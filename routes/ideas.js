@@ -88,5 +88,10 @@ router.put("/edit-ideas/:id",(req,res)=>{                     // put backend val
 })
 
 //------------------------------------------------------------------- DELETE IDEAS
-
+router.delete('/delete-ideas/:id',(req,res)=>{
+    Idea.remove({_id:req.params.id}).then(()=>{
+        req.flash('Success msg',"Idea Deleted");
+        res.redirect("/ideas/my-ideas");
+    })
+})
 module.exports = router;

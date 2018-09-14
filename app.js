@@ -25,11 +25,9 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 //method-override middleware
-
 app.use(methodOverride('_method'));
 
 //express-session middleware
-
 app.use(session({
     secret: 'Vortex Iz cool',
     resave: true,
@@ -39,12 +37,13 @@ app.use(session({
 app.use((flash()));
 
 
-//Global Variables
+//Global Variables middleware
 app.use((req, res, next) => {
     res.locals.success_msg = req.flash('Success msg');
     res.locals.error_msg = req.flash('Error msg');
     next();
 })
+
 // mongoose.Promise = global.Promise;
 //db connection
 mongoose.connect("mongodb://localhost/PlanMe_dev", {
@@ -62,12 +61,18 @@ mongoose.connect("mongodb://localhost/PlanMe_dev", {
 //     next();
 // });
 
+
+//routes
 const ideasRoute = require('./routes/ideas');
 const userRoute = require('./routes/users');
 
-app.use('/ideas',ideasRoute);
-app.use('/user',userRoute);
+app.use('/ideas', ideasRoute);
+app.use('/users', userRoute);
 
+
+
+
+//server
 app.listen(port, () => {
     console.log(`Server started on PORT ${port}`);
 });

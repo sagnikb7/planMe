@@ -1,0 +1,25 @@
+<h1>My Ideas</h1>
+<div class="row">
+{{#each ideas}}
+<div class="col-sm-4">
+<div class="card mb-2">
+  <div class="card-header">
+    <b>{{this.title}}</b>
+  </div>
+  <div class="card-body">
+    <p class="card-text">{{this.details}}</p>
+  <a href=/ideas/edit-ideas/{{this.id}} class="btn btn-primary btn-block"><i class="fas fa-edit"></i> Edit</a>
+  {{!-- <a href=/ideas/edit-ideas/{{this.id}} class="btn btn-danger"><i class="fas fa-trash-alt"></i></a> --}}
+  <form action="/ideas/delete-ideas/{{id}}?_method=DELETE" method="POST">
+  <input type="hidden" name="_method" value="DELETE"></input>
+  <input type="submit" class="mt-2 btn btn-danger btn-block" value="Discard"></input>
+  </form>
+  
+  </div>
+</div>
+</div>
+{{else}}
+<h3>Its lonely here....</h3>
+
+{{/each}}
+</div>

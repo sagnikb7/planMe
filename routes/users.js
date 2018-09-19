@@ -4,21 +4,30 @@ const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 
+const {ensureAuthenticated,onlyNonAuthenticated} = require("../helpers/auth");
 
 //load user model
 
 require('../models/users');
 const usersModel = mongoose.model('users');
 
-router.get('/login', (req, res) => {
+router.get('/login',onlyNonAuthenticated, (req, res) => {
     res.render("users/login")
 });
 
-router.get('/register', (req, res) => {
+router.post('/login',onlyNonAuthenticated,(req,res,next)=>{
+passport.authenticate('local',{
+    successRedirect:'/ideas',
+    failureRedirect:'/users/login',
+    failureFlash:true
+})(req,res,next);
+});
+
+router.get('/register',onlyNonAuthenticated, (req, res) => {
     res.render("users/register")
 });
 
-router.post('/register', (req, res) => {
+router.post('/register',onlyNonAuthenticated, (req, res) => {
     let errors = [];
 
     // console.log(req.body);
@@ -90,4 +99,10 @@ router.post('/register', (req, res) => {
     }
 })
 
+
+router.get('/logout',ensureAuthenticated,(req,res)=>{
+    req.logout();
+    req.flash('Success msg',"You are logged out");
+    res.redirect('/users/login');
+})
 module.exports = router;

@@ -1,3 +1,8 @@
+{{#if error}}
+
+<h3>{{error}}</h3>
+{{/if}}
+
 {{#each errors}}
 <div class="alert alert-danger alert-dismissible fade show" role="alert">
     {{text}}
@@ -6,3 +11,4 @@
     </button>
 </div>
 {{/each}}
+

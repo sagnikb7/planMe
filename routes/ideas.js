@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const {ensureAuthenticated} = require('../helpers/auth');
+
 //Load mongoose model
 require("../models/Ideas");
 const Idea = mongoose.model('ideas');
@@ -14,8 +16,8 @@ const {
 
 
 //---------------------------------------------------------------- ROUTES ----LANDING & STATIC PAGES
-router.get('/', (req, res) => {
-    const title = "PlanMe App";
+router.get('/',ensureAuthenticated, (req, res) => {
+    const title = "PlanMe";
     res.render('index', {
         title: title
     });
@@ -25,8 +27,8 @@ router.get('/about', (req, res) => {
 });
 
 //-------------------------------------------------------------------  VIEW IDEAS
-router.get('/my-ideas', (req, res) => {
-    Idea.find({}).sort({
+router.get('/my-ideas',ensureAuthenticated, (req, res) => {
+    Idea.find({user:req.user._id}).sort({
         date: 'desc'
     }).then(ideas => {
         //console.log(ideas);
@@ -39,12 +41,12 @@ router.get('/my-ideas', (req, res) => {
 
 
 //------------------------------------------------------------------- ADD IDEAS
-router.get('/add-ideas', (req, res) => {
+router.get('/add-ideas',ensureAuthenticated, (req, res) => {
     res.render('ideas/add-ideas');
 });
 
 
-router.post("/add-ideas", [check("title").isLength({
+router.post("/add-ideas",ensureAuthenticated, [check("title").isLength({
         "min": 4
     }),
     check("details").isLength({
@@ -56,7 +58,8 @@ router.post("/add-ideas", [check("title").isLength({
         // console.log(req.body);
         var data = {
             title: req.body.title,
-            details: req.body.details
+            details: req.body.details,
+            user:req.user._id
         }
         new Idea(data).save().then(e => {
             req.flash('Success msg', "Idea saved");
@@ -71,13 +74,13 @@ router.post("/add-ideas", [check("title").isLength({
 
 })
 //------------------------------------------------------------------- ADD IDEAS (view)
-router.get("/edit-ideas/:id",(req,res)=>{
+router.get("/edit-ideas/:id",ensureAuthenticated,(req,res)=>{
     Idea.findById(req.params.id).then((idea)=>{
         res.render('ideas/edit-ideas',{idea:idea});
     })
 })
 
-router.put("/edit-ideas/:id",(req,res)=>{                     // put backend validation while udating
+router.put("/edit-ideas/:id",ensureAuthenticated,(req,res)=>{                     // put backend validation while udating
     Idea.findById(req.params.id).then((idea)=>{
        idea.title = req.body.title;
        idea.details = req.body.details;
@@ -88,7 +91,7 @@ router.put("/edit-ideas/:id",(req,res)=>{                     // put backend val
 })
 
 //------------------------------------------------------------------- DELETE IDEAS
-router.delete('/delete-ideas/:id',(req,res)=>{
+router.delete('/delete-ideas/:id',ensureAuthenticated,(req,res)=>{
     Idea.remove({_id:req.params.id}).then(()=>{
         req.flash('Success msg',"Idea Deleted");
         res.redirect("/ideas/my-ideas");

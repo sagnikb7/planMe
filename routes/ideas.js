@@ -92,9 +92,11 @@ router.put("/edit-ideas/:id",ensureAuthenticated,(req,res)=>{                   
 
 //------------------------------------------------------------------- DELETE IDEAS
 router.delete('/delete-ideas/:id',ensureAuthenticated,(req,res)=>{
-    Idea.remove({_id:req.params.id}).then(()=>{
+    Idea.remove({_id:req.params.id,user:req.user._id}).then(()=>{
         req.flash('Success msg',"Idea Deleted");
         res.redirect("/ideas/my-ideas");
-    })
+    }).catch(()=>{
+        cosnole.log('deletion error');
+    });
 })
 module.exports = router;

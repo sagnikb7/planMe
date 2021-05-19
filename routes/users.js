@@ -17,7 +17,7 @@ router.get('/login',onlyNonAuthenticated, (req, res) => {
 
 router.post('/login',onlyNonAuthenticated,(req,res,next)=>{
 passport.authenticate('local',{
-    successRedirect:'/ideas',
+    successRedirect:'/ideas/my-ideas',
     failureRedirect:'/users/login',
     failureFlash:true
 })(req,res,next);
@@ -55,7 +55,7 @@ router.post('/register',onlyNonAuthenticated, (req, res) => {
 
         usersModel.findOne({
             email: req.body.email
-        }).then((user) => {
+        }).lean().then((user) => {
             // console.log(user);
             if (user) {
                 errors.push({

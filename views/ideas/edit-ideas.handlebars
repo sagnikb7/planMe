@@ -1,12 +1,10 @@
 <div class="row">
     <div class="mx-auto col-lg-6">
         <div class="card">
-            <div class="card-header">
-                <h3>Edit <span><b>Idea</b></span></h3>
-            </div>
             <div class="card-body">
+            <h2 style="font-weight: bold; margin-bottom: 2rem;">Edit Idea</h2>
 
-                <form action="/ideas/edit-ideas/{{idea.id}}?_method=PUT" method="POST">
+                <form action="/ideas/edit-ideas/{{idea._id}}?_method=PUT" method="POST">
                     <input type="hidden" name="_method" value="PUT">
                     <div class="form-group">
                         <label for="title">Title</label>
@@ -17,7 +15,7 @@
                         <textarea name="details" class="form-control" required>{{idea.details}}</textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-edit"></i> Update </button>
+                    <button type="submit" class="btn btn-primary btn-block"> Update </button>
                 </form>
 
 

@@ -1,8 +1,20 @@
-<nav style="background: linear-gradient(to right, #fc466b, #3f5efb);" class="navbar navbar-expand-sm navbar-dark mb-3">
+<style>
+    nav {
+        background: #4e54c8;
+        /* fallback for old browsers */
+        background: -webkit-linear-gradient(to right, #8f94fb, #4e54c8);
+        /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to right, #8f94fb, #4e54c8);
+        /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+    }
+</style>
+
+<nav class="navbar navbar-expand-sm navbar-dark mb-3">
     <div class="container">
         <a class="navbar-brand" href="/">PlanMe</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav"
-            aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -44,7 +56,7 @@
 
                     <div class="dropdown-menu">
                         <a href="/users/logout" class="dropdown-item">Log out</a>
-                       
+
                     </div>
 
                 </li>

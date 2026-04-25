@@ -4,6 +4,7 @@ services:
     runtime: node
     buildCommand: pnpm install && pnpm build
     startCommand: pnpm start
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production

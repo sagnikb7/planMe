@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: planme
+    runtime: node
+    buildCommand: pnpm install && pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: LOG_LEVEL
+        value: info
+      - key: MAX_SESSIONS_PER_USER
+        value: 2

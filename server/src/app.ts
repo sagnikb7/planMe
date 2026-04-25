@@ -95,6 +95,7 @@ export function createApp({
   app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
   if (isProd) {
+    app.set('trust proxy', 1);
     const clientDist = path.join(__dirname, '../../client/dist');
     app.use(express.static(clientDist));
     app.get('*', (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));

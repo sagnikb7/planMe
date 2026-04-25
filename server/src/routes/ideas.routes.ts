@@ -15,7 +15,7 @@ function isValidObjectId(id: string): boolean {
 }
 
 function validateId(req: Request, res: Response, next: NextFunction): void {
-  if (!isValidObjectId(req.params.id)) {
+  if (!isValidObjectId(req.params.id as string)) {
     res.status(404).json({ error: 'Idea not found' });
     return;
   }
@@ -67,7 +67,7 @@ router.patch('/reorder', validate(reorderIdeasSchema), async (req, res) => {
 
 router.get('/:id', validateId, async (req, res) => {
   try {
-    const idea = await ideaService.getById(req.params.id, req.user!._id);
+    const idea = await ideaService.getById(req.params.id as string, req.user!._id);
     if (!idea) return res.status(404).json({ error: 'Idea not found' });
     res.json(idea);
   } catch {
@@ -87,7 +87,7 @@ router.post('/', validate(createIdeaSchema), async (req, res) => {
 
 router.put('/:id', validateId, validate(updateIdeaSchema), async (req, res) => {
   try {
-    const idea = await ideaService.update(req.params.id, req.user!._id, req.body);
+    const idea = await ideaService.update(req.params.id as string, req.user!._id, req.body);
     if (!idea) return res.status(404).json({ error: 'Idea not found' });
     res.json(idea);
   } catch (err) {
@@ -98,7 +98,7 @@ router.put('/:id', validateId, validate(updateIdeaSchema), async (req, res) => {
 
 router.patch('/:id/status', validateId, validate(patchIdeaStatusSchema), async (req, res) => {
   try {
-    const idea = await ideaService.patchStatus(req.params.id, req.user!._id, req.body.status);
+    const idea = await ideaService.patchStatus(req.params.id as string, req.user!._id, req.body.status);
     if (!idea) return res.status(404).json({ error: 'Idea not found' });
     res.json(idea);
   } catch {
@@ -108,7 +108,7 @@ router.patch('/:id/status', validateId, validate(patchIdeaStatusSchema), async (
 
 router.delete('/:id', validateId, async (req, res) => {
   try {
-    const deleted = await ideaService.delete(req.params.id, req.user!._id);
+    const deleted = await ideaService.delete(req.params.id as string, req.user!._id);
     if (!deleted) return res.status(404).json({ error: 'Idea not found' });
     res.json({ message: 'Deleted' });
   } catch {

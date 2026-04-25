@@ -24,7 +24,7 @@ router.get('/', ensureAuthOrPending, async (req, res) => {
 router.delete('/:id', ensureAuthOrPending, async (req, res) => {
   try {
     const userId = getRequestUserId(req);
-    const rawSessionId = await sessionService.terminateSession(req.params.id, userId);
+    const rawSessionId = await sessionService.terminateSession(req.params.id as string, userId);
 
     if (!rawSessionId) {
       return res.status(404).json({ error: 'Session not found' });

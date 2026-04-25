@@ -16,3 +16,5 @@ services:
         value: info
       - key: MAX_SESSIONS_PER_USER
         value: 2
+      - key: MMS_DISABLE_POSTINSTALL
+        value: "1"

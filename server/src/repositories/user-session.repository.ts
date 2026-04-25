@@ -27,7 +27,7 @@ export class UserSessionRepository {
   async findAllByUser(userId: Types.ObjectId): Promise<IUserSession[]> {
     return UserSessionModel.find({ userId, isPending: false })
       .sort({ createdAt: -1 })
-      .lean() as Promise<IUserSession[]>;
+      .lean() as unknown as Promise<IUserSession[]>;
   }
 
   async findByIdAndUser(id: string, userId: Types.ObjectId): Promise<IUserSession | null> {

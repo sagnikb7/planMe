@@ -4,7 +4,7 @@ import type { CreateIdeaInput, UpdateIdeaInput } from '../schemas/idea.schema';
 
 export class IdeaRepository {
   async findAllByUser(userId: Types.ObjectId): Promise<IIdea[]> {
-    return IdeaModel.find({ user: userId }).sort({ sortOrder: 1, createdAt: -1 }).lean() as Promise<IIdea[]>;
+    return IdeaModel.find({ user: userId }).sort({ sortOrder: 1, createdAt: -1 }).lean() as unknown as Promise<IIdea[]>;
   }
 
   async getMaxSortOrder(userId: Types.ObjectId): Promise<number> {

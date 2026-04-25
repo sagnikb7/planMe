@@ -24,7 +24,7 @@ A private idea workspace. Capture thoughts, tag them, track their stage, and com
 | Forms | React Hook Form, Zod v4, @hookform/resolvers |
 | Rich text | Tiptap v2 (StarterKit) |
 | UI primitives | Radix UI (Label, Slot, Toast, Dialog) |
-| Backend | Express 4, TypeScript (strict), tsx (no compile step) |
+| Backend | Express 4, TypeScript (strict), compiled to JS for production |
 | Auth | Passport.js local strategy, express-session, connect-mongo |
 | Database | MongoDB via Mongoose 8 |
 | Validation | Zod v3 (server), Zod v4 (client) |
@@ -114,12 +114,23 @@ LOG_LEVEL=info
 ## Scripts
 
 ```bash
-pnpm dev          # server + client (concurrently)
-pnpm build        # production build → client/dist/ (served by Express)
-pnpm start        # production server (serves built client)
+pnpm dev          # server (tsx watch) + client (Vite) concurrently
+pnpm build        # compile client → client/dist/ and server → server/dist/
+pnpm start        # start the compiled server (production)
+pnpm prod:local   # build everything, then run the production server locally
 pnpm test         # server integration tests (in-memory MongoDB, no setup needed)
 pnpm lint         # ESLint on client
 ```
+
+### Testing the production build locally
+
+`pnpm prod:local` replicates the Render deploy on your machine — it compiles both the client and server, then starts the server with `NODE_ENV=production`. In production mode the Express server:
+
+- Serves the compiled React app from `client/dist/` as static files
+- Falls back to `index.html` for all non-API routes (client-side routing)
+- Enables `secure` cookies (works on `localhost` in modern browsers)
+
+Visit `http://localhost:5001` — there is no Vite dev server, no proxy. The `.env` file is still used for `MONGO_URI`, `COOKIE_SECRET`, etc.
 
 ---
 
@@ -180,6 +191,6 @@ The UI uses a single dark-first design system (`design-system.css`) with a CSS c
 
 **EADDRINUSE on port 5001** — change `PORT` in `.env` and update the Vite proxy target in `client/vite.config.js`.
 
-**503 from Vite proxy on first load** — the server takes ~1s to boot with tsx. Refresh once. This only happens on cold start.
+**503 from Vite proxy on first load** — the server takes ~1s to boot. Refresh once. This only happens in dev on cold start.
 
 **Tiptap editor blank in dev** — if `optimizeDeps` pre-bundling fails, try `rm -rf client/node_modules/.vite` and restart.

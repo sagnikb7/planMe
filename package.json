@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "Idea capture app — Express API + React frontend",
   "private": true,
+  "engines": { "node": ">=22" },
   "packageManager": "pnpm@10.33.2",
   "scripts": {
     "dev": "concurrently \"pnpm --filter planme-server dev\" \"pnpm --filter client dev\"",

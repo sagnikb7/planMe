@@ -1,26 +1,17 @@
 {
   "name": "planme",
-  "version": "1.0.0",
-  "description": "App to add ideas",
-  "main": "app.js",
+  "version": "2.0.0",
+  "description": "Idea capture app — Express API + React frontend",
+  "private": true,
+  "packageManager": "pnpm@10.33.2",
   "scripts": {
-    "start": "node app.js",
-    "dev:start": "nodemon app.js"
+    "dev": "concurrently \"pnpm --filter planme-server dev\" \"pnpm --filter client dev\"",
+    "build": "pnpm --filter client build",
+    "start": "pnpm --filter planme-server start",
+    "test": "pnpm --filter planme-server test",
+    "lint": "pnpm --filter client lint"
   },
-  "author": "SAGNIK ",
-  "license": "ISC",
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "body-parser": "^1.19.0",
-    "connect-flash": "^0.1.1",
-    "dotenv": "^9.0.2",
-    "express": "^4.16.3",
-    "express-handlebars": "^3.0.0",
-    "express-session": "^1.15.6",
-    "express-validator": "^5.3.0",
-    "method-override": "^3.0.0",
-    "mongoose": "^5.12.10",
-    "passport": "^0.4.0",
-    "passport-local": "^1.0.0"
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

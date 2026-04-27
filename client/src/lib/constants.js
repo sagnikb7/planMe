@@ -8,10 +8,11 @@ export const IDEA_STATUS_LABELS = {
 };
 
 export const SORT_OPTIONS = /** @type {const} */ ([
-  { key: 'newest', label: 'Newest' },
-  { key: 'oldest', label: 'Oldest' },
-  { key: 'a-z',    label: 'A–Z' },
-  { key: 'manual', label: 'Manual' },
+  { key: 'newest',  label: 'Newest' },
+  { key: 'updated', label: 'Updated' },
+  { key: 'oldest',  label: 'Oldest' },
+  { key: 'a-z',     label: 'A–Z' },
+  { key: 'manual',  label: 'Manual' },
 ]);
 
 export const TAG_MIN_LENGTH = 2;

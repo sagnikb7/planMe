@@ -13,6 +13,7 @@ import { Loader } from '@/components/ui/loader';
 const schema = z.object({
   email: z.string().email('Invalid email'),
   password: z.string().min(1, 'Password is required'),
+  rememberMe: z.boolean().optional().default(false),
 });
 
 export default function Login() {
@@ -25,7 +26,7 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     try {
-      const result = await login(data.email, data.password);
+      const result = await login(data.email, data.password, data.rememberMe);
       if (result?.sessionLimited) {
         navigate('/session-limit', { replace: true });
       } else {
@@ -72,6 +73,17 @@ export default function Login() {
             <Label htmlFor="password">Password</Label>
             <PasswordField id="password" placeholder="Password" {...register('password')} />
             {errors.password && <p className="text-xs text-[var(--ds-color-danger)]">{errors.password.message}</p>}
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              id="rememberMe"
+              type="checkbox"
+              className="h-3.5 w-3.5 rounded-sm accent-[var(--ds-color-glow)] cursor-pointer"
+              {...register('rememberMe')}
+            />
+            <label htmlFor="rememberMe" className="text-xs text-[var(--ds-color-text-muted)] cursor-pointer select-none">
+              Remember me for 30 days
+            </label>
           </div>
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? <><Loader /> Signing in</> : 'Sign in'}

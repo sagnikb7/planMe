@@ -46,6 +46,17 @@ export default function ViewIdea() {
     api.get('/ideas').then((res) => setAllIdeas(res.data)).catch(() => {});
   }, [id]);
 
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key !== 'e' || e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = document.activeElement;
+      if (el?.tagName === 'INPUT' || el?.tagName === 'TEXTAREA' || el?.isContentEditable) return;
+      navigate(`/ideas/edit/${id}`);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [id, navigate]);
+
   const handleDelete = async () => {
     setDeleting(true);
     try {

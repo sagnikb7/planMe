@@ -238,6 +238,12 @@ Visit `http://localhost:5001` — the server now serves the React client from `s
 
 ---
 
+## Mobile is a first-class surface
+
+Every UI feature must work on both desktop and mobile. planMe has a mobile bottom nav, touch interactions, and a swipe-to-archive gesture on idea rows. When adding buttons, layouts, or interactions always ask: how does this look and behave on small screens? Touch targets ≥ 44px. Never build a feature that works only on desktop.
+
+---
+
 ## Working style
 
 **Ask before implementing non-trivial changes.** If a task involves design decisions, multiple files, or more than one approach — present options and get sign-off. Do not write speculative code.

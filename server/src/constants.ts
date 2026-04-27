@@ -12,6 +12,7 @@ export const PASSWORD_POLICY = {
 export const RESET_TOKEN_TTL_MS = 2 * 60 * 60 * 1000; // 2 hour
 
 export const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+export const REMEMBER_ME_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export const PENDING_SESSION_TTL_MS = 15 * 60 * 1000; // 15 minutes
 

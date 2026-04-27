@@ -12,8 +12,8 @@ export function AuthProvider({ children }) {
       .catch(() => setUser(null));
   }, []);
 
-  const login = async (email, password) => {
-    const res = await api.post('/auth/login', { email, password });
+  const login = async (email, password, rememberMe = false) => {
+    const res = await api.post('/auth/login', { email, password, rememberMe });
     if (res.data.sessionLimited) {
       // Pending session — do not set user; return signal for the login page to redirect
       setPendingSessions(res.data.sessions || []);

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import api from '@/lib/api';
 import { TITLE_MAX_LENGTH } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,8 @@ function stripHtml(html) {
 export default function AddIdea() {
   const navigate = useNavigate();
   const toast = useToast();
+  const [searchParams] = useSearchParams();
+  const prefillTitle = searchParams.get('title') || '';
   const [details, setDetails] = useState('');
   const [tags, setTags] = useState([]);
   const [detailsError, setDetailsError] = useState('');
@@ -36,7 +38,7 @@ export default function AddIdea() {
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting }, setError } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { title: '' },
+    defaultValues: { title: prefillTitle },
   });
   const titleValue = watch('title') ?? '';
 

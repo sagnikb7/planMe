@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import DOMPurify from 'dompurify';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Trash2, Plus, Lightbulb, Search, X, Archive,
   List, LayoutGrid, GripVertical, RotateCcw,
@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils';
 
 const VIEW_KEY = 'planme-view';
 const SORT_KEY = 'planme-sort';
-const SORT_SHORT = { newest: 'New', oldest: 'Old', 'a-z': 'A–Z', manual: '↕' };
+const SORT_SHORT = { newest: 'New', updated: 'Upd', oldest: 'Old', 'a-z': 'A–Z', manual: '↕' };
 
 function StatusBadge({ status }) {
   return (
@@ -34,7 +34,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, openActionDialog }) {
+function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, openActionDialog, onSwipeArchive }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: idea._id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -42,10 +42,40 @@ function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, openAct
     opacity: isDragging ? 0.4 : 1,
   };
   const isArchived = idea.status === 'archived';
+  const canSwipe = !isArchived && sortBy !== 'manual';
+
+  const touchRef = useRef({ startX: 0, startY: 0 });
+  const elRef = useRef(null);
+
+  const setRefs = useCallback((el) => {
+    setNodeRef(el);
+    elRef.current = el;
+  }, [setNodeRef]);
+
+  useEffect(() => {
+    const el = elRef.current;
+    if (!el || !canSwipe) return;
+    const onStart = (e) => {
+      touchRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY };
+    };
+    const onEnd = (e) => {
+      const dx = e.changedTouches[0].clientX - touchRef.current.startX;
+      const dy = e.changedTouches[0].clientY - touchRef.current.startY;
+      if (dx < -72 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        onSwipeArchive(idea._id);
+      }
+    };
+    el.addEventListener('touchstart', onStart, { passive: true });
+    el.addEventListener('touchend', onEnd, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', onStart);
+      el.removeEventListener('touchend', onEnd);
+    };
+  }, [canSwipe, idea._id, onSwipeArchive]);
 
   return (
     <div
-      ref={setNodeRef}
+      ref={setRefs}
       style={{ ...style, animationDelay: `${Math.min(index, 10) * 40}ms` }}
       className={cn('idea-row', isArchived && 'opacity-50')}
     >
@@ -226,6 +256,16 @@ export default function MyIdeas() {
 
   const openActionDialog = (idea) => setPendingIdea(idea);
 
+  const handleSwipeArchive = useCallback(async (ideaId) => {
+    try {
+      await api.patch(`/ideas/${ideaId}/status`, { status: 'archived' });
+      setIdeas((prev) => prev.map((i) => i._id === ideaId ? { ...i, status: 'archived' } : i));
+      toast('Idea archived');
+    } catch {
+      toast('Failed to archive');
+    }
+  }, [toast]);
+
   const handleArchive = async () => {
     if (!pendingIdea) return;
     try {
@@ -262,6 +302,14 @@ export default function MyIdeas() {
     }
   };
 
+  const tagCounts = useMemo(() => {
+    const counts = {};
+    ideas
+      .filter((i) => i.status !== 'archived' || showArchived)
+      .forEach((i) => (i.tags || []).forEach((t) => { counts[t] = (counts[t] || 0) + 1; }));
+    return counts;
+  }, [ideas, showArchived]);
+
   const allTags = [...new Set(
     ideas.filter((i) => i.status !== 'archived' || showArchived).flatMap((i) => i.tags || [])
   )].sort();
@@ -278,6 +326,7 @@ export default function MyIdeas() {
     })
     .sort((a, b) => {
       if (sortBy === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
+      if (sortBy === 'updated') return new Date(b.updatedAt ?? b.createdAt) - new Date(a.updatedAt ?? a.createdAt);
       if (sortBy === 'oldest') return new Date(a.createdAt) - new Date(b.createdAt);
       if (sortBy === 'a-z') return (a.title || 'Untitled').localeCompare(b.title || 'Untitled');
       return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
@@ -335,35 +384,56 @@ export default function MyIdeas() {
       {ideas.filter((i) => i.status !== 'archived').length === 0 && !showArchived ? (
         <div className="ideas-empty">
           <Lightbulb className="ideas-empty-icon h-8 w-8" />
-          <p className="ideas-empty-text">
-            {archivedCount > 0
-              ? `${archivedCount} idea${archivedCount > 1 ? 's' : ''} archived.`
-              : 'Nothing here yet. Your next big idea starts here.'}
-          </p>
-          <div className="flex flex-col items-center gap-3">
-            {atIdeaLimit ? (
-              <Button variant="spark" disabled title={`Idea limit of ${IDEA_LIMIT} reached`}>
-                <Plus className="w-4 h-4" />
-                Capture your first idea
-              </Button>
-            ) : (
-              <Button asChild variant="spark">
-                <Link to="/ideas/add">
-                  <Plus className="w-4 h-4" />
-                  Capture your first idea
-                </Link>
-              </Button>
-            )}
-            {archivedCount > 0 && (
-              <button
-                onClick={() => setShowArchived(true)}
-                className="flex items-center gap-1.5 text-xs text-[var(--ds-color-text-soft)] hover:text-[var(--ds-color-text-muted)] transition-colors"
-              >
-                <Archive className="h-3 w-3" />
-                View {archivedCount} archived
-              </button>
-            )}
-          </div>
+          {ideas.length === 0 ? (
+            <>
+              <p className="ideas-empty-text">Your workspace is empty. Start with something on your mind.</p>
+              <div className="flex flex-col items-center gap-3 w-full max-w-xs">
+                {atIdeaLimit ? (
+                  <Button variant="spark" disabled title={`Idea limit of ${IDEA_LIMIT} reached`}>
+                    <Plus className="w-4 h-4" /> Capture an idea
+                  </Button>
+                ) : (
+                  <Button asChild variant="spark">
+                    <Link to="/ideas/add"><Plus className="w-4 h-4" /> Capture an idea</Link>
+                  </Button>
+                )}
+                <p className="text-[11px] text-[var(--ds-color-text-soft)] uppercase tracking-widest">or start from a prompt</p>
+                <div className="flex flex-col gap-2 w-full">
+                  {[
+                    'A problem I keep noticing',
+                    'Something I\'ve been putting off',
+                    'An idea I keep coming back to',
+                  ].map((prompt) => (
+                    <Link
+                      key={prompt}
+                      to={`/ideas/add?title=${encodeURIComponent(prompt)}`}
+                      className="rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] px-4 py-2.5 text-sm text-[var(--ds-color-text-muted)] text-left transition-colors hover:border-[var(--ds-color-border-strong)] hover:text-[var(--ds-color-text)]"
+                    >
+                      {prompt} →
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="ideas-empty-text">{archivedCount} idea{archivedCount > 1 ? 's' : ''} archived.</p>
+              <div className="flex flex-col items-center gap-3">
+                {!atIdeaLimit && (
+                  <Button asChild variant="spark">
+                    <Link to="/ideas/add"><Plus className="w-4 h-4" /> Capture your next idea</Link>
+                  </Button>
+                )}
+                <button
+                  onClick={() => setShowArchived(true)}
+                  className="flex items-center gap-1.5 text-xs text-[var(--ds-color-text-soft)] hover:text-[var(--ds-color-text-muted)] transition-colors"
+                >
+                  <Archive className="h-3 w-3" />
+                  View {archivedCount} archived
+                </button>
+              </div>
+            </>
+          )}
         </div>
       ) : (
         <>
@@ -492,6 +562,9 @@ export default function MyIdeas() {
                   style={filterTag === tag ? { outline: '1px solid var(--ds-color-glow)' } : {}}
                 >
                   {tag}
+                  {tagCounts[tag] > 0 && (
+                    <span className="ml-1 opacity-50 text-[10px]">{tagCounts[tag]}</span>
+                  )}
                   {filterTag === tag && <X className="w-2.5 h-2.5 ml-0.5" />}
                 </button>
               ))}
@@ -526,6 +599,7 @@ export default function MyIdeas() {
                         filterTag={filterTag}
                         setFilterTag={setFilterTag}
                         openActionDialog={openActionDialog}
+                        onSwipeArchive={handleSwipeArchive}
                       />
                     ))}
                   </div>

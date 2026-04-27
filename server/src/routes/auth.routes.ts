@@ -8,6 +8,7 @@ import { authService, ConflictError, ValidationError } from '../services/auth.se
 import { sessionService } from '../services/session.service';
 import { env } from '../config/env';
 import { parseUserAgent } from '../utils/user-agent';
+import { REMEMBER_ME_MAX_AGE_MS } from '../constants';
 
 const router = Router();
 
@@ -75,6 +76,10 @@ router.post('/login', (req, res, next) => {
         req.logIn(user, async (loginErr) => {
           if (loginErr) return next(loginErr);
           try {
+            if (req.body.rememberMe) {
+              req.session.cookie.maxAge = REMEMBER_ME_MAX_AGE_MS;
+            }
+
             await sessionService.createSession({
               userId,
               sessionId: req.session.id,

@@ -27,3 +27,10 @@ export const DETAILS_MAX_LENGTH = 50_000;
 export const IDEA_MAX_TAGS = 3;
 export const WORKSPACE_MAX_TAGS = 10;
 export const IDEA_LIMIT = 100;
+
+// Rate limits — windowMs + max requests per IP per window
+export const RATE_LIMIT_LOGIN           = { windowMs: 15 * 60 * 1000, max: 20 } as const; // 20 / 15 min
+export const RATE_LIMIT_REGISTER        = { windowMs: 60 * 60 * 1000, max: 10 } as const; // 10 / hr
+export const RATE_LIMIT_FORGOT_PASSWORD = { windowMs: 60 * 60 * 1000, max:  5 } as const; // 5  / hr
+export const RATE_LIMIT_RESET_PASSWORD  = { windowMs: 15 * 60 * 1000, max: 10 } as const; // 10 / 15 min
+export const RATE_LIMIT_CHANGE_PASSWORD = { windowMs: 15 * 60 * 1000, max: 10 } as const; // 10 / 15 min

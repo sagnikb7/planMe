@@ -1,6 +1,7 @@
 import { Router, Request } from 'express';
 import { Types } from 'mongoose';
 import passport from 'passport';
+import rateLimit from 'express-rate-limit';
 import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { registerSchema, forgotPasswordSchema, resetPasswordSchema, updateNameSchema, changePasswordSchema } from '../schemas/auth.schema';
@@ -8,7 +9,33 @@ import { authService, ConflictError, ValidationError } from '../services/auth.se
 import { sessionService } from '../services/session.service';
 import { env } from '../config/env';
 import { parseUserAgent } from '../utils/user-agent';
-import { REMEMBER_ME_MAX_AGE_MS } from '../constants';
+import {
+  REMEMBER_ME_MAX_AGE_MS,
+  RATE_LIMIT_LOGIN,
+  RATE_LIMIT_REGISTER,
+  RATE_LIMIT_FORGOT_PASSWORD,
+  RATE_LIMIT_RESET_PASSWORD,
+  RATE_LIMIT_CHANGE_PASSWORD,
+} from '../constants';
+
+function makeRateLimiter(opts: { windowMs: number; max: number }) {
+  return rateLimit({
+    windowMs: opts.windowMs,
+    max: opts.max,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: () => process.env.NODE_ENV === 'test',
+    handler: (_req, res) => {
+      res.status(429).json({ error: 'Too many requests — please try again later.' });
+    },
+  });
+}
+
+const loginLimiter          = makeRateLimiter(RATE_LIMIT_LOGIN);
+const registerLimiter       = makeRateLimiter(RATE_LIMIT_REGISTER);
+const forgotPasswordLimiter = makeRateLimiter(RATE_LIMIT_FORGOT_PASSWORD);
+const resetPasswordLimiter  = makeRateLimiter(RATE_LIMIT_RESET_PASSWORD);
+const changePasswordLimiter = makeRateLimiter(RATE_LIMIT_CHANGE_PASSWORD);
 
 const router = Router();
 
@@ -25,7 +52,7 @@ function getClientIp(req: Request): string {
   return req.ip || req.socket?.remoteAddress || 'Unknown';
 }
 
-router.post('/register', validate(registerSchema), async (req, res) => {
+router.post('/register', registerLimiter, validate(registerSchema), async (req, res) => {
   try {
     await authService.register(req.body.name, req.body.email, req.body.password);
     res.status(201).json({ message: 'Registered successfully' });
@@ -37,7 +64,7 @@ router.post('/register', validate(registerSchema), async (req, res) => {
   }
 });
 
-router.post('/login', (req, res, next) => {
+router.post('/login', loginLimiter, (req, res, next) => {
   passport.authenticate('local', async (err: Error | null, user: Express.User | false, info: { message: string } | undefined) => {
     if (err) return next(err);
     if (!user) return res.status(401).json({ error: info?.message || 'Invalid email or password' });
@@ -122,7 +149,7 @@ router.get('/me', (req, res) => {
   res.json({ user: authService.sanitize(req.user as Parameters<typeof authService.sanitize>[0]) });
 });
 
-router.post('/forgot-password', validate(forgotPasswordSchema), async (req, res) => {
+router.post('/forgot-password', forgotPasswordLimiter, validate(forgotPasswordSchema), async (req, res) => {
   try {
     const result = await authService.forgotPassword(req.body.email);
     if (result.resetUrl) {
@@ -134,7 +161,7 @@ router.post('/forgot-password', validate(forgotPasswordSchema), async (req, res)
   }
 });
 
-router.post('/reset-password', validate(resetPasswordSchema), async (req, res) => {
+router.post('/reset-password', resetPasswordLimiter, validate(resetPasswordSchema), async (req, res) => {
   try {
     await authService.resetPassword(req.body.token, req.body.password);
     res.json({ message: 'Password reset successfully' });
@@ -157,7 +184,7 @@ router.patch('/me', ensureAuthenticated, validate(updateNameSchema), async (req,
   }
 });
 
-router.post('/change-password', ensureAuthenticated, validate(changePasswordSchema), async (req, res) => {
+router.post('/change-password', ensureAuthenticated, changePasswordLimiter, validate(changePasswordSchema), async (req, res) => {
   try {
     const userId = String((req.user as { _id: Types.ObjectId })._id);
     await authService.changePassword(userId, req.body.currentPassword, req.body.newPassword);

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
-import { PenLine, Hash, Lock } from 'lucide-react';
+import { PenLine, Hash, Lock, ChevronDown, Github } from 'lucide-react';
 
 const FEATURES = [
   {
@@ -75,6 +75,9 @@ export default function Landing() {
               </p>
             </>
           )}
+          <div className="landing-scroll-cue" aria-hidden="true">
+            <ChevronDown size={18} strokeWidth={1.5} />
+          </div>
         </section>
 
         <section className="landing-features" aria-label="Features">
@@ -106,9 +109,41 @@ export default function Landing() {
       </main>
 
       <footer className="landing-footer">
-        <span>© 2026 planMe</span>
-        <span aria-hidden="true">·</span>
-        <Link to="/login" className="landing-nav-link">Sign in</Link>
+        <div className="landing-footer-inner">
+          <div className="landing-footer-brand">
+            <Logo className="text-sm" />
+            <p className="landing-footer-tagline">
+              Capture ideas, half-thoughts, and sparks before they disappear.
+            </p>
+          </div>
+
+          <div className="landing-footer-links">
+            <div className="landing-footer-col">
+              <p className="landing-footer-col-label">Product</p>
+              {!user && <Link to="/register" className="landing-footer-link">Get started</Link>}
+              <Link to="/login" className="landing-footer-link">Sign in</Link>
+            </div>
+            <div className="landing-footer-col">
+              <p className="landing-footer-col-label">Source</p>
+              <a
+                href="https://github.com/sagnikb7/planMe"
+                target="_blank"
+                rel="noreferrer"
+                className="landing-footer-link landing-footer-gh"
+              >
+                <Github size={13} aria-hidden="true" />
+                GitHub
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="landing-footer-bottom">
+          <span>© 2026 planMe. All rights reserved.</span>
+          <span>
+            Made with <span className="landing-footer-heart" aria-hidden="true">♥</span> by sagnikbetal
+          </span>
+        </div>
       </footer>
     </div>
   );

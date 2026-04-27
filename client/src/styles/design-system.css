@@ -348,6 +348,27 @@
 
 .landing-headline-accent {
   color: var(--ds-color-glow);
+  white-space: nowrap;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 0.78em;
+  background: var(--ds-color-glow);
+  border-radius: 1px;
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: cursor-blink 0.9s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-cursor { animation: none; opacity: 0.7; }
 }
 
 .landing-subhead {

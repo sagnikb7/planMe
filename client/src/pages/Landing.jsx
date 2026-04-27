@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useTypewriter } from '@/hooks/useTypewriter';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { PenLine, Hash, Lock, ChevronDown, ExternalLink } from 'lucide-react';
+
+const TYPEWRITER_WORDS = ['ideas', 'sparks', 'thoughts', 'notes', 'plans'];
 
 const FEATURES = [
   {
@@ -24,6 +27,7 @@ const FEATURES = [
 
 export default function Landing() {
   const { user } = useAuth();
+  const typeword = useTypewriter(TYPEWRITER_WORDS);
 
   return (
     <div className="landing-root">
@@ -49,7 +53,9 @@ export default function Landing() {
         <section className="landing-hero" aria-label="Introduction">
           <h1 className="landing-headline">
             A place for the{' '}
-            <span className="landing-headline-accent">ideas</span>
+            <span className="landing-headline-accent typewriter-word">
+              {typeword}<span className="typewriter-cursor" aria-hidden="true" />
+            </span>
             <br />
             worth coming back to.
           </h1>

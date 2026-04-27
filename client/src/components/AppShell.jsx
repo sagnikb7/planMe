@@ -58,7 +58,7 @@ export function AppShell() {
       <div className="mx-auto flex min-h-screen max-w-[var(--ds-size-container)] gap-0 md:gap-6 px-0 py-0 md:px-6 md:py-6">
 
         {/* Sidebar */}
-        <aside className="surface-glass hidden w-56 shrink-0 flex-col p-3 md:flex sticky top-6 self-start" style={{ maxHeight: 'calc(100dvh - 3rem)' }}>
+        <aside className="surface-glass hidden w-56 shrink-0 flex-col p-3 md:flex sticky top-6 h-[calc(100dvh-3rem)]">
           <div className="mb-6 px-2 pt-1">
             <Link to="/" aria-label="Go to home page">
               <Logo className="text-sm" />

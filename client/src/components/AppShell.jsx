@@ -74,9 +74,7 @@ export function AppShell() {
 
         {/* Main content */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="hidden md:flex items-center md:px-0 md:pt-0 md:pb-4">
-            <h1 className="text-sm font-medium text-[var(--ds-color-text)]">{sectionTitle}</h1>
-          </header>
+          <h1 className="sr-only">{sectionTitle}</h1>
 
           <main id="main-content" key={location.pathname} className="ds-page-enter min-w-0 flex-1 px-4 py-4 md:px-0">
             <Outlet />

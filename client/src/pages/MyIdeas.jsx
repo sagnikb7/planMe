@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import DOMPurify from 'dompurify';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Trash2, Plus, Lightbulb, Search, X, Archive,
   List, LayoutGrid, GripVertical, RotateCcw,
@@ -376,8 +376,6 @@ export default function MyIdeas() {
       </div>
     );
   }
-
-  const isDraggable = sortBy === 'manual';
 
   return (
     <main>

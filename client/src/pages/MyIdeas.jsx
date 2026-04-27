@@ -379,8 +379,11 @@ export default function MyIdeas() {
       if (filterTag && !(idea.tags || []).includes(filterTag)) return false;
       if (query.length < SEARCH_MIN_LENGTH) return true;
       const q = query.toLowerCase();
-      const text = `${idea.title} ${(idea.tags || []).join(' ')}`.toLowerCase();
-      const detailsText = idea.details?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ') ?? '';
+      const text = `${idea.title || ''} ${(idea.tags || []).join(' ')}`.toLowerCase();
+      const detailsText = (idea.details ?? '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#?\w+;/g, ' ')
+        .replace(/\s+/g, ' ');
       return text.includes(q) || detailsText.toLowerCase().includes(q);
     })
     .sort((a, b) => {
@@ -501,11 +504,20 @@ export default function MyIdeas() {
               <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--ds-color-text-soft)]" />
               <Input
                 ref={searchRef}
-                className="h-10 sm:h-8 pl-8 text-sm sm:text-xs"
+                className="h-10 sm:h-8 pl-8 pr-7 text-sm sm:text-xs"
                 placeholder="Search…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
+              {query && (
+                <button
+                  onClick={() => setQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--ds-color-text-soft)] hover:text-[var(--ds-color-text)] transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
 
             {/* Sort — abbreviated labels on mobile */}
@@ -631,7 +643,11 @@ export default function MyIdeas() {
           {displayed.length === 0 ? (
             <div className="ideas-empty">
               <p className="ideas-empty-text">
-                {filterTag ? `No ideas tagged "${filterTag}"` : `No ideas match "${query}"`}
+                {filterTag && query.length >= SEARCH_MIN_LENGTH
+                ? `No ideas match "${query}" in tag "${filterTag}"`
+                : filterTag
+                  ? `No ideas tagged "${filterTag}"`
+                  : `No ideas match "${query}"`}
               </p>
             </div>
           ) : (

@@ -61,26 +61,50 @@ export function AppShell() {
     return () => window.removeEventListener('planme:shortcuts-open', handler);
   }, []);
 
+  const tryFlush = (showSyncing = true) => {
+    if (showSyncing) setBannerStatus('syncing');
+    flushPendingQueue().then((synced) => {
+      if (synced > 0) {
+        setBannerStatus('synced');
+        window.dispatchEvent(new CustomEvent('planme:sync-complete'));
+        clearTimeout(syncedTimer.current);
+        syncedTimer.current = setTimeout(() => setBannerStatus('idle'), 2500);
+      } else {
+        setBannerStatus('idle');
+      }
+    }).catch(() => setBannerStatus('idle'));
+  };
+
+  // Flush on mount — handles app restart and "opened while online with queued ops"
+  useEffect(() => {
+    if (navigator.onLine) tryFlush(false);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Flush on online transition (tab stays open, connectivity changes)
   useEffect(() => {
     if (!isOnline) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBannerStatus('offline');
       prevOnline.current = false;
       return;
     }
     if (prevOnline.current === false) {
-      setBannerStatus('syncing');
-      flushPendingQueue().then(() => {
-        setBannerStatus('synced');
-        window.dispatchEvent(new CustomEvent('planme:sync-complete'));
-        clearTimeout(syncedTimer.current);
-        syncedTimer.current = setTimeout(() => setBannerStatus('idle'), 2500);
-      }).catch(() => setBannerStatus('idle'));
+      tryFlush();
     } else {
       setBannerStatus('idle');
     }
     prevOnline.current = true;
-  }, [isOnline]);
+  }, [isOnline]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Flush on visibilitychange — Android backgrounded WebView misses the `online` event
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && navigator.onLine) {
+        tryFlush(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sectionTitle = navItems.find((item) => location.pathname.startsWith(item.to))?.label || 'Workspace';
 

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { IDEA_STATUSES, TAG_MIN_LENGTH, TAG_MAX_LENGTH, TITLE_MAX_LENGTH, DETAILS_MAX_LENGTH, IDEA_MAX_TAGS } from '../constants';
 
-// Letters and hyphens only; must start and end with a letter; min 2 chars.
-const TAG_PATTERN = /^[a-z][a-z-]*[a-z]$|^[a-z]{2}$/;
+// Letters, digits, hyphens; must start and end with a letter or digit; min 2 chars.
+const TAG_PATTERN = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]{2}$/;
 
 export const tagSchema = z
   .string()
@@ -10,7 +10,7 @@ export const tagSchema = z
   .toLowerCase()
   .min(TAG_MIN_LENGTH, `Tag must be at least ${TAG_MIN_LENGTH} characters`)
   .max(TAG_MAX_LENGTH, `Tag must be at most ${TAG_MAX_LENGTH} characters`)
-  .regex(TAG_PATTERN, 'Tag must contain only letters and hyphens, and cannot start or end with a hyphen');
+  .regex(TAG_PATTERN, 'Tag must contain only letters, digits, and hyphens, and cannot start or end with a hyphen');
 
 const tagsArraySchema = z
   .array(tagSchema)

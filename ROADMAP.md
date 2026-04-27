@@ -14,6 +14,7 @@ _Updated: 2026-04-27 (post-sprint)_
 - Full CRUD with Tiptap rich editor (headings, task lists, code, blockquote, bullet/ordered lists)
 - Archive / restore with contextual banners on ViewIdea and EditIdea
 - Search, tag filter (with counts), sort: newest / updated / A–Z / manual drag-and-drop
+- Tags allow digits (`3dprinting`, `web3`, `html5`) — pattern updated on client + server
 - List + grid view toggle; drag-and-drop manual reorder persisted to server
 - Word count, reading time, last edited date, related ideas by tag — all on ViewIdea
 - Swipe left to archive on mobile (idea rows)
@@ -60,6 +61,8 @@ _Updated: 2026-04-27 (post-sprint)_
 ---
 
 ## Next (P1–P2)
+
+**Tag validation tests** — no tag-validation tests exist in `api.test.ts`. Add cases: valid tags with digits (`3dprinting`, `web3`), hyphen-only rejection, leading/trailing hyphen rejection, duplicate tags, over-limit arrays.
 
 **Fix checkbox persistence** — current DOMParser approach breaks if Tiptap changes HTML format. Correct fix: store `{ html, json }`, update through a Tiptap editor instance.
 

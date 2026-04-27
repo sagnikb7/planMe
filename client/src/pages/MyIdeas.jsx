@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 
 const VIEW_KEY = 'planme-view';
 const SORT_KEY = 'planme-sort';
+const SORT_SHORT = { newest: 'New', oldest: 'Old', 'a-z': 'A–Z', manual: '↕' };
 
 function StatusBadge({ status }) {
   return (
@@ -324,85 +325,75 @@ export default function MyIdeas() {
 
   return (
     <main>
-      <div className="ideas-header">
-        {archivedCount > 0 && (
-          <button
-            onClick={() => setShowArchived((v) => !v)}
-            className={cn(
-              'flex items-center gap-1.5 text-xs transition-colors',
-              showArchived
-                ? 'text-[var(--ds-color-text-muted)]'
-                : 'text-[var(--ds-color-text-soft)] hover:text-[var(--ds-color-text-muted)]'
-            )}
-          >
-            <Archive className="h-3 w-3" />
-            {showArchived ? 'Hide archived' : `${archivedCount} archived`}
-          </button>
-        )}
-        {atIdeaLimit ? (
-          <Button variant="spark" size="sm" disabled title={`Idea limit of ${IDEA_LIMIT} reached`}>
-            <Plus className="w-3.5 h-3.5" />
-            New idea
-          </Button>
-        ) : (
-          <Button asChild variant="spark" size="sm">
-            <Link to="/ideas/add">
-              <Plus className="w-3.5 h-3.5" />
-              New idea
-            </Link>
-          </Button>
-        )}
-      </div>
-
       {ideas.filter((i) => i.status !== 'archived').length === 0 && !showArchived ? (
         <div className="ideas-empty">
           <Lightbulb className="ideas-empty-icon h-8 w-8" />
-          <p className="ideas-empty-text">Nothing captured yet. Your next big idea starts here.</p>
-          {atIdeaLimit ? (
-            <Button variant="spark" disabled title={`Idea limit of ${IDEA_LIMIT} reached`}>
-              <Plus className="w-4 h-4" />
-              Capture your first idea
-            </Button>
-          ) : (
-            <Button asChild variant="spark">
-              <Link to="/ideas/add">
+          <p className="ideas-empty-text">
+            {archivedCount > 0
+              ? `${archivedCount} idea${archivedCount > 1 ? 's' : ''} archived.`
+              : 'Nothing here yet. Your next big idea starts here.'}
+          </p>
+          <div className="flex flex-col items-center gap-3">
+            {atIdeaLimit ? (
+              <Button variant="spark" disabled title={`Idea limit of ${IDEA_LIMIT} reached`}>
                 <Plus className="w-4 h-4" />
                 Capture your first idea
-              </Link>
-            </Button>
-          )}
+              </Button>
+            ) : (
+              <Button asChild variant="spark">
+                <Link to="/ideas/add">
+                  <Plus className="w-4 h-4" />
+                  Capture your first idea
+                </Link>
+              </Button>
+            )}
+            {archivedCount > 0 && (
+              <button
+                onClick={() => setShowArchived(true)}
+                className="flex items-center gap-1.5 text-xs text-[var(--ds-color-text-soft)] hover:text-[var(--ds-color-text-muted)] transition-colors"
+              >
+                <Archive className="h-3 w-3" />
+                View {archivedCount} archived
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <>
-          <div className="mt-3 mb-2 flex gap-2">
-            <div className="relative flex-1">
+          {/* Unified controls row */}
+          <div className="flex items-center gap-2 mt-3 mb-2">
+            {/* Search — taller on mobile */}
+            <div className="relative flex-1 min-w-0">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--ds-color-text-soft)]" />
               <Input
-                className="h-8 pl-8 text-xs"
-                placeholder="Search ideas…"
+                className="h-10 sm:h-8 pl-8 text-sm sm:text-xs"
+                placeholder="Search…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
 
+            {/* Sort — abbreviated labels on mobile */}
             <div className="flex shrink-0 overflow-hidden rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border-strong)]">
               {SORT_OPTIONS.map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() => persistSort(key)}
                   className={cn(
-                    'px-2.5 py-1.5 text-xs font-medium transition-colors',
+                    'px-2 sm:px-2.5 py-1.5 text-xs font-medium transition-colors',
                     sortBy === key
                       ? 'bg-[var(--ds-color-surface-strong)] text-[var(--ds-color-text)]'
                       : 'text-[var(--ds-color-text-muted)] hover:text-[var(--ds-color-text)]'
                   )}
                 >
-                  {label}
+                  <span className="sm:hidden">{SORT_SHORT[key]}</span>
+                  <span className="hidden sm:inline">{label}</span>
                 </button>
               ))}
             </div>
 
-            <div className="flex shrink-0 overflow-hidden rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border-strong)]">
+            {/* View toggle — desktop only (single column on mobile = no difference) */}
+            <div className="hidden sm:flex shrink-0 overflow-hidden rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border-strong)]">
               <button
                 onClick={() => persistView('list')}
                 className={cn(
@@ -428,16 +419,66 @@ export default function MyIdeas() {
                 <LayoutGrid className="h-3.5 w-3.5" />
               </button>
             </div>
+
+            {/* Archive toggle — desktop inline, mobile below */}
+            {archivedCount > 0 && (
+              <button
+                onClick={() => setShowArchived((v) => !v)}
+                className={cn(
+                  'hidden sm:flex items-center gap-1.5 text-xs shrink-0 transition-colors',
+                  showArchived
+                    ? 'text-[var(--ds-color-text-muted)]'
+                    : 'text-[var(--ds-color-text-soft)] hover:text-[var(--ds-color-text-muted)]'
+                )}
+              >
+                <Archive className="h-3 w-3" />
+                {showArchived ? 'Hide archived' : `${archivedCount} archived`}
+              </button>
+            )}
+
+            {/* New idea — icon+label on desktop, icon-only on mobile */}
+            {atIdeaLimit ? (
+              <Button variant="spark" size="sm" disabled className="shrink-0 h-10 sm:h-[var(--ds-size-control-sm)]" title={`Idea limit of ${IDEA_LIMIT} reached`}>
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">New idea</span>
+              </Button>
+            ) : (
+              <Button asChild variant="spark" size="sm" className="shrink-0 h-10 sm:h-[var(--ds-size-control-sm)]">
+                <Link to="/ideas/add">
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">New idea</span>
+                </Link>
+              </Button>
+            )}
           </div>
 
+          {/* Archive toggle row — mobile only */}
+          {archivedCount > 0 && (
+            <div className="flex sm:hidden mb-2">
+              <button
+                onClick={() => setShowArchived((v) => !v)}
+                className={cn(
+                  'flex items-center gap-1.5 text-xs transition-colors',
+                  showArchived
+                    ? 'text-[var(--ds-color-text-muted)]'
+                    : 'text-[var(--ds-color-text-soft)] hover:text-[var(--ds-color-text-muted)]'
+                )}
+              >
+                <Archive className="h-3 w-3" />
+                {showArchived ? 'Hide archived' : `${archivedCount} archived`}
+              </button>
+            </div>
+          )}
+
+          {/* Tags — horizontal scroll on mobile, wrap on desktop */}
           {allTags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3 mt-1">
+            <div className="flex overflow-x-auto gap-1.5 mb-3 mt-1 pb-0.5 flex-nowrap sm:flex-wrap">
               {allTags.map((tag) => (
                 <button
                   key={tag}
                   onClick={() => setFilterTag(filterTag === tag ? '' : tag)}
                   className={cn(
-                    'tag-chip transition-opacity',
+                    'tag-chip transition-opacity shrink-0',
                     filterTag && filterTag !== tag && 'opacity-40'
                   )}
                   style={filterTag === tag ? { outline: '1px solid var(--ds-color-glow)' } : {}}

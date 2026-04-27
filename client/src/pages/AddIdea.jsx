@@ -58,9 +58,8 @@ export default function AddIdea() {
   return (
     <div className="mx-auto max-w-3xl">
       <Card className="w-full">
-        <CardHeader>
+        <CardHeader className="pb-2">
           <CardTitle>New idea</CardTitle>
-          <p className="text-sm text-[var(--ds-color-text-muted)]">Capture the core thought first. You can refine the framing and detail later.</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" id="idea-form">

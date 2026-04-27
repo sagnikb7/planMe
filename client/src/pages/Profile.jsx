@@ -69,7 +69,7 @@ export default function Profile() {
       </div>
 
       {/* Sign out */}
-      <div className="surface-card px-6 py-4 flex items-center justify-between">
+      <div className="surface-card px-5 sm:px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium text-[var(--ds-color-text)]">Sign out</p>
           <p className="text-xs text-[var(--ds-color-text-muted)]">Ends your current session on this device.</p>
@@ -79,7 +79,7 @@ export default function Profile() {
           size="sm"
           onClick={handleLogout}
           disabled={loggingOut}
-          className="flex items-center gap-1.5"
+          className="self-start sm:self-auto"
         >
           {loggingOut ? <Loader /> : <LogOut className="h-4 w-4" />}
           {loggingOut ? 'Signing out…' : 'Sign out'}

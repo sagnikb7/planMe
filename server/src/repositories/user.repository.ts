@@ -34,6 +34,14 @@ export class UserRepository {
       resetPasswordExpiresAt: null,
     });
   }
+
+  async updateName(userId: string, name: string): Promise<void> {
+    await UserModel.findByIdAndUpdate(userId, { name });
+  }
+
+  async deleteById(userId: string): Promise<void> {
+    await UserModel.findByIdAndDelete(userId);
+  }
 }
 
 export const userRepository = new UserRepository();

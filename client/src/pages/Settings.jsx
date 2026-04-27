@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Moon, Sun, Check, Pencil, X, Heart } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Download, Moon, Sun, Check, Pencil, X, Heart } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/context/toast-context';
+import { useAuth } from '@/hooks/useAuth';
 import { Loader } from '@/components/ui/loader';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import api from '@/lib/api';
 import { TAG_MIN_LENGTH, TAG_MAX_LENGTH, WORKSPACE_MAX_TAGS } from '@/lib/constants';
 
@@ -11,6 +13,14 @@ const TAG_PATTERN = /^[a-z][a-z-]*[a-z]$|^[a-z]{2}$/;
 
 function isValidTag(tag) {
   return tag.length >= TAG_MIN_LENGTH && tag.length <= TAG_MAX_LENGTH && TAG_PATTERN.test(tag);
+}
+
+function SectionLabel({ children }) {
+  return (
+    <p className="px-1 text-[10px] font-semibold uppercase tracking-widest text-[var(--ds-color-text-soft)]">
+      {children}
+    </p>
+  );
 }
 
 function ThemeOption({ value, label, icon: Icon, current, onChange }) {
@@ -146,8 +156,21 @@ function TagRow({ entry, allTags, onRenamed }) {
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
+  const toast = useToast();
+  const { deleteAccount } = useAuth();
+  const navigate = useNavigate();
   const [tags, setTags] = useState([]);
   const [tagsLoading, setTagsLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+
+  const [currentPwd, setCurrentPwd] = useState('');
+  const [newPwd, setNewPwd] = useState('');
+  const [savingPwd, setSavingPwd] = useState(false);
+  const [pwdError, setPwdError] = useState('');
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     api.get('/ideas/tags')
@@ -160,68 +183,197 @@ export default function Settings() {
     setTags((prev) => prev.map((t) => t.tag === oldTag ? { ...t, tag: newTag } : t));
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await api.get('/ideas');
+      const date = new Date().toISOString().slice(0, 10);
+      const payload = { exported: date, ideas: res.data };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `planme-ideas-${date}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast('Export failed — please try again');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPwdError('');
+    setSavingPwd(true);
+    try {
+      await api.post('/auth/change-password', { currentPassword: currentPwd, newPassword: newPwd });
+      toast('Password updated');
+      setCurrentPwd('');
+      setNewPwd('');
+    } catch (err) {
+      setPwdError(err.response?.data?.error || 'Failed to change password');
+    } finally {
+      setSavingPwd(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await deleteAccount();
+      navigate('/');
+    } catch {
+      setDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   return (
-    <div className="mx-auto max-w-lg space-y-4">
-      <div className="surface-card divide-y divide-[var(--ds-color-border)]">
-        <div className="flex items-center justify-between px-4 py-4">
-          <div>
-            <p className="text-sm font-medium text-[var(--ds-color-text)]">Appearance</p>
-            <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">Choose your preferred theme</p>
-          </div>
-          <div className="flex overflow-hidden rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border-strong)]">
-            <ThemeOption value="dark" label="Dark" icon={Moon} current={theme} onChange={setTheme} />
-            <ThemeOption value="light" label="Light" icon={Sun} current={theme} onChange={setTheme} />
+    <div className="mx-auto max-w-lg space-y-6">
+
+      {/* Preferences */}
+      <div className="space-y-2">
+        <SectionLabel>Preferences</SectionLabel>
+        <div className="surface-card">
+          <div className="flex items-center justify-between px-4 py-4">
+            <div>
+              <p className="text-sm font-medium text-[var(--ds-color-text)]">Appearance</p>
+              <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">Choose your preferred theme</p>
+            </div>
+            <div className="flex overflow-hidden rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border-strong)]">
+              <ThemeOption value="dark" label="Dark" icon={Moon} current={theme} onChange={setTheme} />
+              <ThemeOption value="light" label="Light" icon={Sun} current={theme} onChange={setTheme} />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="surface-card divide-y divide-[var(--ds-color-border)]">
-        <div className="px-4 py-4">
-          <div className="flex items-baseline justify-between">
-            <p className="text-sm font-medium text-[var(--ds-color-text)]">Workspace tags</p>
-            <span className="text-xs text-[var(--ds-color-text-soft)] font-variant-numeric tabular-nums">
-              {tags.length}/{WORKSPACE_MAX_TAGS}
-            </span>
-          </div>
-          <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">
-            Tags in use across your ideas. Create tags by adding them to an idea. Rename here to update everywhere.
-          </p>
-        </div>
-
-        {tagsLoading ? (
-          <div className="flex items-center justify-center py-8 text-[var(--ds-color-text-muted)]">
-            <Loader />
-          </div>
-        ) : tags.length === 0 ? (
-          <div className="px-4 py-6 text-center">
-            <p className="text-xs text-[var(--ds-color-text-soft)]">No tags yet.</p>
-            <p className="text-xs text-[var(--ds-color-text-soft)] mt-0.5">
-              Add tags when{' '}
-              <Link to="/ideas/add" className="underline hover:text-[var(--ds-color-text-muted)] transition-colors">
-                creating an idea
-              </Link>.
+      {/* Workspace */}
+      <div className="space-y-2">
+        <SectionLabel>Workspace</SectionLabel>
+        <div className="surface-card divide-y divide-[var(--ds-color-border)]">
+          {/* Tags */}
+          <div className="px-4 py-4">
+            <div className="flex items-baseline justify-between">
+              <p className="text-sm font-medium text-[var(--ds-color-text)]">Tags</p>
+              <span className="text-xs text-[var(--ds-color-text-soft)] tabular-nums">
+                {tags.length}/{WORKSPACE_MAX_TAGS}
+              </span>
+            </div>
+            <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">
+              Tags in use across your ideas. Rename here to update everywhere.
             </p>
           </div>
-        ) : (
-          tags.map((entry) => (
-            <TagRow
-              key={entry.tag}
-              entry={entry}
-              allTags={tags}
-              onRenamed={handleRenamed}
-            />
-          ))
-        )}
+
+          {tagsLoading ? (
+            <div className="flex items-center justify-center py-8 text-[var(--ds-color-text-muted)]">
+              <Loader />
+            </div>
+          ) : tags.length === 0 ? (
+            <div className="px-4 py-6 text-center">
+              <p className="text-xs text-[var(--ds-color-text-soft)]">No tags yet.</p>
+              <p className="text-xs text-[var(--ds-color-text-soft)] mt-0.5">
+                Add tags when{' '}
+                <Link to="/ideas/add" className="underline hover:text-[var(--ds-color-text-muted)] transition-colors">
+                  creating an idea
+                </Link>.
+              </p>
+            </div>
+          ) : (
+            tags.map((entry) => (
+              <TagRow
+                key={entry.tag}
+                entry={entry}
+                allTags={tags}
+                onRenamed={handleRenamed}
+              />
+            ))
+          )}
+
+          {/* Export */}
+          <div className="flex items-center justify-between px-4 py-4">
+            <div>
+              <p className="text-sm font-medium text-[var(--ds-color-text)]">Export ideas</p>
+              <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">Download all your ideas as a JSON file.</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={exporting}
+              className="flex items-center gap-1.5 rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border-strong)] bg-transparent px-3 py-1.5 text-xs font-medium text-[var(--ds-color-text-muted)] transition-colors hover:bg-[var(--ds-color-accent-soft)] hover:text-[var(--ds-color-text)] disabled:pointer-events-none disabled:opacity-40 shrink-0"
+            >
+              <Download className="h-3.5 w-3.5" />
+              {exporting ? 'Exporting…' : 'Export'}
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="surface-card px-4 py-4">
-        <div className="flex items-baseline justify-between mb-1">
-          <span className="text-sm font-medium text-[var(--ds-color-text)]">planMe</span>
+      {/* Account */}
+      <div className="space-y-2">
+        <SectionLabel>Account</SectionLabel>
+        <div className="surface-card divide-y divide-[var(--ds-color-border)]">
+          {/* Change password */}
+          <div className="px-4 py-4">
+            <p className="text-sm font-medium text-[var(--ds-color-text)]">Change password</p>
+            <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">Enter your current password, then choose a new one.</p>
+            <form onSubmit={handleChangePassword} className="mt-4 space-y-4">
+              <div className="flex flex-col gap-3">
+                <input
+                  type="password"
+                  placeholder="Current password"
+                  value={currentPwd}
+                  onChange={(e) => { setCurrentPwd(e.target.value); setPwdError(''); }}
+                  className="tag-picker-create-input w-full"
+                  autoComplete="current-password"
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder="New password"
+                  value={newPwd}
+                  onChange={(e) => { setNewPwd(e.target.value); setPwdError(''); }}
+                  className="tag-picker-create-input w-full"
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+              {pwdError && <p className="text-xs text-[var(--ds-color-danger)]">{pwdError}</p>}
+              <button
+                type="submit"
+                disabled={savingPwd || !currentPwd || !newPwd}
+                className="flex items-center gap-1.5 rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border-strong)] bg-transparent px-3 py-1.5 text-xs font-medium text-[var(--ds-color-text-muted)] transition-colors hover:bg-[var(--ds-color-accent-soft)] hover:text-[var(--ds-color-text)] disabled:pointer-events-none disabled:opacity-40"
+              >
+                {savingPwd ? <><Loader /> Saving…</> : 'Update password'}
+              </button>
+            </form>
+          </div>
+
+          {/* Delete account */}
+          <div className="flex items-center justify-between px-4 py-4">
+            <div>
+              <p className="text-sm font-medium text-[var(--ds-color-text)]">Delete account</p>
+              <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">Permanently removes your account and all ideas.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setDeleteConfirm(''); setShowDeleteDialog(true); }}
+              className="flex items-center gap-1.5 rounded-[var(--ds-radius-sm)] px-3 py-1.5 text-xs font-medium text-[var(--ds-color-danger)] transition-colors hover:bg-[var(--ds-color-danger-soft)] shrink-0"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* About — no card, just footer text */}
+      <div className="px-1 pb-2">
+        <div className="flex items-baseline justify-between mb-1.5">
+          <span className="text-xs font-medium text-[var(--ds-color-text-soft)]">planMe</span>
           <span className="text-xs text-[var(--ds-color-text-soft)] tabular-nums">v2.0.0</span>
         </div>
-        <p className="text-xs text-[var(--ds-color-text-muted)] mb-3 leading-relaxed">
-          A focused space for capturing and developing your ideas.
-        </p>
         <div className="flex items-center gap-1.5 flex-wrap text-xs text-[var(--ds-color-text-soft)]">
           <span className="flex items-center gap-1">
             Made with
@@ -241,6 +393,40 @@ export default function Settings() {
           <span>© 2026</span>
         </div>
       </div>
+
+      <Dialog open={showDeleteDialog} onOpenChange={(open) => !open && setShowDeleteDialog(false)}>
+        <DialogContent>
+          <DialogTitle>Delete account</DialogTitle>
+          <DialogDescription>
+            This will permanently delete your account and all your ideas. Type <strong>delete</strong> to confirm.
+          </DialogDescription>
+          <input
+            type="text"
+            className="tag-picker-create-input w-full mb-4"
+            placeholder="Type delete to confirm"
+            value={deleteConfirm}
+            onChange={(e) => setDeleteConfirm(e.target.value)}
+            autoFocus
+          />
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setShowDeleteDialog(false)}
+              className="rounded-[var(--ds-radius-sm)] px-3 py-1.5 text-xs font-medium text-[var(--ds-color-text-muted)] hover:bg-[var(--ds-color-accent-soft)] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirm !== 'delete' || deleting}
+              className="flex items-center gap-1.5 rounded-[var(--ds-radius-sm)] px-3 py-1.5 text-xs font-medium text-[var(--ds-color-danger)] hover:bg-[var(--ds-color-danger-soft)] transition-colors disabled:pointer-events-none disabled:opacity-40"
+            >
+              {deleting ? <><Loader /> Deleting…</> : 'Delete permanently'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

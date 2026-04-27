@@ -1,6 +1,9 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { Types } from 'mongoose';
 import { userRepository } from '../repositories/user.repository';
+import { ideaRepository } from '../repositories/idea.repository';
+import { userSessionRepository } from '../repositories/user-session.repository';
 import { env } from '../config/env';
 import { RESET_TOKEN_TTL_MS, BCRYPT_ROUNDS } from '../constants';
 import { sendPasswordResetEmail } from '../utils/email';
@@ -48,6 +51,28 @@ export class AuthService {
 
     const hashed = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
     await userRepository.updatePassword(String(user._id), hashed);
+  }
+
+  async updateName(userId: string, name: string): Promise<void> {
+    await userRepository.updateName(userId, name);
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    const user = await userRepository.findById(userId);
+    if (!user) throw new ValidationError('User not found');
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) throw new ValidationError('Current password is incorrect');
+    const hashed = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    await userRepository.updatePassword(userId, hashed);
+  }
+
+  async deleteAccount(userId: string): Promise<void> {
+    const oid = new Types.ObjectId(userId);
+    await Promise.all([
+      ideaRepository.deleteAllByUser(oid),
+      userSessionRepository.deleteAllByUser(oid),
+    ]);
+    await userRepository.deleteById(userId);
   }
 
   sanitize(user: Parameters<typeof sanitizeUser>[0]) {

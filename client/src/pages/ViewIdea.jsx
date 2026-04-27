@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { Archive, ArrowLeft, Pencil, RotateCcw, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
@@ -27,6 +27,7 @@ export default function ViewIdea() {
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [restoring, setRestoring] = useState(false);
 
   const contentRef = useRef(null);
   const saveTimerRef = useRef(null);
@@ -47,6 +48,19 @@ export default function ViewIdea() {
     } catch {
       setDeleting(false);
       setShowDeleteDialog(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    setRestoring(true);
+    try {
+      await api.patch(`/ideas/${id}/status`, { status: 'draft' });
+      setIdea((prev) => ({ ...prev, status: 'draft' }));
+      toast('Idea restored');
+    } catch {
+      toast('Failed to restore idea');
+    } finally {
+      setRestoring(false);
     }
   };
 
@@ -106,6 +120,12 @@ export default function ViewIdea() {
 
         {idea && (
           <div className="flex items-center gap-2">
+            {idea.status === 'archived' && (
+              <Button variant="outline" size="sm" onClick={handleRestore} disabled={restoring}>
+                <RotateCcw className="h-3.5 w-3.5" />
+                {restoring ? 'Restoring…' : 'Restore'}
+              </Button>
+            )}
             <Button asChild variant="ghost" size="sm">
               <Link to={`/ideas/edit/${id}`}>
                 <Pencil className="h-3.5 w-3.5" />
@@ -150,6 +170,13 @@ export default function ViewIdea() {
               <span className="text-xs text-[var(--ds-color-text-soft)]">· {createdAt}</span>
             )}
           </div>
+
+          {idea.status === 'archived' && (
+            <div className="mb-6 flex items-center gap-2 rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border-strong)] bg-[var(--ds-color-surface-strong)] px-3 py-2 text-sm text-[var(--ds-color-text-muted)]">
+              <Archive className="h-3.5 w-3.5 flex-shrink-0" />
+              This idea is archived — it won't appear in your active list.
+            </div>
+          )}
 
           {idea.details ? (
             <div

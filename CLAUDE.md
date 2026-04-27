@@ -38,6 +38,8 @@ Copy `example.env` → `.env` at the repo root. Key vars:
 | `SMTP_USER` | _(empty)_ | Brevo: your login email |
 | `SMTP_PASS` | _(empty)_ | Brevo: SMTP key from dashboard → SMTP & API tab |
 | `SMTP_FROM` | `noreply@planme.app` | Sender address shown in email client |
+| `CLIENT_ORIGIN` | `http://localhost:5173` | Allowed CORS origin; set to your frontend URL in production |
+| `MAX_SESSIONS_PER_USER` | `3` (from constants) | Max concurrent sessions per account |
 
 ---
 
@@ -100,6 +102,9 @@ Routes never touch Mongoose directly. Services never import Express types. Repos
 | GET | `/me` | Returns session user (password + reset fields stripped) |
 | POST | `/forgot-password` | SHA-256 token hash stored; 2hr TTL; dev returns `resetUrl` in response; prod sends email via SMTP |
 | POST | `/reset-password` | Validates token hash + expiry, updates password with `BCRYPT_ROUNDS`, clears token |
+| PATCH | `/me` | Update display name (min 2 chars); reflects immediately in session |
+| POST | `/change-password` | Validates current password via bcrypt, hashes new password; sessions stay active |
+| DELETE | `/me` | Cascade-deletes all ideas + sessions, then destroys user; logs out current session |
 
 ### Ideas (`/api/ideas`) — all require auth, scoped to `req.user._id`
 
@@ -116,7 +121,8 @@ Routes never touch Mongoose directly. Services never import Express types. Repos
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/` | List all active sessions for user — includes `id`, `ip`, `device`, `location`, `createdAt`, `isCurrent` |
+| GET | `/` | List all active sessions (auth or pending user) |
+| GET | `/me` | List active sessions for authenticated user only (profile page) |
 | DELETE | `/:id` | Terminate a session by opaque `UserSession._id`; destroys the underlying express session |
 | POST | `/resolve` | Promote a pending session to active (used after session-limit flow: user must terminate one first) |
 
@@ -170,6 +176,56 @@ The amber glow (`--ds-color-glow: #f59e0b`) is the **single chromatic accent**. 
 
 ---
 
+## Deployment (Render — full stack)
+
+The server serves the compiled React client as static files in production (`isProd` branch in `app.ts`). One Render web service runs everything — no split deployment needed.
+
+The root `package.json` already has the right scripts:
+- `pnpm build` — compiles client → `client/dist/` and server → `server/dist/`
+- `pnpm start` — `node server/dist/index.js`
+
+### Render web service settings
+
+| Setting | Value |
+|---|---|
+| **Runtime** | Node |
+| **Root directory** | *(leave blank — repo root)* |
+| **Build command** | `pnpm install && pnpm build` |
+| **Start command** | `pnpm start` |
+| **Node version** | `22` (already set in `engines` field) |
+
+### Environment variables (set in Render → Service → Environment)
+
+| Var | Notes |
+|-----|-------|
+| `NODE_ENV` | `production` — enables static serving, secure cookies, trust proxy |
+| `MONGO_URI` | MongoDB Atlas connection string |
+| `COOKIE_SECRET` | Random string, 32+ chars — use a password manager to generate |
+| `LOG_LEVEL` | `info` |
+| `SMTP_HOST` | e.g. `smtp-relay.brevo.com` (leave blank to skip email — reset link returned in API response) |
+| `SMTP_PORT` | `587` |
+| `SMTP_USER` | Brevo login email |
+| `SMTP_PASS` | Brevo SMTP key (from Brevo dashboard → SMTP & API) |
+| `SMTP_FROM` | `noreply@planme.app` |
+| `PORT` | **Do not set** — Render injects this automatically |
+| `CLIENT_ORIGIN` | **Not needed in prod** — CORS is disabled when `NODE_ENV=production` (same origin) |
+
+### MongoDB Atlas
+
+1. Create a free M0 cluster at [cloud.mongodb.com](https://cloud.mongodb.com)
+2. Network Access → Add IP → `0.0.0.0/0` (Render IPs are dynamic)
+3. Create a database user → copy the connection string into `MONGO_URI`
+
+### Local production test before deploying
+
+```bash
+pnpm build && NODE_ENV=production pnpm start
+```
+
+Visit `http://localhost:5001` — the server now serves the React client from `server/dist`.
+
+---
+
 ## Testing
 
 - Tests: `server/test/api.test.ts` — Node `node:test` runner + `supertest`
@@ -205,8 +261,8 @@ Each surface has exactly one job. Do not add features that belong to a different
 | Landing header | Entry point nav: Log in + Get started | Duplicate the hero CTA |
 | Landing hero | Value prop + single primary CTA (guests only) | Show a CTA when user is logged in |
 | Sidebar nav | Navigate between app sections | Display user identity |
-| Sidebar footer | Single Log out action | Show name, avatar, or email |
-| Profile page | User identity: name, email, joined date | Contain a Log out button |
+| Sidebar footer | Navigation overflow (if needed) | Show name, avatar, email, or Log out |
+| Profile page | User identity: name, email, joined date, idea stats; Log out action | Duplicate nav links |
 | AppShell header | Current section title | Avatar, duplicate nav, user info |
 | `/ideas` list | Ideas + filter/sort + tag filter + archive toggle | Inline editing |
 | `/ideas/add` | Capture new idea (title, details, tags, status) | Show existing ideas |

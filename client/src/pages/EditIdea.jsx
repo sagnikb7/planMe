@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Archive } from 'lucide-react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import api from '@/lib/api';
 import { TITLE_MAX_LENGTH } from '@/lib/constants';
@@ -80,6 +81,12 @@ export default function EditIdea() {
         <CardHeader>
           <CardTitle>Edit idea</CardTitle>
           <p className="text-sm text-[var(--ds-color-text-muted)]">Tighten the framing, remove noise, and keep the idea easy to revisit later.</p>
+          {status === 'archived' && (
+            <div className="mt-2 flex items-center gap-2 rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border-strong)] bg-[var(--ds-color-surface-strong)] px-3 py-2 text-xs text-[var(--ds-color-text-muted)]">
+              <Archive className="h-3.5 w-3.5 flex-shrink-0" />
+              This idea is archived. Change the Stage field to restore it.
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" id="edit-form">

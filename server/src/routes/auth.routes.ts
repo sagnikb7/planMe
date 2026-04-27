@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import passport from 'passport';
 import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
-import { registerSchema, forgotPasswordSchema, resetPasswordSchema } from '../schemas/auth.schema';
+import { registerSchema, forgotPasswordSchema, resetPasswordSchema, updateNameSchema, changePasswordSchema } from '../schemas/auth.schema';
 import { authService, ConflictError, ValidationError } from '../services/auth.service';
 import { sessionService } from '../services/session.service';
 import { env } from '../config/env';
@@ -138,6 +138,44 @@ router.post('/reset-password', validate(resetPasswordSchema), async (req, res) =
       return res.status(400).json({ error: err.message });
     }
     res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+router.patch('/me', ensureAuthenticated, validate(updateNameSchema), async (req, res) => {
+  try {
+    const userId = String((req.user as { _id: Types.ObjectId })._id);
+    await authService.updateName(userId, req.body.name);
+    (req.user as { name: string }).name = req.body.name;
+    res.json({ user: authService.sanitize(req.user as Parameters<typeof authService.sanitize>[0]) });
+  } catch {
+    res.status(500).json({ error: 'Failed to update name' });
+  }
+});
+
+router.post('/change-password', ensureAuthenticated, validate(changePasswordSchema), async (req, res) => {
+  try {
+    const userId = String((req.user as { _id: Types.ObjectId })._id);
+    await authService.changePassword(userId, req.body.currentPassword, req.body.newPassword);
+    res.json({ message: 'Password updated' });
+  } catch (err) {
+    if (err instanceof ValidationError) return res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
+router.delete('/me', ensureAuthenticated, async (req, res, next) => {
+  try {
+    const userId = String((req.user as { _id: Types.ObjectId })._id);
+    await authService.deleteAccount(userId);
+    req.logout((err) => {
+      if (err) return next(err);
+      req.session.destroy(() => {
+        res.clearCookie('connect.sid');
+        res.json({ message: 'Account deleted' });
+      });
+    });
+  } catch {
+    res.status(500).json({ error: 'Failed to delete account' });
   }
 });
 

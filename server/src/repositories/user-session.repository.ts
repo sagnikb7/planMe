@@ -47,6 +47,10 @@ export class UserSessionRepository {
     await UserSessionModel.deleteOne({ sessionId });
   }
 
+  async deleteAllByUser(userId: Types.ObjectId): Promise<void> {
+    await UserSessionModel.deleteMany({ userId });
+  }
+
   async promoteToActive(sessionId: string): Promise<void> {
     await UserSessionModel.updateOne(
       { sessionId },

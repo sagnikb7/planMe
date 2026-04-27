@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { to: '/ideas', label: 'Ideas', icon: BookOpen },
   { to: '/ideas/add', label: 'New idea', icon: PlusCircle },
-  { to: '/profile', label: 'Profile', icon: UserCircle2 },
   { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/profile', label: 'Profile', icon: UserCircle2 },
 ];
 
 function NavItem({ to, icon: Icon, label, mobile = false }) {

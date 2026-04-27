@@ -47,8 +47,18 @@ export function AuthProvider({ children }) {
     await api.post('/auth/reset-password', { token, password });
   };
 
+  const updateUser = (patch) => {
+    setUser((prev) => prev ? { ...prev, ...patch } : prev);
+  };
+
   const logout = async () => {
     await api.post('/auth/logout');
+    setUser(null);
+    setPendingSessions(null);
+  };
+
+  const deleteAccount = async () => {
+    await api.delete('/auth/me');
     setUser(null);
     setPendingSessions(null);
   };
@@ -62,6 +72,8 @@ export function AuthProvider({ children }) {
       forgotPassword,
       resetPassword,
       logout,
+      updateUser,
+      deleteAccount,
       resolveSession,
       clearPending,
     }}>

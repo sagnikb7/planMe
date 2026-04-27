@@ -71,6 +71,10 @@ export class IdeaRepository {
     ]);
   }
 
+  async deleteAllByUser(userId: Types.ObjectId): Promise<void> {
+    await IdeaModel.deleteMany({ user: userId });
+  }
+
   async renameTag(userId: Types.ObjectId, oldTag: string, newTag: string): Promise<void> {
     await IdeaModel.updateMany(
       { user: userId, tags: oldTag },

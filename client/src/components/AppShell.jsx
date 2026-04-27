@@ -2,6 +2,7 @@ import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { BookOpen, PlusCircle, Settings, UserCircle2 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { cn } from '@/lib/utils';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 const navItems = [
   { to: '/ideas', label: 'Ideas', icon: BookOpen },
@@ -42,6 +43,7 @@ function NavItem({ to, icon: Icon, label, mobile = false }) {
 
 export function AppShell() {
   const location = useLocation();
+  useKeyboardShortcuts();
 
   const sectionTitle = navItems.find((item) => location.pathname.startsWith(item.to))?.label || 'Workspace';
 

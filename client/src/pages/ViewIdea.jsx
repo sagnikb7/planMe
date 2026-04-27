@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import DOMPurify from 'dompurify';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Archive, ArrowLeft, Pencil, RotateCcw, Trash2 } from 'lucide-react';
@@ -7,6 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/context/toast-context';
+
+function wordCount(html) {
+  if (!html) return 0;
+  return (html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().match(/\S+/g) || []).length;
+}
 
 function StatusBadge({ status }) {
   return (
@@ -28,6 +33,7 @@ export default function ViewIdea() {
   const [deleting, setDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [allIdeas, setAllIdeas] = useState([]);
 
   const contentRef = useRef(null);
   const saveTimerRef = useRef(null);
@@ -37,6 +43,7 @@ export default function ViewIdea() {
       .then((res) => setIdea(res.data))
       .catch(() => setError('This idea could not be found.'))
       .finally(() => setLoading(false));
+    api.get('/ideas').then((res) => setAllIdeas(res.data)).catch(() => {});
   }, [id]);
 
   const handleDelete = async () => {
@@ -106,6 +113,22 @@ export default function ViewIdea() {
     ? new Date(idea.createdAt).toLocaleDateString('en', { month: 'long', day: 'numeric', year: 'numeric' })
     : null;
 
+  const words = useMemo(() => wordCount(idea?.details), [idea?.details]);
+  const readTime = words > 50 ? `~${Math.ceil(words / 200)} min read` : null;
+
+  const wasEdited = idea?.updatedAt && idea?.createdAt
+    && new Date(idea.updatedAt) - new Date(idea.createdAt) > 60_000;
+  const editedAt = wasEdited
+    ? new Date(idea.updatedAt).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })
+    : null;
+
+  const relatedIdeas = useMemo(() => {
+    if (!idea?.tags?.length || !allIdeas.length) return [];
+    return allIdeas
+      .filter((i) => i._id !== id && i.status !== 'archived' && (i.tags || []).some((t) => idea.tags.includes(t)))
+      .slice(0, 3);
+  }, [idea, allIdeas, id]);
+
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       {/* Top bar */}
@@ -169,6 +192,12 @@ export default function ViewIdea() {
             {createdAt && (
               <span className="text-xs text-[var(--ds-color-text-soft)]">· {createdAt}</span>
             )}
+            {editedAt && (
+              <span className="text-xs text-[var(--ds-color-text-soft)]">· edited {editedAt}</span>
+            )}
+            {readTime && (
+              <span className="text-xs text-[var(--ds-color-text-soft)]">· {readTime}</span>
+            )}
           </div>
 
           {idea.status === 'archived' && (
@@ -188,6 +217,31 @@ export default function ViewIdea() {
           ) : (
             <p className="text-sm text-[var(--ds-color-text-soft)] italic">No details added.</p>
           )}
+        </div>
+      )}
+
+      {/* Related ideas */}
+      {relatedIdeas.length > 0 && (
+        <div>
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[var(--ds-color-text-soft)]">
+            Related ideas
+          </p>
+          <div className="space-y-1.5">
+            {relatedIdeas.map((related) => (
+              <Link
+                key={related._id}
+                to={`/ideas/${related._id}`}
+                className="flex items-center gap-2 rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] px-3 py-2.5 text-sm text-[var(--ds-color-text-muted)] transition-colors hover:border-[var(--ds-color-border-strong)] hover:text-[var(--ds-color-text)]"
+              >
+                <span className="min-w-0 flex-1 truncate">{related.title || 'Untitled'}</span>
+                <span className="flex shrink-0 gap-1">
+                  {(related.tags || []).filter((t) => idea.tags.includes(t)).map((t) => (
+                    <span key={t} className="tag-chip pointer-events-none">{t}</span>
+                  ))}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 

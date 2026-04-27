@@ -46,7 +46,7 @@ function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, openAct
   return (
     <div
       ref={setNodeRef}
-      style={{ ...style, animationDelay: `${index * 40}ms` }}
+      style={{ ...style, animationDelay: `${Math.min(index, 10) * 40}ms` }}
       className={cn('idea-row', isArchived && 'opacity-50')}
     >
       <div className="idea-row-left">
@@ -197,6 +197,13 @@ export default function MyIdeas() {
   const [pendingIdea, setPendingIdea] = useState(null);
 
   const reorderTimeoutRef = useRef(null);
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    const handler = () => searchRef.current?.focus();
+    window.addEventListener('planme:focus-search', handler);
+    return () => window.removeEventListener('planme:focus-search', handler);
+  }, []);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -366,6 +373,7 @@ export default function MyIdeas() {
             <div className="relative flex-1 min-w-0">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--ds-color-text-soft)]" />
               <Input
+                ref={searchRef}
                 className="h-10 sm:h-8 pl-8 text-sm sm:text-xs"
                 placeholder="Search…"
                 value={query}

@@ -10,6 +10,16 @@ const { version } = JSON.parse(readFileSync(path.resolve(__dirname, '../package.
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('@tiptap') || id.includes('prosemirror')) return 'editor';
+          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'vendor';
+        },
+      },
+    },
+  },
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },

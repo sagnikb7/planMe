@@ -1,8 +1,10 @@
+import { useState, useEffect } from 'react';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
-import { BookOpen, PlusCircle, Settings, UserCircle2 } from 'lucide-react';
+import { BookOpen, Keyboard, PlusCircle, Settings, UserCircle2 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { ShortcutsModal } from '@/components/ShortcutsModal';
 
 const navItems = [
   { to: '/ideas', label: 'Ideas', icon: BookOpen },
@@ -43,7 +45,14 @@ function NavItem({ to, icon: Icon, label, mobile = false }) {
 
 export function AppShell() {
   const location = useLocation();
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   useKeyboardShortcuts();
+
+  useEffect(() => {
+    const handler = () => setShortcutsOpen(true);
+    window.addEventListener('planme:shortcuts-open', handler);
+    return () => window.removeEventListener('planme:shortcuts-open', handler);
+  }, []);
 
   const sectionTitle = navItems.find((item) => location.pathname.startsWith(item.to))?.label || 'Workspace';
 
@@ -69,10 +78,17 @@ export function AppShell() {
             {navItems.map((item) => <NavItem key={item.to} {...item} />)}
           </nav>
 
-          <div className="mt-4 border-t border-[var(--ds-color-border)] pt-3 px-3">
+          <div className="mt-4 border-t border-[var(--ds-color-border)] pt-3 px-3 flex items-center justify-between">
             <p className="text-[11px] text-[var(--ds-color-text-soft)]">
               planMe <span className="opacity-50">v{__APP_VERSION__}</span>
             </p>
+            <button
+              onClick={() => setShortcutsOpen(true)}
+              aria-label="Keyboard shortcuts"
+              className="flex items-center justify-center w-6 h-6 rounded-[var(--ds-radius-sm)] text-[var(--ds-color-text-soft)] hover:text-[var(--ds-color-text)] hover:bg-[var(--ds-color-surface-strong)] transition-colors"
+            >
+              <Keyboard className="w-3.5 h-3.5" />
+            </button>
           </div>
         </aside>
 
@@ -85,6 +101,8 @@ export function AppShell() {
           </main>
         </div>
       </div>
+
+      <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
       {/* Mobile bottom nav */}
       <nav className="nav-shell fixed inset-x-3 bottom-3 z-20 rounded-[var(--ds-radius-lg)] px-2 py-2 md:hidden">

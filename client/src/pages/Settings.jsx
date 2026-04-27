@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Download, Moon, Sun, Check, Pencil, X, Heart } from 'lucide-react';
+import { Download, Keyboard, Moon, Sun, Check, Pencil, X, Heart } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/context/toast-context';
 import { useAuth } from '@/hooks/useAuth';
@@ -365,6 +365,24 @@ export default function Settings() {
               Delete
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Keyboard shortcuts — visible on mobile where sidebar button isn't */}
+      <div className="surface-card divide-y divide-[var(--ds-color-border)] overflow-hidden md:hidden">
+        <div className="flex items-center justify-between px-4 py-4">
+          <div>
+            <p className="text-sm font-medium text-[var(--ds-color-text)]">Keyboard shortcuts</p>
+            <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">Works when a keyboard is connected.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('planme:shortcuts-open'))}
+            className="flex items-center justify-center w-8 h-8 rounded-[var(--ds-radius-sm)] text-[var(--ds-color-text-muted)] transition-colors hover:bg-[var(--ds-color-surface-strong)] hover:text-[var(--ds-color-text)]"
+            aria-label="View keyboard shortcuts"
+          >
+            <Keyboard className="w-4 h-4" />
+          </button>
         </div>
       </div>
 

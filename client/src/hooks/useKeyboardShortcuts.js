@@ -27,6 +27,11 @@ export function useKeyboardShortcuts() {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent('planme:focus-search'));
       }
+
+      if (e.key === '?') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('planme:shortcuts-open'));
+      }
     };
 
     window.addEventListener('keydown', handler);

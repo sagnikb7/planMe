@@ -548,7 +548,7 @@ export default function MyIdeas() {
 
           {/* Tags — horizontal scroll on mobile, wrap on desktop */}
           {allTags.length > 0 && (
-            <div className="flex overflow-x-auto gap-1.5 mb-3 mt-1 pb-0.5 flex-nowrap sm:flex-wrap">
+            <div className="flex overflow-x-auto gap-1.5 mb-3 mt-1 py-1 flex-nowrap sm:flex-wrap">
               {allTags.map((tag) => (
                 <button
                   key={tag}

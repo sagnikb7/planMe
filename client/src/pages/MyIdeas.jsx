@@ -225,6 +225,12 @@ function IdeaBody({ idea, filterTag, setFilterTag, openActionDialog, isArchived,
   );
 }
 
+const _searchDoc = new DOMParser().parseFromString('', 'text/html');
+function decodeForSearch(html) {
+  _searchDoc.documentElement.innerHTML = html.replace(/<[^>]*>/g, ' ');
+  return (_searchDoc.documentElement.textContent || '').replace(/\s+/g, ' ');
+}
+
 export default function MyIdeas() {
   const toast = useToast();
   const isOnline = useOnlineStatus();
@@ -380,10 +386,7 @@ export default function MyIdeas() {
       if (query.length < SEARCH_MIN_LENGTH) return true;
       const q = query.toLowerCase();
       const text = `${idea.title || ''} ${(idea.tags || []).join(' ')}`.toLowerCase();
-      const detailsText = (idea.details ?? '')
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#?\w+;/g, ' ')
-        .replace(/\s+/g, ' ');
+      const detailsText = decodeForSearch(idea.details ?? '');
       return text.includes(q) || detailsText.toLowerCase().includes(q);
     })
     .sort((a, b) => {
@@ -511,8 +514,9 @@ export default function MyIdeas() {
               />
               {query && (
                 <button
+                  type="button"
                   onClick={() => setQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--ds-color-text-soft)] hover:text-[var(--ds-color-text)] transition-colors"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-[var(--ds-radius-sm)] text-[var(--ds-color-text-soft)] hover:text-[var(--ds-color-text)] transition-colors"
                   aria-label="Clear search"
                 >
                   <X className="h-3.5 w-3.5" />

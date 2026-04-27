@@ -12,7 +12,15 @@ export async function seedCache(serverIdeas) {
   await db.ideas.bulkPut(toUpsert);
 }
 
-export async function flushPendingQueue() {
+let activeFlush = null;
+
+export function flushPendingQueue() {
+  if (activeFlush) return activeFlush;
+  activeFlush = _flushPendingQueue().finally(() => { activeFlush = null; });
+  return activeFlush;
+}
+
+async function _flushPendingQueue() {
   const queue = await db.pendingQueue.orderBy('createdAt').toArray();
   let synced = 0;
 

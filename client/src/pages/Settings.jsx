@@ -162,6 +162,7 @@ export default function Settings() {
   const [tags, setTags] = useState([]);
   const [tagsLoading, setTagsLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [ideaCount, setIdeaCount] = useState(null);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [installed, setInstalled] = useState(
     () => window.matchMedia?.('(display-mode: standalone)').matches
@@ -195,6 +196,9 @@ export default function Settings() {
       .then((res) => setTags(res.data.tags || []))
       .catch(() => {})
       .finally(() => setTagsLoading(false));
+    api.get('/ideas')
+      .then((res) => setIdeaCount(Array.isArray(res.data) ? res.data.length : 0))
+      .catch(() => setIdeaCount(0));
   }, []);
 
   const handleRenamed = (oldTag, newTag) => {
@@ -205,6 +209,7 @@ export default function Settings() {
     setExporting(true);
     try {
       const res = await api.get('/ideas');
+      setIdeaCount(Array.isArray(res.data) ? res.data.length : 0);
       const date = new Date().toISOString().slice(0, 10);
       const payload = { exported: date, ideas: res.data };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -368,7 +373,8 @@ export default function Settings() {
             <button
               type="button"
               onClick={handleExport}
-              disabled={exporting}
+              disabled={exporting || ideaCount === 0}
+              title={ideaCount === 0 ? 'No ideas to export' : undefined}
               className="flex items-center gap-1.5 rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border-strong)] bg-transparent px-3 py-1.5 text-xs font-medium text-[var(--ds-color-text-muted)] transition-colors hover:bg-[var(--ds-color-accent-soft)] hover:text-[var(--ds-color-text)] disabled:pointer-events-none disabled:opacity-40 shrink-0"
             >
               <Download className="h-3.5 w-3.5" />

@@ -63,6 +63,7 @@ export function AppShell() {
 
   useEffect(() => {
     if (!isOnline) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBannerStatus('offline');
       prevOnline.current = false;
       return;

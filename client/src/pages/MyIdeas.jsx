@@ -16,7 +16,7 @@ import api from '@/lib/api';
 import db from '@/lib/db';
 import { seedCache, isOfflineError } from '@/lib/sync';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { SORT_OPTIONS, SEARCH_MIN_LENGTH, IDEA_LIMIT } from '@/lib/constants';
+import { SORT_OPTIONS, SEARCH_MIN_LENGTH, IDEA_LIMIT, PROMPT_TEMPLATES } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader } from '@/components/ui/loader';
@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 
 const VIEW_KEY = 'planme-view';
 const SORT_KEY = 'planme-sort';
-const SORT_SHORT = { newest: 'New', updated: 'Upd', oldest: 'Old', 'a-z': 'A–Z', manual: '↕' };
+const SORT_SHORT = { newest: 'New', updated: 'Upd', 'a-z': 'A–Z', manual: '↕' };
 
 function StatusBadge({ status }) {
   return (
@@ -233,7 +233,10 @@ export default function MyIdeas() {
   const [error, setError] = useState('');
   const [fromCache, setFromCache] = useState(false);
   const [query, setQuery] = useState('');
-  const [sortBy, setSortBy] = useState(() => localStorage.getItem(SORT_KEY) || 'newest');
+  const [sortBy, setSortBy] = useState(() => {
+    const stored = localStorage.getItem(SORT_KEY);
+    return stored && SORT_OPTIONS.some((o) => o.key === stored) ? stored : 'newest';
+  });
   const [filterTag, setFilterTag] = useState('');
   const [showArchived, setShowArchived] = useState(false);
   const [view, setView] = useState(() => localStorage.getItem(VIEW_KEY) || 'list');
@@ -253,6 +256,7 @@ export default function MyIdeas() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadFromServer().catch(async (err) => {
       if (isOfflineError(err)) {
         const cached = await db.ideas.orderBy('updatedAt').reverse().toArray();
@@ -382,7 +386,6 @@ export default function MyIdeas() {
     .sort((a, b) => {
       if (sortBy === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
       if (sortBy === 'updated') return new Date(b.updatedAt ?? b.createdAt) - new Date(a.updatedAt ?? a.createdAt);
-      if (sortBy === 'oldest') return new Date(a.createdAt) - new Date(b.createdAt);
       if (sortBy === 'a-z') return (a.title || 'Untitled').localeCompare(b.title || 'Untitled');
       return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
     });
@@ -445,7 +448,7 @@ export default function MyIdeas() {
           {ideas.length === 0 ? (
             <>
               <p className="ideas-empty-text">Your workspace is empty. Start with something on your mind.</p>
-              <div className="flex flex-col items-center gap-3 w-full max-w-xs">
+              <div className="flex flex-col items-center gap-3 w-full max-w-xs mx-auto">
                 {atIdeaLimit ? (
                   <Button variant="spark" disabled title={`Idea limit of ${IDEA_LIMIT} reached`}>
                     <Plus className="w-4 h-4" /> Capture an idea
@@ -457,17 +460,13 @@ export default function MyIdeas() {
                 )}
                 <p className="text-[11px] text-[var(--ds-color-text-soft)] uppercase tracking-widest">or start from a prompt</p>
                 <div className="flex flex-col gap-2 w-full">
-                  {[
-                    'A problem I keep noticing',
-                    'Something I\'ve been putting off',
-                    'An idea I keep coming back to',
-                  ].map((prompt) => (
+                  {PROMPT_TEMPLATES.map((t) => (
                     <Link
-                      key={prompt}
-                      to={`/ideas/add?title=${encodeURIComponent(prompt)}`}
+                      key={t.key}
+                      to={`/ideas/add?title=${encodeURIComponent(t.title)}&template=${t.key}`}
                       className="rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] px-4 py-2.5 text-sm text-[var(--ds-color-text-muted)] text-left transition-colors hover:border-[var(--ds-color-border-strong)] hover:text-[var(--ds-color-text)]"
                     >
-                      {prompt} →
+                      {t.title} →
                     </Link>
                   ))}
                 </div>
@@ -608,7 +607,7 @@ export default function MyIdeas() {
 
           {/* Tags — horizontal scroll on mobile, wrap on desktop */}
           {allTags.length > 0 && (
-            <div className="flex overflow-x-auto gap-1.5 mb-3 mt-1 py-1 flex-nowrap sm:flex-wrap">
+            <div className="flex overflow-x-auto gap-1.5 mb-3 mt-1 py-1 px-0.5 flex-nowrap sm:flex-wrap">
               {allTags.map((tag) => (
                 <button
                   key={tag}

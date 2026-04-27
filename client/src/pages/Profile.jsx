@@ -84,6 +84,7 @@ export default function Profile() {
       .finally(() => setSessionsLoading(false));
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadSessions(); }, [loadSessions]);
 
   const handleTerminate = async (sessionId) => {

@@ -153,7 +153,7 @@ Session location is resolved at list time via `geoip-lite` (offline DB). Private
 | File | Owns |
 |------|------|
 | `server/src/constants.ts` | `IDEA_STATUSES`, `PASSWORD_POLICY`, `RESET_TOKEN_TTL_MS`, `SESSION_MAX_AGE_MS`, `REMEMBER_ME_MAX_AGE_MS`, `TAG_MAX_LENGTH`, `IDEA_LIMIT` |
-| `client/src/lib/constants.js` | `APP_NAME`, `IDEA_STATUSES`, `IDEA_STATUS_LABELS`, `SORT_OPTIONS`, `TAG_MAX_LENGTH`, `SEARCH_MIN_LENGTH`, `IDEA_LIMIT` |
+| `client/src/lib/constants.js` | `APP_NAME`, `IDEA_STATUSES`, `IDEA_STATUS_LABELS`, `SORT_OPTIONS`, `PROMPT_TEMPLATES`, `TAG_MAX_LENGTH`, `SEARCH_MIN_LENGTH`, `IDEA_LIMIT` |
 
 Before adding a new configurable value, check these files first. Before using a string like `'archived'` or a number like `32` more than once, extract it.
 

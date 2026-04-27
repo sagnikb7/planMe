@@ -7,7 +7,7 @@ import api from '@/lib/api';
 import db from '@/lib/db';
 import { isOfflineError } from '@/lib/sync';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { TITLE_MAX_LENGTH } from '@/lib/constants';
+import { TITLE_MAX_LENGTH, PROMPT_TEMPLATES } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,7 +31,8 @@ export default function AddIdea() {
   const isOnline = useOnlineStatus();
   const [searchParams] = useSearchParams();
   const prefillTitle = searchParams.get('title') || '';
-  const [details, setDetails] = useState('');
+  const prefillTemplate = PROMPT_TEMPLATES.find((t) => t.key === searchParams.get('template'));
+  const [details, setDetails] = useState(prefillTemplate?.details ?? '');
   const [tags, setTags] = useState([]);
   const [detailsError, setDetailsError] = useState('');
   const [workspaceTags, setWorkspaceTags] = useState([]);

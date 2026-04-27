@@ -1,5 +1,5 @@
 # planMe Roadmap
-_Updated: 2026-04-27_
+_Updated: 2026-04-27 (post-sprint)_
 
 ---
 
@@ -13,11 +13,11 @@ _Updated: 2026-04-27_
 **Ideas**
 - Full CRUD with Tiptap rich editor (headings, task lists, code, blockquote, bullet/ordered lists)
 - Archive / restore with contextual banners on ViewIdea and EditIdea
-- Search, tag filter (with counts), sort: newest / updated / oldest / A–Z / manual drag-and-drop
+- Search, tag filter (with counts), sort: newest / updated / A–Z / manual drag-and-drop
 - List + grid view toggle; drag-and-drop manual reorder persisted to server
 - Word count, reading time, last edited date, related ideas by tag — all on ViewIdea
 - Swipe left to archive on mobile (idea rows)
-- Empty state with starter prompts for brand-new users
+- Empty state with 3 starter prompt links; each pre-fills title + rich-text template (task list, bullet+blockquote, ordered list) to showcase editor capabilities
 - `n` → new idea, `/` → focus search, `e` → edit idea, `?` → keyboard shortcuts modal
 - Keyboard shortcuts modal: `⌨` button in sidebar footer (desktop) + Settings row (mobile)
 - Inline checkbox persistence (HTML-based, ViewIdea)
@@ -25,7 +25,7 @@ _Updated: 2026-04-27_
 **Profile & Settings**
 - Profile: avatar initials, name (inline edit), email, joined date, idea stats (active/archived), sessions, sign out
 - Settings — PREFERENCES: dark/light theme toggle
-- Settings — WORKSPACE: tag rename with usage counts, export all ideas as JSON
+- Settings — WORKSPACE: tag rename with usage counts, export all ideas as JSON (disabled when workspace is empty)
 - Settings — ACCOUNT: change password, delete account with type-to-confirm dialog
 
 **Offline support**
@@ -42,20 +42,17 @@ _Updated: 2026-04-27_
 
 **Infrastructure**
 - PWA: service worker, offline caching, installable (192 + 512px PNG icons, apple-touch-icon)
+- Rate limiting on all 5 auth endpoints via `express-rate-limit`; limits defined in `server/src/constants.ts`; bypassed in test mode via `NODE_ENV=test`
 - Sticky sidebar — never stretches to match long pages
 - Mobile bottom nav (Ideas → New idea → Settings → Profile)
 - DOMPurify on all HTML rendering; toast feedback on all mutations
 - Render deployment: `pnpm build` → `pnpm start`, MongoDB Atlas
 - Vitest client test suite — `sync.js` unit tests with `fake-indexeddb` (19 tests, no browser/MongoDB needed)
+- ESLint: `__APP_VERSION__` Vite define global declared in config; pre-existing `set-state-in-effect` false positives suppressed inline
 
 ---
 
 ## Fix before ship (P0)
-
-**Rate limiting on auth endpoints** — no `express-rate-limit` yet. Credential stuffing is unmitigated.
-- Apply to: `/register`, `/login`, `/forgot-password`, `/change-password`, `/reset-password`
-- 10 req/min on login, 5 req/15 min on register + forgot-password
-- Define limits in `server/src/constants.ts`
 
 **Email delivery for password reset** — SMTP is wired, just needs env vars set on Render.
 - Set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` in Render environment

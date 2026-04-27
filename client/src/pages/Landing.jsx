@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
-import { PenLine, Hash, Lock, ChevronDown, Github } from 'lucide-react';
+import { PenLine, Hash, Lock, ChevronDown, ExternalLink } from 'lucide-react';
 
 const FEATURES = [
   {
@@ -131,7 +131,7 @@ export default function Landing() {
                 rel="noreferrer"
                 className="landing-footer-link landing-footer-gh"
               >
-                <Github size={13} aria-hidden="true" />
+                <ExternalLink size={13} aria-hidden="true" />
                 GitHub
               </a>
             </div>

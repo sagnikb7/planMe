@@ -340,6 +340,62 @@ test('users cannot access another users idea', async () => {
   assert.equal(response.status, 404);
 });
 
+test('idea status update: archive and restore return the full updated idea', async () => {
+  await agent
+    .post('/api/auth/register')
+    .send({ name: 'Status User', email: 'statusupdate@example.com', password: 'Password1!' });
+  await agent
+    .post('/api/auth/login')
+    .send({ email: 'statusupdate@example.com', password: 'Password1!' });
+
+  const created = await agent
+    .post('/api/ideas')
+    .send({ title: 'Will be archived', details: 'Some details' });
+  assert.equal(created.status, 201);
+  const ideaId = created.body._id;
+
+  const archiveRes = await agent
+    .patch(`/api/ideas/${ideaId}/status`)
+    .send({ status: 'archived' });
+  assert.equal(archiveRes.status, 200);
+  assert.equal(archiveRes.body._id, ideaId);
+  assert.equal(archiveRes.body.status, 'archived');
+  assert.ok(archiveRes.body.updatedAt, 'response must include updatedAt for cache upsert');
+
+  const restoreRes = await agent
+    .patch(`/api/ideas/${ideaId}/status`)
+    .send({ status: 'draft' });
+  assert.equal(restoreRes.status, 200);
+  assert.equal(restoreRes.body._id, ideaId);
+  assert.equal(restoreRes.body.status, 'draft');
+});
+
+test('idea status update: rejects an invalid status value', async () => {
+  await agent
+    .post('/api/auth/register')
+    .send({ name: 'Status2', email: 'statusbad@example.com', password: 'Password1!' });
+  await agent
+    .post('/api/auth/login')
+    .send({ email: 'statusbad@example.com', password: 'Password1!' });
+
+  const created = await agent
+    .post('/api/ideas')
+    .send({ title: 'Test', details: 'Details' });
+  const ideaId = created.body._id;
+
+  const res = await agent
+    .patch(`/api/ideas/${ideaId}/status`)
+    .send({ status: 'published' });
+  assert.equal(res.status, 400);
+});
+
+test('idea status update: requires authentication', async () => {
+  const res = await request(createTestApp())
+    .patch('/api/ideas/507f1f77bcf86cd799439011/status')
+    .send({ status: 'archived' });
+  assert.equal(res.status, 401);
+});
+
 test('weak passwords are rejected on register and reset', async () => {
   const weakRegister = await agent
     .post('/api/auth/register')

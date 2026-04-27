@@ -13,6 +13,9 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import api from '@/lib/api';
+import db from '@/lib/db';
+import { seedCache, isOfflineError } from '@/lib/sync';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { SORT_OPTIONS, SEARCH_MIN_LENGTH, IDEA_LIMIT } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -147,26 +150,36 @@ function SortableIdeaCard({ idea, sortBy, filterTag, setFilterTag, openActionDia
 
 function IdeaBody({ idea, filterTag, setFilterTag, openActionDialog, isArchived, compact = false }) {
   const navigate = useNavigate();
+  const isLocal = idea._id?.startsWith('local_');
 
   const handleBodyClick = (e) => {
     if (e.target.closest('a, button, [role="button"]')) return;
-    navigate(`/ideas/${idea._id}`);
+    if (!isLocal) navigate(`/ideas/${idea._id}`);
   };
 
   const date = new Date(idea.createdAt).toLocaleDateString('en', { month: 'short', day: 'numeric' });
 
   return (
-    <div className="idea-row-body cursor-pointer" onClick={handleBodyClick}>
+    <div className={cn('idea-row-body', !isLocal && 'cursor-pointer')} onClick={handleBodyClick}>
       <div className="idea-title-row">
         <h3 className={cn('idea-title', !idea.title && 'text-[var(--ds-color-text-soft)] italic')}>
-          <Link
-            to={`/ideas/${idea._id}`}
-            className="hover:text-[var(--ds-color-glow)] transition-colors duration-150"
-          >
-            {idea.title || 'Untitled'}
-          </Link>
+          {isLocal ? (
+            <span>{idea.title || 'Untitled'}</span>
+          ) : (
+            <Link
+              to={`/ideas/${idea._id}`}
+              className="hover:text-[var(--ds-color-glow)] transition-colors duration-150"
+            >
+              {idea.title || 'Untitled'}
+            </Link>
+          )}
         </h3>
-        {isArchived && <StatusBadge status="archived" />}
+        {isLocal && (
+          <span className="inline-flex items-center rounded-[var(--ds-radius-sm)] bg-[var(--ds-color-glow-soft)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--ds-color-glow)] shrink-0">
+            Local
+          </span>
+        )}
+        {isArchived && !isLocal && <StatusBadge status="archived" />}
       </div>
       <div
         className="idea-preview-rich"
@@ -214,9 +227,11 @@ function IdeaBody({ idea, filterTag, setFilterTag, openActionDialog, isArchived,
 
 export default function MyIdeas() {
   const toast = useToast();
+  const isOnline = useOnlineStatus();
   const [ideas, setIdeas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [fromCache, setFromCache] = useState(false);
   const [query, setQuery] = useState('');
   const [sortBy, setSortBy] = useState(() => localStorage.getItem(SORT_KEY) || 'newest');
   const [filterTag, setFilterTag] = useState('');
@@ -229,6 +244,32 @@ export default function MyIdeas() {
   const reorderTimeoutRef = useRef(null);
   const searchRef = useRef(null);
 
+  const loadFromServer = useCallback(async () => {
+    const res = await api.get('/ideas');
+    await seedCache(res.data);
+    const pendingLocal = await db.ideas.where('syncStatus').notEqual('synced').toArray();
+    setIdeas([...pendingLocal, ...res.data]);
+    setFromCache(false);
+  }, []);
+
+  useEffect(() => {
+    loadFromServer().catch(async (err) => {
+      if (isOfflineError(err)) {
+        const cached = await db.ideas.orderBy('updatedAt').reverse().toArray();
+        setIdeas(cached);
+        setFromCache(true);
+      } else {
+        setError(err.response?.data?.error || 'Failed to load ideas');
+      }
+    }).finally(() => setLoading(false));
+  }, [loadFromServer]);
+
+  useEffect(() => {
+    const refresh = () => loadFromServer().catch(() => {});
+    window.addEventListener('planme:sync-complete', refresh);
+    return () => window.removeEventListener('planme:sync-complete', refresh);
+  }, [loadFromServer]);
+
   useEffect(() => {
     const handler = () => searchRef.current?.focus();
     window.addEventListener('planme:focus-search', handler);
@@ -236,13 +277,6 @@ export default function MyIdeas() {
   }, []);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
-
-  useEffect(() => {
-    api.get('/ideas')
-      .then((res) => setIdeas(res.data))
-      .catch((err) => setError(err.response?.data?.error || 'Failed to load ideas'))
-      .finally(() => setLoading(false));
-  }, []);
 
   const persistView = (v) => {
     setView(v);
@@ -257,14 +291,27 @@ export default function MyIdeas() {
   const openActionDialog = (idea) => setPendingIdea(idea);
 
   const handleSwipeArchive = useCallback(async (ideaId) => {
+    if (ideaId.startsWith('local_')) return;
+    const doLocalArchive = async () => {
+      const now = new Date().toISOString();
+      await db.ideas.update(ideaId, { status: 'archived', syncStatus: 'pending-archive', updatedAt: now });
+      const existing = await db.pendingQueue.where('ideaId').equals(ideaId)
+        .filter((op) => op.type === 'pending-archive').first();
+      if (!existing) {
+        await db.pendingQueue.add({ type: 'pending-archive', ideaId, status: 'archived', createdAt: now });
+      }
+      setIdeas((prev) => prev.map((i) => i._id === ideaId ? { ...i, status: 'archived', syncStatus: 'pending-archive' } : i));
+      toast('Archived locally — will sync when you reconnect');
+    };
+    if (!isOnline) { await doLocalArchive(); return; }
     try {
       await api.patch(`/ideas/${ideaId}/status`, { status: 'archived' });
       setIdeas((prev) => prev.map((i) => i._id === ideaId ? { ...i, status: 'archived' } : i));
       toast('Idea archived');
-    } catch {
-      toast('Failed to archive');
+    } catch (err) {
+      if (isOfflineError(err)) { await doLocalArchive(); } else { toast('Failed to archive'); }
     }
-  }, [toast]);
+  }, [toast, isOnline]);
 
   const handleArchive = async () => {
     if (!pendingIdea) return;
@@ -292,6 +339,14 @@ export default function MyIdeas() {
 
   const handleDelete = async () => {
     if (!pendingIdea) return;
+    if (pendingIdea._id.startsWith('local_')) {
+      await db.ideas.delete(pendingIdea._id);
+      await db.pendingQueue.where('ideaId').equals(pendingIdea._id).delete();
+      setIdeas((prev) => prev.filter((i) => i._id !== pendingIdea._id));
+      setPendingIdea(null);
+      toast('Idea deleted');
+      return;
+    }
     try {
       await api.delete(`/ideas/${pendingIdea._id}`);
       setIdeas((prev) => prev.filter((i) => i._id !== pendingIdea._id));
@@ -379,6 +434,11 @@ export default function MyIdeas() {
 
   return (
     <main>
+      {fromCache && (
+        <p className="mb-3 text-xs text-[var(--ds-color-text-soft)] px-1">
+          Showing cached ideas — changes will sync when you reconnect.
+        </p>
+      )}
       {ideas.filter((i) => i.status !== 'archived').length === 0 && !showArchived ? (
         <div className="ideas-empty">
           <Lightbulb className="ideas-empty-icon h-8 w-8" />

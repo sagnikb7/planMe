@@ -18,6 +18,7 @@ pnpm lint                            # ESLint on client
 pnpm --filter planme-server dev      # server only
 pnpm --filter planme-server test     # server tests only
 pnpm --filter client dev             # client only
+pnpm --filter client test            # client unit tests (Vitest, no MongoDB needed)
 ```
 
 ---
@@ -78,7 +79,8 @@ Routes never touch Mongoose directly. Services never import Express types. Repos
 
 - **Entry:** `client/src/main.jsx` → `App.jsx` (router + auth context)
 - **Auth state:** `AuthContext` + `useAuth()` hook. `ProtectedRoute` / `PublicOnlyRoute` guard routes.
-- **API calls:** `client/src/lib/api.js` (axios instance, `baseURL: '/api'`, `withCredentials: true`)
+- **API calls:** `client/src/lib/api.js` (axios instance, `baseURL: '/api'`, `withCredentials: true`, 8 s timeout — treats timeouts and network errors as offline)
+- **Offline layer:** `client/src/lib/db.js` (Dexie IndexedDB, `planme-offline` database) + `client/src/lib/sync.js` (`seedCache`, `flushPendingQueue`, `isOfflineError`). All writes go local-first when offline; sync engine flushes the pending queue on reconnect.
 - **Vite proxy:** `/api/*` → `http://localhost:5001` in dev. Responds 503 (not 502) when server is starting.
 - **Styling:** Tailwind + `client/src/styles/design-system.css` (custom properties + utility classes)
 
@@ -229,13 +231,19 @@ Visit `http://localhost:5001` — the server now serves the React client from `s
 
 ## Testing
 
+### Server (`pnpm test` or `pnpm --filter planme-server test`)
 - Tests: `server/test/api.test.ts` — Node `node:test` runner + `supertest`
 - Requires local MongoDB. Uses the `planme_test` database (separate from the dev `planme` db — no data pollution).
 - Each test clears all collections via `beforeEach`. The full database is dropped in `test.after`.
 - Override the database with `MONGO_TEST_URI` env var (defaults to `mongodb://127.0.0.1:27017/planme_test`).
 - `pnpm test` uses `node -r tsx/cjs --test --test-concurrency=1`
-- No client-side tests exist.
 - The `createApp()` factory pattern is what makes tests work — tests pass their own `mongoUri` and `MemoryStore`, never reading `.env`.
+
+### Client (`pnpm --filter client test`)
+- Tests: `client/src/lib/sync.test.js` — Vitest + `fake-indexeddb`
+- No MongoDB or browser required — runs in Node with a fake IndexedDB.
+- Covers: `isOfflineError`, `seedCache` (pending-* isolation, bulk upsert), `flushPendingQueue` (all op types, 404 skip, network-error halt, chronological order).
+- Config: `client/vitest.config.js`. Add new test files alongside the modules they test (`*.test.js`).
 
 ---
 

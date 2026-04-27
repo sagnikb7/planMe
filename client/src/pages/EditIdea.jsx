@@ -5,6 +5,9 @@ import { z } from 'zod';
 import { Archive } from 'lucide-react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import api from '@/lib/api';
+import db from '@/lib/db';
+import { isOfflineError } from '@/lib/sync';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { TITLE_MAX_LENGTH } from '@/lib/constants';
 import { useToast } from '@/context/toast-context';
 import { Button } from '@/components/ui/button';
@@ -28,6 +31,7 @@ export default function EditIdea() {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const isOnline = useOnlineStatus();
   const [loading, setLoading] = useState(true);
   const [details, setDetails] = useState('');
   const [tags, setTags] = useState([]);
@@ -42,23 +46,56 @@ export default function EditIdea() {
   const titleValue = watch('title') ?? '';
 
   useEffect(() => {
+    const populate = (idea) => {
+      reset({ title: idea.title });
+      setDetails(idea.details || '');
+      setTags(idea.tags || []);
+      setStatus(idea.status || 'draft');
+    };
+
     Promise.all([
       api.get(`/ideas/${id}`),
       api.get('/ideas/tags'),
     ])
       .then(([ideaRes, tagsRes]) => {
-        const idea = ideaRes.data;
-        reset({ title: idea.title });
-        setDetails(idea.details || '');
-        setTags(idea.tags || []);
-        setStatus(idea.status || 'draft');
+        populate(ideaRes.data);
         setWorkspaceTags((tagsRes.data.tags || []).map((t) => t.tag));
       })
-      .catch((err) => {
+      .catch(async (err) => {
+        if (isOfflineError(err)) {
+          const cached = await db.ideas.get(id);
+          if (cached) {
+            populate(cached);
+            return;
+          }
+        }
         setError('root', { message: err.response?.data?.error || 'Failed to load idea' });
       })
       .finally(() => setLoading(false));
   }, [id, reset, setError]);
+
+  const saveLocally = async (payload) => {
+    const now = new Date().toISOString();
+    const existing = await db.ideas.get(id);
+    await db.ideas.put({
+      ...(existing || {}),
+      _id: id,
+      ...payload,
+      syncStatus: 'pending-update',
+      updatedAt: now,
+    });
+    const existingQueueEntry = await db.pendingQueue
+      .where('ideaId').equals(id)
+      .filter((op) => op.type === 'pending-create' || op.type === 'pending-update')
+      .first();
+    if (existingQueueEntry) {
+      await db.pendingQueue.update(existingQueueEntry.id, { payload, createdAt: now });
+    } else {
+      await db.pendingQueue.add({ type: 'pending-update', ideaId: id, payload, createdAt: now });
+    }
+    toast('Saved locally — will sync when you reconnect');
+    navigate('/ideas');
+  };
 
   const onSubmit = async (data) => {
     if (!stripHtml(details)) {
@@ -66,11 +103,20 @@ export default function EditIdea() {
       return;
     }
     setDetailsError('');
+    const payload = { ...data, details, tags, status };
+    if (!isOnline) {
+      await saveLocally(payload);
+      return;
+    }
     try {
-      await api.put(`/ideas/${id}`, { ...data, details, tags, status });
+      await api.put(`/ideas/${id}`, payload);
       toast('Idea updated');
       navigate('/ideas');
-    } catch {
+    } catch (err) {
+      if (isOfflineError(err)) {
+        await saveLocally(payload);
+        return;
+      }
       setError('root', { message: 'Failed to update idea' });
     }
   };

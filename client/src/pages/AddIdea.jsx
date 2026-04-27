@@ -4,6 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import api from '@/lib/api';
+import db from '@/lib/db';
+import { isOfflineError } from '@/lib/sync';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { TITLE_MAX_LENGTH } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +28,7 @@ function stripHtml(html) {
 export default function AddIdea() {
   const navigate = useNavigate();
   const toast = useToast();
+  const isOnline = useOnlineStatus();
   const [searchParams] = useSearchParams();
   const prefillTitle = searchParams.get('title') || '';
   const [details, setDetails] = useState('');
@@ -42,17 +46,46 @@ export default function AddIdea() {
   });
   const titleValue = watch('title') ?? '';
 
+  const saveLocally = async (payload) => {
+    const localId = `local_${crypto.randomUUID()}`;
+    const now = new Date().toISOString();
+    await db.ideas.put({
+      _id: localId,
+      ...payload,
+      syncStatus: 'pending-create',
+      createdAt: now,
+      updatedAt: now,
+    });
+    await db.pendingQueue.add({
+      type: 'pending-create',
+      ideaId: localId,
+      payload,
+      createdAt: now,
+    });
+    toast('Saved locally — will sync when you reconnect');
+    navigate('/ideas');
+  };
+
   const onSubmit = async (data) => {
     if (!stripHtml(details)) {
       setDetailsError('Add at least a sentence.');
       return;
     }
     setDetailsError('');
+    const payload = { ...data, details, tags, status: 'draft' };
+    if (!isOnline) {
+      await saveLocally(payload);
+      return;
+    }
     try {
-      await api.post('/ideas', { ...data, details, tags, status: 'draft' });
+      await api.post('/ideas', payload);
       toast('Idea saved');
       navigate('/ideas');
     } catch (err) {
+      if (isOfflineError(err)) {
+        await saveLocally(payload);
+        return;
+      }
       setError('root', { message: err.response?.data?.error || 'Failed to save idea' });
     }
   };

@@ -33,6 +33,16 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname === '/api/ideas',
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'planme-api',
+              expiration: { maxEntries: 5, maxAgeSeconds: 86400 },
+            },
+          },
+        ],
       },
     }),
   ],

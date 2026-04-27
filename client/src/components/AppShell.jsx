@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { BookOpen, Keyboard, PlusCircle, Settings, UserCircle2 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { ShortcutsModal } from '@/components/ShortcutsModal';
+import { OfflineBanner } from '@/components/OfflineBanner';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { flushPendingQueue } from '@/lib/sync';
 
 const navItems = [
   { to: '/ideas', label: 'Ideas', icon: BookOpen },
@@ -46,6 +49,10 @@ function NavItem({ to, icon: Icon, label, mobile = false }) {
 export function AppShell() {
   const location = useLocation();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const isOnline = useOnlineStatus();
+  const [bannerStatus, setBannerStatus] = useState('idle');
+  const syncedTimer = useRef(null);
+  const prevOnline = useRef(isOnline);
   useKeyboardShortcuts();
 
   useEffect(() => {
@@ -53,6 +60,26 @@ export function AppShell() {
     window.addEventListener('planme:shortcuts-open', handler);
     return () => window.removeEventListener('planme:shortcuts-open', handler);
   }, []);
+
+  useEffect(() => {
+    if (!isOnline) {
+      setBannerStatus('offline');
+      prevOnline.current = false;
+      return;
+    }
+    if (prevOnline.current === false) {
+      setBannerStatus('syncing');
+      flushPendingQueue().then(() => {
+        setBannerStatus('synced');
+        window.dispatchEvent(new CustomEvent('planme:sync-complete'));
+        clearTimeout(syncedTimer.current);
+        syncedTimer.current = setTimeout(() => setBannerStatus('idle'), 2500);
+      }).catch(() => setBannerStatus('idle'));
+    } else {
+      setBannerStatus('idle');
+    }
+    prevOnline.current = true;
+  }, [isOnline]);
 
   const sectionTitle = navItems.find((item) => location.pathname.startsWith(item.to))?.label || 'Workspace';
 
@@ -95,6 +122,7 @@ export function AppShell() {
         {/* Main content */}
         <div className="flex min-w-0 flex-1 flex-col">
           <h1 className="sr-only">{sectionTitle}</h1>
+          <OfflineBanner status={bannerStatus} />
 
           <main id="main-content" key={location.pathname} className="ds-page-enter min-w-0 flex-1 px-4 py-4 md:px-0">
             <Outlet />

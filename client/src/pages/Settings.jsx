@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Download, Keyboard, Moon, Sun, Check, Pencil, X, Heart } from 'lucide-react';
+import { Download, Keyboard, Moon, Sun, Check, Pencil, X, Heart, WifiOff, Smartphone } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/context/toast-context';
 import { useAuth } from '@/hooks/useAuth';
@@ -162,6 +162,24 @@ export default function Settings() {
   const [tags, setTags] = useState([]);
   const [tagsLoading, setTagsLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [installed, setInstalled] = useState(
+    () => window.matchMedia?.('(display-mode: standalone)').matches
+  );
+
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('appinstalled', () => { setInstalled(true); setInstallPrompt(null); });
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    await installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') { setInstalled(true); setInstallPrompt(null); }
+  };
 
   const [currentPwd, setCurrentPwd] = useState('');
   const [newPwd, setNewPwd] = useState('');
@@ -232,6 +250,55 @@ export default function Settings() {
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
+
+      {/* App / PWA */}
+      <div className="space-y-2">
+        <SectionLabel>App</SectionLabel>
+        <div className="surface-card divide-y divide-[var(--ds-color-border)]">
+          {/* Offline support — always visible */}
+          <div className="flex items-start gap-3 px-4 py-4">
+            <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--ds-radius-sm)] bg-[var(--ds-color-glow-soft)] text-[var(--ds-color-glow)]">
+              <WifiOff className="h-3.5 w-3.5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[var(--ds-color-text)]">Offline support</p>
+              <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">
+                Create and read ideas without an internet connection. Changes sync automatically when you reconnect.
+              </p>
+            </div>
+          </div>
+
+          {/* Install to home screen */}
+          {(installPrompt || installed) && (
+            <div className="flex items-center justify-between px-4 py-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--ds-radius-sm)] bg-[var(--ds-color-surface-strong)] text-[var(--ds-color-text-muted)]">
+                  <Smartphone className="h-3.5 w-3.5" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-[var(--ds-color-text)]">Add to home screen</p>
+                  <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">
+                    Install planMe as a standalone app for faster access.
+                  </p>
+                </div>
+              </div>
+              {installed ? (
+                <span className="flex items-center gap-1 shrink-0 text-xs text-[var(--ds-color-text-soft)]">
+                  <Check className="h-3.5 w-3.5 text-[#16a34a]" /> Installed
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleInstall}
+                  className="flex items-center gap-1.5 shrink-0 rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border-strong)] bg-transparent px-3 py-1.5 text-xs font-medium text-[var(--ds-color-text-muted)] transition-colors hover:bg-[var(--ds-color-accent-soft)] hover:text-[var(--ds-color-text)]"
+                >
+                  Install
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Preferences */}
       <div className="space-y-2">

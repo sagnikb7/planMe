@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
-import { PenLine, Hash, Lock, ChevronDown, ExternalLink } from 'lucide-react';
+import { PenLine, Hash, Lock, WifiOff, ChevronDown, ExternalLink } from 'lucide-react';
 
 const TYPEWRITER_WORDS = [
   'ideas',
@@ -30,6 +30,11 @@ const FEATURES = [
     icon: Lock,
     title: 'Yours alone',
     body: 'Your ideas stay private by default. No feeds, no algorithms, no noise.',
+  },
+  {
+    icon: WifiOff,
+    title: 'Works offline',
+    body: 'Create and read ideas without a connection. Everything syncs automatically when you\'re back.',
   },
 ];
 
@@ -84,6 +89,8 @@ export default function Landing() {
                 <span>Tags</span>
                 <span aria-hidden="true">·</span>
                 <span>Private</span>
+                <span aria-hidden="true">·</span>
+                <span>Offline-ready</span>
                 <span aria-hidden="true">·</span>
                 <span>Free</span>
               </p>

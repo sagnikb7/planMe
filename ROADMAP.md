@@ -28,12 +28,25 @@ _Updated: 2026-04-27_
 - Settings — WORKSPACE: tag rename with usage counts, export all ideas as JSON
 - Settings — ACCOUNT: change password, delete account with type-to-confirm dialog
 
+**Offline support**
+- Dexie.js IndexedDB store (`planme-offline`) — ideas cached locally, pending queue for offline writes
+- Four op types: `pending-create`, `pending-update`, `pending-archive`, `pending-delete`
+- Auto-flush queue on `window.online` event; 404 ops skipped silently, network errors halt and retry next reconnect
+- Offline banner: amber (offline) → spinner (syncing) → green flash (synced)
+- Axios 8 s timeout — Render cold-start treated as offline; user saves locally, syncs once server wakes
+- Workbox `StaleWhileRevalidate` runtime cache for `GET /api/ideas` — list loads instantly on cold-start
+- Local ideas shown with amber "Local" badge; non-navigable until synced
+- Offline swipe-to-archive queued and applied optimistically
+- Settings → App section: offline feature info + PWA install prompt (`beforeinstallprompt`)
+- Landing: "Works offline" feature card + "Offline-ready" pill
+
 **Infrastructure**
 - PWA: service worker, offline caching, installable (192 + 512px PNG icons, apple-touch-icon)
 - Sticky sidebar — never stretches to match long pages
 - Mobile bottom nav (Ideas → New idea → Settings → Profile)
 - DOMPurify on all HTML rendering; toast feedback on all mutations
 - Render deployment: `pnpm build` → `pnpm start`, MongoDB Atlas
+- Vitest client test suite — `sync.js` unit tests with `fake-indexeddb` (19 tests, no browser/MongoDB needed)
 
 ---
 
@@ -61,7 +74,7 @@ _Updated: 2026-04-27_
 
 **Export per-idea as Markdown** — `turndown` converts Tiptap HTML → GFM. Download `slug.md` from ViewIdea alongside Edit / Delete.
 
-**EditIdea load failure** — when fetch fails, form card still renders. Should show a full-page error like ViewIdea does.
+**EditIdea load failure** — when fetch fails with a non-offline error (e.g., auth expired), form card still renders with no content. Should show a full-page error. (Offline fallback is handled — Dexie cache is used automatically.)
 
 ---
 
@@ -71,7 +84,7 @@ _Updated: 2026-04-27_
 - OAuth — Google login. Only after email delivery is confirmed working.
 - Revision history — snapshot on save. High storage cost; validate need first.
 - Docker compose — spins up MongoDB + Express, simplifies contributor onboarding.
-- Client-side tests — Vitest + RTL. Priority: AuthContext, TagPicker, filter/sort logic.
+- Client-side tests (RTL layer) — Vitest is set up; sync.js has 19 unit tests. Next: AuthContext, TagPicker, filter/sort logic with React Testing Library.
 - AI tagging / summarization — Anthropic API, suggested tags as accept/reject chips.
 
 ---

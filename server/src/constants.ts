@@ -16,7 +16,7 @@ export const REMEMBER_ME_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export const PENDING_SESSION_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
-export const MAX_SESSIONS_PER_USER = 3;
+export const MAX_SESSIONS_PER_USER = 5;
 
 export const BCRYPT_ROUNDS = 12;
 

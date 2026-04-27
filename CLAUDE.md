@@ -12,7 +12,7 @@ pnpm monorepo — always run from the repo root unless filtering explicitly.
 pnpm install                         # install all workspace deps
 pnpm dev                             # server (5001) + client (5173) concurrently
 pnpm build                           # production build of client → client/dist/
-pnpm test                            # server integration tests (no DB setup needed)
+pnpm test                            # server integration tests (requires local MongoDB)
 pnpm lint                            # ESLint on client
 
 pnpm --filter planme-server dev      # server only
@@ -172,8 +172,10 @@ The amber glow (`--ds-color-glow: #f59e0b`) is the **single chromatic accent**. 
 
 ## Testing
 
-- Tests: `server/test/api.test.ts` — Node `node:test` runner + `supertest` + `mongodb-memory-server`
-- No real MongoDB needed. Each test gets a fresh in-memory DB via `beforeEach`.
+- Tests: `server/test/api.test.ts` — Node `node:test` runner + `supertest`
+- Requires local MongoDB. Uses the `planme_test` database (separate from the dev `planme` db — no data pollution).
+- Each test clears all collections via `beforeEach`. The full database is dropped in `test.after`.
+- Override the database with `MONGO_TEST_URI` env var (defaults to `mongodb://127.0.0.1:27017/planme_test`).
 - `pnpm test` uses `node -r tsx/cjs --test --test-concurrency=1`
 - No client-side tests exist.
 - The `createApp()` factory pattern is what makes tests work — tests pass their own `mongoUri` and `MemoryStore`, never reading `.env`.

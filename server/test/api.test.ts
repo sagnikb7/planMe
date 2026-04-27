@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import session from 'express-session';
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import mongoose from 'mongoose';
 
 import { createApp } from '../src/app';
 import { connectToDatabase, disconnectFromDatabase } from '../src/config/database';
@@ -11,12 +11,13 @@ import { IdeaModel } from '../src/models/idea.model';
 import { UserSessionModel } from '../src/models/user-session.model';
 import { lookupLocation } from '../src/utils/geo';
 
-let mongoServer: MongoMemoryServer;
+const TEST_MONGO_URI = process.env.MONGO_TEST_URI ?? 'mongodb://127.0.0.1:27017/planme_test';
+
 let agent: ReturnType<typeof request.agent>;
 
 function createTestApp() {
   return createApp({
-    mongoUri: mongoServer.getUri(),
+    mongoUri: TEST_MONGO_URI,
     cookieSecret: 'test-cookie-secret',
     isProd: false,
     sessionStore: new session.MemoryStore(),
@@ -25,14 +26,13 @@ function createTestApp() {
 }
 
 test.before(async () => {
-  mongoServer = await MongoMemoryServer.create();
-  await connectToDatabase(mongoServer.getUri());
+  await connectToDatabase(TEST_MONGO_URI);
   agent = request.agent(createTestApp());
 });
 
 test.after(async () => {
+  await mongoose.connection.db?.dropDatabase();
   await disconnectFromDatabase();
-  if (mongoServer) await mongoServer.stop();
 });
 
 test.beforeEach(async () => {
@@ -46,7 +46,7 @@ test.beforeEach(async () => {
 function createSharedTestSetup() {
   const store = new session.MemoryStore();
   const app = createApp({
-    mongoUri: mongoServer.getUri(),
+    mongoUri: TEST_MONGO_URI,
     cookieSecret: 'test-cookie-secret',
     isProd: false,
     sessionStore: store,

@@ -237,7 +237,8 @@ These require validation that users actually want them before spending the effor
 - Eliminate the `as unknown as { sortOrder: number }` cast in `getMaxSortOrder` — query the field directly with a typed projection.
 
 ### Dead code / deps
-- Remove `nodemon` from `server/package.json` devDependencies — unused (`tsx watch` is the dev runner).
+- ~~**Remove `nodemon` from `server/package.json` devDependencies**~~ — done. `tsx watch` is the dev runner.
+- ~~**Remove `mongodb-memory-server` from `server/package.json` devDependencies**~~ — done. Tests now connect to a real `planme_test` database (cleared per-test, dropped after suite). Override with `MONGO_TEST_URI` env var.
 - `server/src/utils/user-agent.ts` should be audited to confirm it handles all major UA strings. The `device` field in sessions currently shows raw strings that may not be user-friendly.
 
 ### Constants
@@ -295,7 +296,7 @@ Items that deliver real value with under a day of effort each.
 | Add logout to sidebar footer | 2h | Design system compliance |
 | Cap stagger animation at index 10 | 15 min | Polish |
 | Move `VIEW_KEY`/`SORT_KEY` to constants file | 30 min | Constants rule compliance |
-| Remove `nodemon` from server devDependencies | 5 min | Hygiene |
+| ~~Remove `nodemon` + `mongodb-memory-server` from server devDependencies~~ | ✅ Done | Hygiene + Render build speed |
 | ~~Wrap archive/restore/delete in try/catch with error toast~~ | ✅ Done | UX reliability |
 | Remove or implement `location` field in SessionInfo | 1h | Honesty in the UI |
 | ~~Add `active` badge to `StatusBadge`~~ | Removed from scope | `active` status removed |

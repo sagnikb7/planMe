@@ -30,7 +30,7 @@ A private idea workspace. Capture thoughts, tag them, track their stage, and com
 | Validation | Zod v3 (server), Zod v4 (client) |
 | Logging | Pino + pino-http |
 | Tooling | pnpm workspaces, concurrently, ESLint |
-| Testing | Node built-in `node:test`, supertest, mongodb-memory-server |
+| Testing | Node built-in `node:test`, supertest (real MongoDB, `planme_test` db) |
 
 ---
 
@@ -76,7 +76,7 @@ planMe/
 
 ## Getting started
 
-**Requirements:** Node.js 20+, pnpm, MongoDB (local or remote)
+**Requirements:** Node.js 22+, pnpm, MongoDB (local or remote)
 
 ```bash
 # 1. Install dependencies
@@ -118,7 +118,7 @@ pnpm dev          # server (tsx watch) + client (Vite) concurrently
 pnpm build        # compile client → client/dist/ and server → server/dist/
 pnpm start        # start the compiled server (production)
 pnpm prod:local   # build everything, then run the production server locally
-pnpm test         # server integration tests (in-memory MongoDB, no setup needed)
+pnpm test         # server integration tests (requires local MongoDB — uses planme_test db)
 pnpm lint         # ESLint on client
 ```
 

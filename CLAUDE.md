@@ -97,7 +97,7 @@ Routes never touch Mongoose directly. Services never import Express types. Repos
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/register` | Zod-validated; bcrypt hash; email normalized lowercase |
-| POST | `/login` | Passport local; session regenerated on login (fixation prevention) |
+| POST | `/login` | Passport local; session regenerated on login (fixation prevention); accepts `rememberMe: boolean` → 30-day cookie |
 | POST | `/logout` | Destroys session, clears cookie |
 | GET | `/me` | Returns session user (password + reset fields stripped) |
 | POST | `/forgot-password` | SHA-256 token hash stored; 2hr TTL; dev returns `resetUrl` in response; prod sends email via SMTP |
@@ -114,7 +114,8 @@ Routes never touch Mongoose directly. Services never import Express types. Repos
 | GET | `/:id` | Get one idea |
 | POST | `/` | Create idea — 400 if `IDEA_LIMIT` (100) reached |
 | PUT | `/:id` | Full update |
-| PATCH | `/:id/status` | Status-only update (used by archive action) |
+| PATCH | `/:id/status` | Status-only update (archive / restore) |
+| PATCH | `/reorder` | Persist manual drag-and-drop order; body `{ ids: ObjectId[] }`, capped at 500 |
 | DELETE | `/:id` | Permanent delete |
 
 ### Sessions (`/api/sessions`) — scoped to session user; pending sessions can list + terminate but not access other APIs
@@ -149,7 +150,7 @@ Session location is resolved at list time via `geoip-lite` (offline DB). Private
 
 | File | Owns |
 |------|------|
-| `server/src/constants.ts` | `IDEA_STATUSES`, `PASSWORD_POLICY`, `RESET_TOKEN_TTL_MS`, `SESSION_MAX_AGE_MS`, `TAG_MAX_LENGTH`, `IDEA_LIMIT` |
+| `server/src/constants.ts` | `IDEA_STATUSES`, `PASSWORD_POLICY`, `RESET_TOKEN_TTL_MS`, `SESSION_MAX_AGE_MS`, `REMEMBER_ME_MAX_AGE_MS`, `TAG_MAX_LENGTH`, `IDEA_LIMIT` |
 | `client/src/lib/constants.js` | `APP_NAME`, `IDEA_STATUSES`, `IDEA_STATUS_LABELS`, `SORT_OPTIONS`, `TAG_MAX_LENGTH`, `SEARCH_MIN_LENGTH`, `IDEA_LIMIT` |
 
 Before adding a new configurable value, check these files first. Before using a string like `'archived'` or a number like `32` more than once, extract it.

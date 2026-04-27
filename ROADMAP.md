@@ -18,7 +18,8 @@ _Updated: 2026-04-27_
 - Word count, reading time, last edited date, related ideas by tag — all on ViewIdea
 - Swipe left to archive on mobile (idea rows)
 - Empty state with starter prompts for brand-new users
-- `e` → edit, `n` → new idea, `/` → focus search keyboard shortcuts
+- `n` → new idea, `/` → focus search, `e` → edit idea, `?` → keyboard shortcuts modal
+- Keyboard shortcuts modal: `⌨` button in sidebar footer (desktop) + Settings row (mobile)
 - Inline checkbox persistence (HTML-based, ViewIdea)
 
 **Profile & Settings**

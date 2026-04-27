@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { BookOpen, PlusCircle, Settings, UserCircle2 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { cn } from '@/lib/utils';
@@ -58,7 +58,9 @@ export function AppShell() {
         {/* Sidebar */}
         <aside className="surface-glass hidden w-56 shrink-0 flex-col p-3 md:flex">
           <div className="mb-6 px-2 pt-1">
-            <Logo className="text-sm" />
+            <Link to="/" aria-label="Go to home page">
+              <Logo className="text-sm" />
+            </Link>
           </div>
 
           <nav className="flex-1 space-y-0.5">

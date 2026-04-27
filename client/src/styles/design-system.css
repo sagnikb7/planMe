@@ -1101,7 +1101,7 @@
 
 .rich-editor .ProseMirror {
   padding: 0.625rem 0.75rem;
-  min-height: 9rem;
+  min-height: 16rem;
   outline: none;
   font-size: 0.875rem;
   color: var(--ds-color-text);

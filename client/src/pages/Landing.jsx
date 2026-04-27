@@ -5,8 +5,16 @@ import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { PenLine, Hash, Lock, ChevronDown, ExternalLink } from 'lucide-react';
 
-const TYPEWRITER_WORDS = ['ideas', 'sparks', 'thoughts', 'notes', 'plans'];
-
+const TYPEWRITER_WORDS = [
+  'ideas',
+  'sparks',
+  'notes',
+  'plans',
+  'tasks',     // short + useful
+  'drafts',    // common in note apps
+  'lists',     // fits well with productivity theme
+  'goals'      // concise and meaningful
+];
 const FEATURES = [
   {
     icon: PenLine,

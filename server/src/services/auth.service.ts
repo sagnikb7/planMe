@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { userRepository } from '../repositories/user.repository';
 import { env } from '../config/env';
 import { RESET_TOKEN_TTL_MS, BCRYPT_ROUNDS } from '../constants';
+import { sendPasswordResetEmail } from '../utils/email';
 
 function sanitizeUser(user: { _id: unknown; name: string; email: string; createdAt?: Date; password?: string; resetPasswordTokenHash?: unknown; resetPasswordExpiresAt?: unknown }) {
   const { password: _p, resetPasswordTokenHash: _t, resetPasswordExpiresAt: _e, ...safe } = user;
@@ -26,13 +27,18 @@ export class AuthService {
     const token = crypto.randomBytes(32).toString('hex');
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
     const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS);
+    const expiryHours = Math.round(RESET_TOKEN_TTL_MS / (60 * 60 * 1000));
 
     await userRepository.setResetToken(String(user._id), tokenHash, expiresAt);
 
-    if (!env.isProd) {
-      return { resetUrl: `${env.clientOrigin}/reset-password?token=${token}` };
+    const resetUrl = `${env.clientOrigin}/reset-password?token=${token}`;
+
+    if (process.env.NODE_ENV === 'production') {
+      await sendPasswordResetEmail(user.email, resetUrl, expiryHours);
+      return {};
     }
-    return {};
+
+    return { resetUrl };
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
@@ -40,7 +46,7 @@ export class AuthService {
     const user = await userRepository.findByResetToken(tokenHash);
     if (!user) throw new ValidationError('Invalid or expired reset token');
 
-    const hashed = await bcrypt.hash(newPassword, 10);
+    const hashed = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
     await userRepository.updatePassword(String(user._id), hashed);
   }
 

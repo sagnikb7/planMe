@@ -33,6 +33,11 @@ Copy `example.env` → `.env` at the repo root. Key vars:
 | `COOKIE_SECRET` | `dev-cookie-secret` | Required in production |
 | `NODE_ENV` | `development` | |
 | `LOG_LEVEL` | `info` | Pino log level |
+| `SMTP_HOST` | _(empty)_ | Leave blank in dev — reset link returned in API response instead |
+| `SMTP_PORT` | `587` | 465 for SSL |
+| `SMTP_USER` | _(empty)_ | Brevo: your login email |
+| `SMTP_PASS` | _(empty)_ | Brevo: SMTP key from dashboard → SMTP & API tab |
+| `SMTP_FROM` | `noreply@planme.app` | Sender address shown in email client |
 
 ---
 
@@ -53,7 +58,7 @@ planMe/
 │       ├── services/    business logic — routes call services, not repos
 │       ├── routes/      thin handlers: validate → call service → respond
 │       ├── middleware/  auth.ts (ensureAuthenticated), validate.ts (Zod wrapper)
-│       ├── utils/       logger.ts, password-policy.ts
+│       ├── utils/       logger.ts, password-policy.ts, email.ts, geo.ts, user-agent.ts
 │       └── types/       express.d.ts (Express.User augmentation)
 ├── .env             local config (gitignored)
 └── pnpm-workspace.yaml
@@ -93,8 +98,8 @@ Routes never touch Mongoose directly. Services never import Express types. Repos
 | POST | `/login` | Passport local; session regenerated on login (fixation prevention) |
 | POST | `/logout` | Destroys session, clears cookie |
 | GET | `/me` | Returns session user (password + reset fields stripped) |
-| POST | `/forgot-password` | SHA-256 token hash stored; 1hr TTL; dev returns `resetUrl` in response |
-| POST | `/reset-password` | Validates token hash, updates password, clears token |
+| POST | `/forgot-password` | SHA-256 token hash stored; 2hr TTL; dev returns `resetUrl` in response; prod sends email via SMTP |
+| POST | `/reset-password` | Validates token hash + expiry, updates password with `BCRYPT_ROUNDS`, clears token |
 
 ### Ideas (`/api/ideas`) — all require auth, scoped to `req.user._id`
 
@@ -102,10 +107,20 @@ Routes never touch Mongoose directly. Services never import Express types. Repos
 |--------|------|-------------|
 | GET | `/` | List all ideas for user |
 | GET | `/:id` | Get one idea |
-| POST | `/` | Create idea |
+| POST | `/` | Create idea — 400 if `IDEA_LIMIT` (100) reached |
 | PUT | `/:id` | Full update |
 | PATCH | `/:id/status` | Status-only update (used by archive action) |
 | DELETE | `/:id` | Permanent delete |
+
+### Sessions (`/api/sessions`) — scoped to session user; pending sessions can list + terminate but not access other APIs
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/` | List all active sessions for user — includes `id`, `ip`, `device`, `location`, `createdAt`, `isCurrent` |
+| DELETE | `/:id` | Terminate a session by opaque `UserSession._id`; destroys the underlying express session |
+| POST | `/resolve` | Promote a pending session to active (used after session-limit flow: user must terminate one first) |
+
+Session location is resolved at list time via `geoip-lite` (offline DB). Private/loopback IPs return `"Local"`.
 
 ### Health
 
@@ -128,8 +143,8 @@ Routes never touch Mongoose directly. Services never import Express types. Repos
 
 | File | Owns |
 |------|------|
-| `server/src/constants.ts` | `IDEA_STATUSES`, `PASSWORD_POLICY`, `RESET_TOKEN_TTL_MS`, `SESSION_MAX_AGE_MS`, `TAG_MAX_LENGTH` |
-| `client/src/lib/constants.js` | `APP_NAME`, `IDEA_STATUSES`, `IDEA_STATUS_LABELS`, `SORT_OPTIONS`, `TAG_MAX_LENGTH`, `SEARCH_MIN_LENGTH` |
+| `server/src/constants.ts` | `IDEA_STATUSES`, `PASSWORD_POLICY`, `RESET_TOKEN_TTL_MS`, `SESSION_MAX_AGE_MS`, `TAG_MAX_LENGTH`, `IDEA_LIMIT` |
+| `client/src/lib/constants.js` | `APP_NAME`, `IDEA_STATUSES`, `IDEA_STATUS_LABELS`, `SORT_OPTIONS`, `TAG_MAX_LENGTH`, `SEARCH_MIN_LENGTH`, `IDEA_LIMIT` |
 
 Before adding a new configurable value, check these files first. Before using a string like `'archived'` or a number like `32` more than once, extract it.
 

@@ -20,5 +20,6 @@ export const TITLE_MAX_LENGTH = 200;
 export const DETAILS_MAX_LENGTH = 50_000;
 export const IDEA_MAX_TAGS = 3;
 export const WORKSPACE_MAX_TAGS = 10;
+export const IDEA_LIMIT = 100;
 
 export const SEARCH_MIN_LENGTH = 2;

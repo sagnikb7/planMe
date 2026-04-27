@@ -9,6 +9,7 @@ import { connectToDatabase, disconnectFromDatabase } from '../src/config/databas
 import { UserModel } from '../src/models/user.model';
 import { IdeaModel } from '../src/models/idea.model';
 import { UserSessionModel } from '../src/models/user-session.model';
+import { lookupLocation } from '../src/utils/geo';
 
 let mongoServer: MongoMemoryServer;
 let agent: ReturnType<typeof request.agent>;
@@ -134,6 +135,128 @@ test('forgot-password does not reveal whether an account exists', async () => {
   assert.equal(response.body.resetUrl, undefined);
 });
 
+test('reset-password rejects an expired token', async () => {
+  await agent
+    .post('/api/auth/register')
+    .send({ name: 'Expire User', email: 'expire@example.com', password: 'Password1!' });
+
+  const forgotRes = await agent
+    .post('/api/auth/forgot-password')
+    .send({ email: 'expire@example.com' });
+  const token = new URL(forgotRes.body.resetUrl).searchParams.get('token');
+  assert.ok(token);
+
+  // Manually expire the token in the DB
+  await UserModel.updateOne(
+    { email: 'expire@example.com' },
+    { resetPasswordExpiresAt: new Date(Date.now() - 1000) },
+  );
+
+  const resetRes = await agent
+    .post('/api/auth/reset-password')
+    .send({ token, password: 'Newpassword1!' });
+  assert.equal(resetRes.status, 400);
+  assert.match(resetRes.body.error, /invalid or expired/i);
+});
+
+test('reset-password rejects a token that has already been used', async () => {
+  await agent
+    .post('/api/auth/register')
+    .send({ name: 'Reuse User', email: 'reuse@example.com', password: 'Password1!' });
+
+  const forgotRes = await agent
+    .post('/api/auth/forgot-password')
+    .send({ email: 'reuse@example.com' });
+  const token = new URL(forgotRes.body.resetUrl).searchParams.get('token');
+  assert.ok(token);
+
+  const first = await agent
+    .post('/api/auth/reset-password')
+    .send({ token, password: 'Newpassword1!' });
+  assert.equal(first.status, 200);
+
+  // Second use of the same token must fail
+  const second = await agent
+    .post('/api/auth/reset-password')
+    .send({ token, password: 'Anotherpass1!' });
+  assert.equal(second.status, 400);
+  assert.match(second.body.error, /invalid or expired/i);
+});
+
+test('reset-password rejects an invalid token', async () => {
+  const res = await agent
+    .post('/api/auth/reset-password')
+    .send({ token: 'a'.repeat(64), password: 'Newpassword1!' });
+  assert.equal(res.status, 400);
+  assert.match(res.body.error, /invalid or expired/i);
+});
+
+test('forgot-password does not expose resetUrl in production mode', async () => {
+  const prev = process.env.NODE_ENV;
+  process.env.NODE_ENV = 'production';
+  try {
+    await agent
+      .post('/api/auth/register')
+      .send({ name: 'Prod User', email: 'prod@example.com', password: 'Password1!' });
+
+    const res = await agent
+      .post('/api/auth/forgot-password')
+      .send({ email: 'prod@example.com' });
+
+    assert.equal(res.status, 200);
+    // resetUrl must never be returned in production
+    assert.equal(res.body.resetUrl, undefined);
+    // Token must still be stored so email delivery would work
+    const stored = await UserModel.findOne({ email: 'prod@example.com' }).lean();
+    assert.ok(stored?.resetPasswordTokenHash, 'token hash should be stored even in prod mode');
+  } finally {
+    process.env.NODE_ENV = prev;
+  }
+});
+
+test('lookupLocation returns a result for a known public IP', () => {
+  // 8.8.8.8 is Google DNS — reliably in geoip-lite's DB
+  const location = lookupLocation('8.8.8.8');
+  assert.ok(location.length > 0);
+  assert.notEqual(location, 'Local');
+  // Should resolve to something (city/country) not unknown
+  assert.notEqual(location, 'Unknown location');
+});
+
+test('lookupLocation returns Local for loopback and private IPs', () => {
+  assert.equal(lookupLocation('127.0.0.1'), 'Local');
+  assert.equal(lookupLocation('::1'), 'Local');
+  assert.equal(lookupLocation('192.168.1.1'), 'Local');
+  assert.equal(lookupLocation('10.0.0.1'), 'Local');
+  assert.equal(lookupLocation('172.16.0.1'), 'Local');
+});
+
+test('lookupLocation returns Unknown location for empty input', () => {
+  assert.equal(lookupLocation(''), 'Unknown location');
+});
+
+test('session list includes resolved location for a known IP', async () => {
+  const { app } = createSharedTestSetup();
+  const a1 = request.agent(app);
+
+  await a1.post('/api/auth/register').send({ name: 'Geo User', email: 'geo@example.com', password: 'Password1!' });
+
+  // Manually create a session record with a known public IP so we can assert location
+  await a1.post('/api/auth/login').send({ email: 'geo@example.com', password: 'Password1!' });
+
+  // Patch the session record's IP to a known public IP
+  await UserSessionModel.updateMany(
+    { userId: (await UserModel.findOne({ email: 'geo@example.com' }).lean())?._id },
+    { ip: '8.8.8.8' },
+  );
+
+  const sessionsRes = await a1.get('/api/sessions');
+  assert.equal(sessionsRes.status, 200);
+  const session = sessionsRes.body.sessions[0];
+  assert.ok(session.location);
+  assert.notEqual(session.location, 'Unknown location');
+});
+
 test('idea routes require authentication', async () => {
   const response = await request(createTestApp()).get('/api/ideas');
   assert.equal(response.status, 401);
@@ -255,38 +378,44 @@ test('login succeeds normally when below the session limit', async () => {
   assert.equal(res.body.sessionLimited, undefined);
 });
 
-test('login enters session-limit flow when at MAX_SESSIONS_PER_USER (2)', async () => {
+test('login enters session-limit flow when at MAX_SESSIONS_PER_USER (3)', async () => {
   const { app } = createSharedTestSetup();
   const a1 = request.agent(app);
   const a2 = request.agent(app);
   const a3 = request.agent(app);
+  const a4 = request.agent(app);
 
   await a1.post('/api/auth/register').send({ name: 'Limit User2', email: 'limit2@example.com', password: 'Password1!' });
 
-  // Fill 2 sessions
+  // Fill 3 sessions
   const r1 = await a1.post('/api/auth/login').send({ email: 'limit2@example.com', password: 'Password1!' });
   assert.equal(r1.status, 200);
 
   const r2 = await a2.post('/api/auth/login').send({ email: 'limit2@example.com', password: 'Password1!' });
   assert.equal(r2.status, 200);
 
-  // Third login hits the limit
   const r3 = await a3.post('/api/auth/login').send({ email: 'limit2@example.com', password: 'Password1!' });
-  assert.equal(r3.status, 202);
-  assert.equal(r3.body.sessionLimited, true);
-  assert.ok(Array.isArray(r3.body.sessions));
-  assert.equal(r3.body.sessions.length, 2);
+  assert.equal(r3.status, 200);
+
+  // Fourth login hits the limit
+  const r4 = await a4.post('/api/auth/login').send({ email: 'limit2@example.com', password: 'Password1!' });
+  assert.equal(r4.status, 202);
+  assert.equal(r4.body.sessionLimited, true);
+  assert.ok(Array.isArray(r4.body.sessions));
+  assert.equal(r4.body.sessions.length, 3);
 });
 
 test('pending session cannot access normal authenticated APIs', async () => {
   const { app } = createSharedTestSetup();
   const a1 = request.agent(app);
   const a2 = request.agent(app);
+  const a3 = request.agent(app);
   const pending = request.agent(app);
 
   await a1.post('/api/auth/register').send({ name: 'Limit User3', email: 'limit3@example.com', password: 'Password1!' });
   await a1.post('/api/auth/login').send({ email: 'limit3@example.com', password: 'Password1!' });
   await a2.post('/api/auth/login').send({ email: 'limit3@example.com', password: 'Password1!' });
+  await a3.post('/api/auth/login').send({ email: 'limit3@example.com', password: 'Password1!' });
 
   // Pending session
   const pendingRes = await pending.post('/api/auth/login').send({ email: 'limit3@example.com', password: 'Password1!' });
@@ -305,17 +434,19 @@ test('pending session can list active sessions', async () => {
   const { app } = createSharedTestSetup();
   const a1 = request.agent(app);
   const a2 = request.agent(app);
+  const a3 = request.agent(app);
   const pending = request.agent(app);
 
   await a1.post('/api/auth/register').send({ name: 'Limit User4', email: 'limit4@example.com', password: 'Password1!' });
   await a1.post('/api/auth/login').send({ email: 'limit4@example.com', password: 'Password1!' });
   await a2.post('/api/auth/login').send({ email: 'limit4@example.com', password: 'Password1!' });
+  await a3.post('/api/auth/login').send({ email: 'limit4@example.com', password: 'Password1!' });
   await pending.post('/api/auth/login').send({ email: 'limit4@example.com', password: 'Password1!' });
 
   const sessionsRes = await pending.get('/api/sessions');
   assert.equal(sessionsRes.status, 200);
   assert.ok(Array.isArray(sessionsRes.body.sessions));
-  assert.equal(sessionsRes.body.sessions.length, 2);
+  assert.equal(sessionsRes.body.sessions.length, 3);
 
   // Sessions expose only safe fields — no raw sessionId
   const s = sessionsRes.body.sessions[0];
@@ -329,11 +460,13 @@ test('terminating an existing session allows the pending login to resolve', asyn
   const { app } = createSharedTestSetup();
   const a1 = request.agent(app);
   const a2 = request.agent(app);
+  const a3 = request.agent(app);
   const pending = request.agent(app);
 
   await a1.post('/api/auth/register').send({ name: 'Limit User5', email: 'limit5@example.com', password: 'Password1!' });
   await a1.post('/api/auth/login').send({ email: 'limit5@example.com', password: 'Password1!' });
   await a2.post('/api/auth/login').send({ email: 'limit5@example.com', password: 'Password1!' });
+  await a3.post('/api/auth/login').send({ email: 'limit5@example.com', password: 'Password1!' });
   const pendingRes = await pending.post('/api/auth/login').send({ email: 'limit5@example.com', password: 'Password1!' });
 
   // Get session list from the pending agent
@@ -345,10 +478,11 @@ test('terminating an existing session allows the pending login to resolve', asyn
   const terminateRes = await pending.delete(`/api/sessions/${sessionToTerminate.id}`);
   assert.equal(terminateRes.status, 200);
 
-  // Terminated session (a1 or a2) can no longer access APIs
-  const terminatedAgentRes = await a1.get('/api/ideas');
-  const otherAgentRes = await a2.get('/api/ideas');
-  const oneBlocked = terminatedAgentRes.status === 401 || otherAgentRes.status === 401;
+  // Terminated session (a1, a2, or a3) can no longer access APIs
+  const r_a1 = await a1.get('/api/ideas');
+  const r_a2 = await a2.get('/api/ideas');
+  const r_a3 = await a3.get('/api/ideas');
+  const oneBlocked = r_a1.status === 401 || r_a2.status === 401 || r_a3.status === 401;
   assert.ok(oneBlocked, 'the terminated session must be invalidated');
 
   // Now the pending session can resolve
@@ -365,11 +499,13 @@ test('resolve is rejected when session limit is still reached', async () => {
   const { app } = createSharedTestSetup();
   const a1 = request.agent(app);
   const a2 = request.agent(app);
+  const a3 = request.agent(app);
   const pending = request.agent(app);
 
   await a1.post('/api/auth/register').send({ name: 'Limit User6', email: 'limit6@example.com', password: 'Password1!' });
   await a1.post('/api/auth/login').send({ email: 'limit6@example.com', password: 'Password1!' });
   await a2.post('/api/auth/login').send({ email: 'limit6@example.com', password: 'Password1!' });
+  await a3.post('/api/auth/login').send({ email: 'limit6@example.com', password: 'Password1!' });
   await pending.post('/api/auth/login').send({ email: 'limit6@example.com', password: 'Password1!' });
 
   // Attempt to resolve without terminating anything

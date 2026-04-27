@@ -69,8 +69,9 @@ The single chromatic note. Amber is warm, rare in dark UIs, and reads as creativ
 | `--ds-color-glow` | `#f59e0b` | Active nav, idea index numbers, spark button bg, logo icon |
 | `--ds-color-glow-soft` | `rgba(245,158,11, 0.07)` | Active nav bg, hover tints for glow elements |
 | `--ds-color-glow-medium` | `rgba(245,158,11, 0.13)` | Stronger amber tint |
-| `--ds-color-glow-ring` | `rgba(245,158,11, 0.28)` | Focus rings, avatar ring, button glow shadow |
-| `--ds-color-glow-fg` | `#0a0a0a` | Text ON the spark button (dark text on amber) |
+| `--ds-color-glow-ring` | `rgba(245,158,11, 0.28)` | Focus rings — 2px solid amber ring on inputs and buttons |
+| `--ds-color-glow-shadow` | `rgba(245,158,11, 0.28)` dark / `rgba(192,96,0, 0.12)` light | Ambient glow on the spark button only. Kept separate from `--ds-color-glow-ring` so it can be tuned per theme without affecting focus ring visibility. |
+| `--ds-color-glow-fg` | `#0a0a0a` (dark) / `#111111` (light) | Text ON the spark button — always dark text on amber |
 
 ### Contrast rules
 
@@ -78,7 +79,8 @@ The single chromatic note. Amber is warm, rare in dark UIs, and reads as creativ
 - `--ds-color-text-muted` (#888) on `--ds-color-surface` (#1a1a1a): ~4.6:1 ✓
 - `--ds-color-text-soft` (#666) on `--ds-color-bg` (#111): ~4.6:1 ✓
 - `--ds-color-accent-fg` (#111) on `--ds-color-accent` (#fff): 18:1 ✓
-- `--ds-color-glow-fg` (#0a0a0a) on `--ds-color-glow` (#f59e0b): ~9:1 ✓
+- `--ds-color-glow-fg` (#0a0a0a) on `--ds-color-glow` (#f59e0b, dark): ~10:1 ✓
+- `--ds-color-glow-fg` (#111111) on `--ds-color-glow` (#c06000, light): ~5.2:1 ✓
 
 All functional text (dates, index numbers, status badges, tag chips) is set at `0.75rem` minimum (12px). Never go below 12px for text that conveys information.
 
@@ -213,6 +215,18 @@ auth-root (centered flex, full height, amber ambient glow)
 - `Logo` — `client/src/components/Logo.jsx` — includes amber Sparkles icon
 - `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter` — wrappers around `.surface-card`
 
+### About section (Settings page)
+
+A single `surface-card` at the bottom of `/settings`. Content that earns its place:
+
+- **App name + version** (top row, space-between) — useful for bug reports and version identification
+- **One-line description** — factual, not marketing (that belongs on the landing page)
+- **Made with + GitHub + copyright** — ownership metadata, quiet footer row
+
+The `Heart` icon from Lucide uses `--ds-color-glow` (amber) — the one controlled extension of the amber accent beyond CTAs/active states. It reads as warmth, not as a button or active indicator. Don't add other icon colors here.
+
+Text hierarchy: `text-sm/500` for name, `text-xs/muted` for description, `text-xs/soft` for footer row.
+
 ### Adding a new component
 
 1. Use `--ds-color-*` tokens for all colors
@@ -316,6 +330,26 @@ Auto-dismiss at 3 s. Position: top-right, z-index `--ds-z-toast` (60).
 
 **Never** use toasts for validation or auth errors — those are blocking and need inline treatment.
 **Never** use inline banners for success confirmations after navigation — use toasts.
+
+---
+
+## Tailwind v4 — cascade layer rule
+
+Tailwind v4 puts all utilities into `@layer utilities`. **Unlayered CSS beats all layered CSS** regardless of specificity. This means any global element rule written outside a `@layer` in `index.css` will silently override Tailwind utility classes on those elements.
+
+**The invariant:** Every global element selector in `index.css` that sets a property also set by Tailwind utilities must live inside `@layer base`:
+
+```css
+/* CORRECT */
+@layer base {
+  a { color: inherit; text-decoration: none; }
+}
+
+/* WRONG — overrides text-[var(--ds-color-glow-fg)] on <Link> components */
+a { color: inherit; }
+```
+
+The `*`, `html`, `body`, and `#root` rules in `index.css` are currently unlayered but don't conflict with utility classes in practice (no components apply Tailwind color utilities directly to those elements). If that ever changes, move them into `@layer base` too.
 
 ---
 

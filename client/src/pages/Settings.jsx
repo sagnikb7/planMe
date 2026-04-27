@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Moon, Sun, Check, Pencil, X } from 'lucide-react';
+import { Moon, Sun, Check, Pencil, X, Heart } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/context/toast-context';
 import { Loader } from '@/components/ui/loader';
@@ -212,6 +212,34 @@ export default function Settings() {
             />
           ))
         )}
+      </div>
+
+      <div className="surface-card px-4 py-4">
+        <div className="flex items-baseline justify-between mb-1">
+          <span className="text-sm font-medium text-[var(--ds-color-text)]">planMe</span>
+          <span className="text-xs text-[var(--ds-color-text-soft)] tabular-nums">v2.0.0</span>
+        </div>
+        <p className="text-xs text-[var(--ds-color-text-muted)] mb-3 leading-relaxed">
+          A focused space for capturing and developing your ideas.
+        </p>
+        <div className="flex items-center gap-1.5 flex-wrap text-xs text-[var(--ds-color-text-soft)]">
+          <span className="flex items-center gap-1">
+            Made with
+            <Heart className="w-3 h-3 text-[var(--ds-color-glow)]" aria-hidden="true" />
+            by sagnikbetal
+          </span>
+          <span aria-hidden="true" className="select-none">·</span>
+          <a
+            href="https://github.com/sagnikb7/planMe"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-2 hover:text-[var(--ds-color-text-muted)] transition-colors"
+          >
+            GitHub
+          </a>
+          <span aria-hidden="true" className="select-none">·</span>
+          <span>© 2026</span>
+        </div>
       </div>
     </div>
   );

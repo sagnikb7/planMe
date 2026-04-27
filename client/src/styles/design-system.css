@@ -32,6 +32,7 @@
   --ds-color-glow-soft: rgba(245, 158, 11, 0.07);
   --ds-color-glow-medium: rgba(245, 158, 11, 0.13);
   --ds-color-glow-ring: rgba(245, 158, 11, 0.28);
+  --ds-color-glow-shadow: rgba(245, 158, 11, 0.28);
   --ds-color-glow-fg: #0a0a0a;
 
   --ds-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -159,9 +160,9 @@
 }
 
 [data-theme="light"] .nav-shell {
-  background: rgba(247, 243, 238, 0.92);
-  border: 1px solid rgba(120, 90, 60, 0.10);
-  box-shadow: 0 4px 20px rgba(80, 50, 20, 0.08);
+  background: rgba(253, 246, 227, 0.92);
+  border: 1px solid rgba(101, 123, 131, 0.12);
+  box-shadow: 0 4px 20px rgba(7, 54, 66, 0.07);
 }
 
 /* ─── Surfaces ───────────────────────────────────────────────── */
@@ -1318,55 +1319,56 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  /* Warm parchment — cream backgrounds, amber undertones, no pure white */
-  --ds-color-bg: #f7f3ee;
-  --ds-color-bg-elevated: #efe9e1;
-  --ds-color-surface: #fdf9f5;
-  --ds-color-surface-strong: #ede7de;
-  --ds-color-text: #1c1410;
-  --ds-color-text-muted: #6b5e52;
-  --ds-color-text-soft: #8a7a6a;
-  --ds-color-border: rgba(120, 90, 60, 0.10);
-  --ds-color-border-strong: rgba(120, 90, 60, 0.16);
-  --ds-color-accent: #1c1410;
-  --ds-color-accent-hover: #3a2e26;
-  --ds-color-accent-fg: #fdf9f5;
-  --ds-color-accent-soft: rgba(120, 90, 60, 0.06);
-  --ds-color-danger: #b83030;
-  --ds-color-danger-soft: rgba(184, 48, 48, 0.09);
-  --ds-color-success: #2a6e4a;
-  --ds-color-success-soft: rgba(42, 110, 74, 0.09);
+  /* Solarized light — warm yellow-cream base, blue-grey text */
+  --ds-color-bg: #fdf6e3;
+  --ds-color-bg-elevated: #eee8d5;
+  --ds-color-surface: #fdf6e3;
+  --ds-color-surface-strong: #e8e0cc;
+  --ds-color-text: #073642;
+  --ds-color-text-muted: #586e75;
+  --ds-color-text-soft: #657b83;
+  --ds-color-border: rgba(101, 123, 131, 0.13);
+  --ds-color-border-strong: rgba(101, 123, 131, 0.22);
+  --ds-color-accent: #073642;
+  --ds-color-accent-hover: #0d4a5e;
+  --ds-color-accent-fg: #fdf6e3;
+  --ds-color-accent-soft: rgba(7, 54, 66, 0.06);
+  --ds-color-danger: #cb4b16;
+  --ds-color-danger-soft: rgba(203, 75, 22, 0.10);
+  --ds-color-success: #2a7a4f;
+  --ds-color-success-soft: rgba(42, 122, 79, 0.10);
 
-  /* Amber accent — deeper on warm backgrounds */
+  /* Amber accent — unchanged, pops well on solarized bg */
   --ds-color-glow: #c06000;
   --ds-color-glow-soft: rgba(192, 96, 0, 0.08);
-  --ds-color-glow-medium: rgba(192, 96, 0, 0.15);
-  --ds-color-glow-ring: rgba(192, 96, 0, 0.28);
-  --ds-color-glow-fg: #fdf9f5;
+  --ds-color-glow-medium: rgba(192, 96, 0, 0.16);
+  --ds-color-glow-ring: rgba(192, 96, 0, 0.30);
+  --ds-color-glow-shadow: rgba(192, 96, 0, 0.12);
+  --ds-color-glow-fg: #111111;
 
-  --ds-shadow-sm: 0 1px 3px rgba(80, 50, 20, 0.08);
-  --ds-shadow-md: 0 4px 12px rgba(80, 50, 20, 0.10);
-  --ds-shadow-lg: 0 8px 24px rgba(80, 50, 20, 0.12);
+  --ds-shadow-sm: 0 1px 3px rgba(7, 54, 66, 0.08);
+  --ds-shadow-md: 0 4px 12px rgba(7, 54, 66, 0.10);
+  --ds-shadow-lg: 0 8px 24px rgba(7, 54, 66, 0.12);
   --ds-shadow-focus: 0 0 0 2px var(--ds-color-glow-ring);
 
-  --ds-nav-bg: rgba(247, 243, 238, 0.94);
+  --ds-nav-bg: rgba(253, 246, 227, 0.94);
 }
 
 [data-theme="light"] .app-shell {
   background:
-    radial-gradient(ellipse 65% 40% at 10% 5%, rgba(192, 96, 0, 0.055) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 92% 90%, rgba(99, 102, 241, 0.025) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 40% at 10% 5%, rgba(192, 96, 0, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 92% 90%, rgba(38, 139, 210, 0.025) 0%, transparent 60%),
     var(--ds-color-bg);
 }
 
 [data-theme="light"] .surface-glass {
-  background: rgba(253, 249, 245, 0.7);
-  border: 1px solid rgba(120, 90, 60, 0.10);
+  background: rgba(253, 246, 227, 0.72);
+  border: 1px solid rgba(101, 123, 131, 0.12);
 }
 
 [data-theme="light"] .auth-card {
-  background: rgba(253, 249, 245, 0.88);
-  border: 1px solid rgba(120, 90, 60, 0.09);
+  background: rgba(238, 232, 213, 0.88);
+  border: 1px solid rgba(101, 123, 131, 0.12);
 }
 
 [data-theme="light"] .idea-row:hover {

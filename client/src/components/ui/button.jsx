@@ -11,7 +11,7 @@ const buttonVariants = cva(
           'bg-[var(--ds-color-accent)] text-[var(--ds-color-accent-fg)] hover:bg-[var(--ds-color-accent-hover)]',
         /* Amber CTA — primary creative action (capture, new idea) */
         spark:
-          'bg-[var(--ds-color-glow)] text-[var(--ds-color-glow-fg)] shadow-[0_0_18px_var(--ds-color-glow-ring)] hover:opacity-90 hover:shadow-[0_0_26px_var(--ds-color-glow-ring)]',
+          'bg-[var(--ds-color-glow)] text-[var(--ds-color-glow-fg)] shadow-[0_0_18px_var(--ds-color-glow-shadow)] hover:opacity-90 hover:shadow-[0_0_26px_var(--ds-color-glow-shadow)]',
         destructive:
           'bg-[var(--ds-color-danger)] text-white hover:opacity-90',
         outline:

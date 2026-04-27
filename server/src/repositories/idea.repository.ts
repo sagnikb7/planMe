@@ -3,6 +3,10 @@ import { IdeaModel, IIdea, IdeaStatus } from '../models/idea.model';
 import type { CreateIdeaInput, UpdateIdeaInput } from '../schemas/idea.schema';
 
 export class IdeaRepository {
+  async countByUser(userId: Types.ObjectId): Promise<number> {
+    return IdeaModel.countDocuments({ user: userId });
+  }
+
   async findAllByUser(userId: Types.ObjectId): Promise<IIdea[]> {
     return IdeaModel.find({ user: userId }).sort({ sortOrder: 1, createdAt: -1 }).lean() as unknown as Promise<IIdea[]>;
   }

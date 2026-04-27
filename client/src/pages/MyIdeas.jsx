@@ -13,7 +13,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import api from '@/lib/api';
-import { SORT_OPTIONS, SEARCH_MIN_LENGTH } from '@/lib/constants';
+import { SORT_OPTIONS, SEARCH_MIN_LENGTH, IDEA_LIMIT } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader } from '@/components/ui/loader';
@@ -276,6 +276,7 @@ export default function MyIdeas() {
     });
 
   const archivedCount = ideas.filter((i) => i.status === 'archived').length;
+  const atIdeaLimit = ideas.length >= IDEA_LIMIT;
 
   const handleDragStart = ({ active }) => setActiveId(active.id);
 
@@ -338,24 +339,38 @@ export default function MyIdeas() {
             {showArchived ? 'Hide archived' : `${archivedCount} archived`}
           </button>
         )}
-        <Button asChild variant="spark" size="sm">
-          <Link to="/ideas/add">
+        {atIdeaLimit ? (
+          <Button variant="spark" size="sm" disabled title={`Idea limit of ${IDEA_LIMIT} reached`}>
             <Plus className="w-3.5 h-3.5" />
             New idea
-          </Link>
-        </Button>
+          </Button>
+        ) : (
+          <Button asChild variant="spark" size="sm">
+            <Link to="/ideas/add">
+              <Plus className="w-3.5 h-3.5" />
+              New idea
+            </Link>
+          </Button>
+        )}
       </div>
 
       {ideas.filter((i) => i.status !== 'archived').length === 0 && !showArchived ? (
         <div className="ideas-empty">
           <Lightbulb className="ideas-empty-icon h-8 w-8" />
           <p className="ideas-empty-text">Nothing captured yet. Your next big idea starts here.</p>
-          <Button asChild variant="spark">
-            <Link to="/ideas/add">
+          {atIdeaLimit ? (
+            <Button variant="spark" disabled title={`Idea limit of ${IDEA_LIMIT} reached`}>
               <Plus className="w-4 h-4" />
               Capture your first idea
-            </Link>
-          </Button>
+            </Button>
+          ) : (
+            <Button asChild variant="spark">
+              <Link to="/ideas/add">
+                <Plus className="w-4 h-4" />
+                Capture your first idea
+              </Link>
+            </Button>
+          )}
         </div>
       ) : (
         <>

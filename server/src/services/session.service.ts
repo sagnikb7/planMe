@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import { userSessionRepository } from '../repositories/user-session.repository';
 import type { IUserSession } from '../models/user-session.model';
+import { lookupLocation } from '../utils/geo';
 
 export interface SessionInfo {
   id: string;
@@ -16,7 +17,7 @@ function toSessionInfo(doc: IUserSession, currentSessionId: string | undefined):
     id: String(doc._id),
     ip: doc.ip,
     device: doc.device,
-    location: 'Unknown location',
+    location: lookupLocation(doc.ip),
     createdAt: doc.createdAt.toISOString(),
     isCurrent: !!currentSessionId && doc.sessionId === currentSessionId,
   };

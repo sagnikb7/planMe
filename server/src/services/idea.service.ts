@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import { ideaRepository } from '../repositories/idea.repository';
 import type { CreateIdeaInput, UpdateIdeaInput } from '../schemas/idea.schema';
 import type { IdeaStatus } from '../models/idea.model';
-import { WORKSPACE_MAX_TAGS } from '../constants';
+import { WORKSPACE_MAX_TAGS, IDEA_LIMIT } from '../constants';
 import { AppError } from '../utils/errors';
 
 export class IdeaService {
@@ -33,6 +33,10 @@ export class IdeaService {
   }
 
   async create(data: CreateIdeaInput, userId: Types.ObjectId) {
+    const count = await ideaRepository.countByUser(userId);
+    if (count >= IDEA_LIMIT) {
+      throw new AppError(400, `Idea limit of ${IDEA_LIMIT} reached. Delete some ideas to make room.`);
+    }
     await this.enforceWorkspaceTagLimit(data.tags, userId);
     const maxOrder = await ideaRepository.getMaxSortOrder(userId);
     return ideaRepository.create(data, userId, maxOrder + 1);

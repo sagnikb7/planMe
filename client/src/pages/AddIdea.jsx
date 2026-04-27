@@ -50,8 +50,8 @@ export default function AddIdea() {
       await api.post('/ideas', { ...data, details, tags, status: 'draft' });
       toast('Idea saved');
       navigate('/ideas');
-    } catch {
-      setError('root', { message: 'Failed to save idea' });
+    } catch (err) {
+      setError('root', { message: err.response?.data?.error || 'Failed to save idea' });
     }
   };
 

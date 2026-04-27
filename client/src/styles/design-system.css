@@ -331,9 +331,7 @@
 .landing-hero {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 72vh;
-  padding: clamp(3rem, 8vh, 6rem) 2rem 2.5rem;
+  padding: clamp(3rem, 6vh, 5rem) 2rem 2.5rem;
   max-width: 52rem;
   margin: 0 auto;
   width: 100%;
@@ -399,7 +397,7 @@
 
 /* Feature cards section */
 .landing-features {
-  padding: clamp(2.5rem, 5vh, 4.5rem) 2rem clamp(3rem, 6vh, 5rem);
+  padding: clamp(1.5rem, 3vh, 2.5rem) 2rem clamp(2.5rem, 5vh, 4rem);
   max-width: 60rem;
   margin: 0 auto;
   width: 100%;
@@ -496,8 +494,7 @@
 .landing-scroll-cue {
   display: flex;
   justify-content: center;
-  margin-top: auto;
-  padding-top: 2.5rem;
+  padding-top: 2rem;
   color: var(--ds-color-text-soft);
   animation: landing-scroll-bounce 2.2s ease-in-out infinite;
 }

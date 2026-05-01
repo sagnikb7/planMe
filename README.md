@@ -233,6 +233,19 @@ Vite content-hashes all output filenames. The service worker precache manifest r
 
 ---
 
+## Mobile / PWA
+
+planMe is a full PWA with a native-feeling mobile experience:
+
+- **Install prompt** — `display: standalone` in the manifest. Add to home screen on iOS and Android.
+- **Safe area** — `viewport-fit=cover` + `env(safe-area-inset-bottom)` so the floating nav clears the iPhone home indicator and Dynamic Island.
+- **Auto-hiding nav** — the bottom nav slides off screen when scrolling down and reappears on scroll-up, recovering ~64px of vertical space. Always visible at the top and bottom of a page, and resets on every route change.
+- **Snackbar toasts** — on mobile (≤ 767px) toasts appear bottom-center above the nav instead of top-right. Tap anywhere on the toast to dismiss. Desktop keeps top-right.
+- **Swipe to archive** — swipe an idea row left (≥ 72px, horizontally dominant) to archive it. **Haptic feedback fires on Android** via `navigator.vibrate(10)` — a short 10 ms pulse. iOS Safari does not implement `vibrate`; the call is a silent no-op there.
+- **Apple PWA meta tags** — `apple-mobile-web-app-capable` + `apple-mobile-web-app-status-bar-style: black-translucent` for correct iOS standalone behaviour.
+
+---
+
 ## Design system
 
 Single dark-first design token set in `design-system.css`. One chromatic accent: amber (`--ds-color-glow: #f59e0b`) — active nav, focus rings, tag chips, CTAs only. Light theme supported via `[data-theme="light"]`. Never use raw hex in component files — always reference a token.

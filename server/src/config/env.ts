@@ -25,4 +25,13 @@ export const env = {
     pass: process.env.SMTP_PASS || '',
     from: process.env.SMTP_FROM || 'noreply@planme.app',
   },
+  google: {
+    clientId:     process.env.GOOGLE_CLIENT_ID      || '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET  || '',
+    callbackUrl:  process.env.GOOGLE_CALLBACK_URL   || 'http://localhost:5001/api/auth/google/callback',
+  },
+  auth: {
+    localEnabled:  process.env.AUTH_LOCAL_ENABLED  !== 'false',
+    googleEnabled: process.env.AUTH_GOOGLE_ENABLED !== 'false',
+  },
 } as const;

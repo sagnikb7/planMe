@@ -20,6 +20,18 @@ import { REMEMBER_ME_MAX_AGE_MS } from '../constants';
 
 const router = Router();
 
+// Strategy switches — set AUTH_LOCAL_ENABLED=false or AUTH_GOOGLE_ENABLED=false in .env to disable
+if (!env.auth.localEnabled) {
+  for (const path of ['/register', '/login', '/forgot-password', '/reset-password', '/change-password']) {
+    router.all(path, (_req, res) => res.status(503).json({ error: 'Local auth is disabled' }));
+  }
+}
+if (!env.auth.googleEnabled) {
+  for (const path of ['/google', '/google/callback']) {
+    router.all(path, (_req, res) => res.status(503).json({ error: 'Google auth is disabled' }));
+  }
+}
+
 const GENERIC_RESET_RESPONSE = {
   message: 'If an account exists for that email, a reset link has been generated.',
 };
@@ -183,5 +195,50 @@ router.delete('/me', ensureAuthenticated, async (req, res, next) => {
     res.status(500).json({ error: 'Failed to delete account' });
   }
 });
+
+router.get('/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+router.get('/google/callback',
+  passport.authenticate('google', { session: false, failureRedirect: '/login?error=google' }),
+  async (req, res, next) => {
+    const user = req.user as Express.User & { _id: Types.ObjectId };
+    const userId = user._id;
+    try {
+      const activeCount = await sessionService.countActiveSessions(userId);
+
+      if (activeCount >= env.maxSessionsPerUser) {
+        return req.session.regenerate(async (err) => {
+          if (err) return next(err);
+          try {
+            req.session.pendingUserId = userId.toString();
+            await sessionService.createSession({
+              userId, sessionId: req.session.id,
+              ip: getClientIp(req), userAgent: req.headers['user-agent'] || '',
+              device: parseUserAgent(req.headers['user-agent']), isPending: true,
+            });
+            res.redirect('/session-limit');
+          } catch (e) { next(e); }
+        });
+      }
+
+      req.session.regenerate((err) => {
+        if (err) return next(err);
+        req.logIn(user, async (loginErr) => {
+          if (loginErr) return next(loginErr);
+          try {
+            await sessionService.createSession({
+              userId, sessionId: req.session.id,
+              ip: getClientIp(req), userAgent: req.headers['user-agent'] || '',
+              device: parseUserAgent(req.headers['user-agent']), isPending: false,
+            });
+            res.redirect('/ideas');
+          } catch (e) { next(e); }
+        });
+      });
+    } catch (e) { next(e); }
+  }
+);
 
 export default router;

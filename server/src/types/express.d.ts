@@ -6,6 +6,8 @@ declare global {
       _id: Types.ObjectId;
       name: string;
       email: string;
+      authProvider?: 'local' | 'google';
+      hasPassword?: boolean;
       createdAt?: Date;
     }
   }

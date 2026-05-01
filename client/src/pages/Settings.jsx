@@ -158,7 +158,7 @@ function TagRow({ entry, allTags, onRenamed }) {
 export default function Settings() {
   const { theme, setTheme } = useTheme();
   const toast = useToast();
-  const { deleteAccount } = useAuth();
+  const { user, deleteAccount } = useAuth();
   const navigate = useNavigate();
   const [tags, setTags] = useState([]);
   const [tagsLoading, setTagsLoading] = useState(true);
@@ -389,7 +389,8 @@ export default function Settings() {
       <div className="space-y-2">
         <SectionLabel>Account</SectionLabel>
         <div className="surface-card divide-y divide-[var(--ds-color-border)]">
-          {/* Change password */}
+          {/* Change password — hidden for Google-only accounts */}
+          {user?.hasPassword && (
           <div className="px-4 py-4">
             <p className="text-sm font-medium text-[var(--ds-color-text)]">Change password</p>
             <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">Enter your current password, then choose a new one.</p>
@@ -424,6 +425,7 @@ export default function Settings() {
               </button>
             </form>
           </div>
+          )}
 
           {/* Delete account */}
           <div className="flex items-center justify-between px-4 py-4">

@@ -9,9 +9,9 @@ import { RESET_TOKEN_TTL_MS, BCRYPT_ROUNDS } from '../constants';
 import { sendPasswordResetEmail, isSmtpConfigured } from '../utils/email';
 import logger from '../utils/logger';
 
-function sanitizeUser(user: { _id: unknown; name: string; email: string; createdAt?: Date; password?: string; resetPasswordTokenHash?: unknown; resetPasswordExpiresAt?: unknown }) {
-  const { password: _p, resetPasswordTokenHash: _t, resetPasswordExpiresAt: _e, ...safe } = user;
-  return safe;
+function sanitizeUser(user: { _id: unknown; name: string; email: string; authProvider?: 'local' | 'google'; createdAt?: Date; password?: string | null; googleId?: string | null; resetPasswordTokenHash?: unknown; resetPasswordExpiresAt?: unknown }) {
+  const { password: _p, googleId: _g, resetPasswordTokenHash: _t, resetPasswordExpiresAt: _e, ...safe } = user;
+  return { ...safe, hasPassword: !!_p };
 }
 
 export class AuthService {
@@ -27,6 +27,7 @@ export class AuthService {
   async forgotPassword(email: string, baseUrl: string): Promise<{ resetUrl?: string }> {
     const user = await userRepository.findByEmail(email.toLowerCase());
     if (!user) return {};
+    if (!user.password) return {}; // Google-only account — nothing to reset
 
     const token = crypto.randomBytes(32).toString('hex');
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
@@ -69,6 +70,7 @@ export class AuthService {
   async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
     const user = await userRepository.findById(userId);
     if (!user) throw new ValidationError('User not found');
+    if (!user.password) throw new ValidationError('No password set on this account');
     const valid = await bcrypt.compare(currentPassword, user.password);
     if (!valid) throw new ValidationError('Current password is incorrect');
     const hashed = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);

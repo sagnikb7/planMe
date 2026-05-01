@@ -5,28 +5,33 @@
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(ellipse 55% 40% at 50% 80%, rgba(245, 158, 11, 0.04) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(245, 158, 11, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 0%, rgba(245, 158, 11, 0.03) 0%, transparent 70%),
     var(--ds-color-bg);
   padding: 2rem 1.25rem;
 }
 
-.auth-logo {
-  font-size: 1.5rem;
-  margin-bottom: 2rem;
-  line-height: 1;
-}
-
 .auth-card {
   width: 100%;
-  max-width: 22rem;
-  background: rgba(22, 22, 22, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: var(--ds-radius-md);
-  padding: 1.75rem;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  max-width: 26rem;
+  background: rgba(22, 22, 22, 0.80);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--ds-radius-lg);
+  padding: 2rem;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 0 0 1px rgba(245, 158, 11, 0.04),
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.05) inset;
   animation: ds-fade-up 0.28s ease-out both;
   animation-delay: 0.06s;
+}
+
+.auth-card-divider {
+  height: 1px;
+  background: var(--ds-color-border);
+  margin: 1.25rem 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -34,6 +39,9 @@
 }
 
 [data-theme="light"] .auth-card {
-  background: rgba(238, 232, 213, 0.88);
-  border: 1px solid rgba(101, 123, 131, 0.12);
+  background: rgba(238, 232, 213, 0.92);
+  border: 1px solid rgba(101, 123, 131, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(245, 158, 11, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.1);
 }

@@ -13,6 +13,18 @@ export class UserRepository {
     return UserModel.create(data);
   }
 
+  async findByGoogleId(googleId: string): Promise<IUser | null> {
+    return UserModel.findOne({ googleId }).lean() as Promise<IUser | null>;
+  }
+
+  async attachGoogleId(userId: string, googleId: string): Promise<void> {
+    await UserModel.findByIdAndUpdate(userId, { googleId });
+  }
+
+  async createGoogleUser(data: { name: string; email: string; googleId: string }): Promise<IUser> {
+    return UserModel.create({ ...data, password: null, authProvider: 'google' });
+  }
+
   async findByResetToken(tokenHash: string): Promise<IUser | null> {
     return UserModel.findOne({
       resetPasswordTokenHash: tokenHash,

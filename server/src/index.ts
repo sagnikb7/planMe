@@ -17,9 +17,10 @@ async function startServer(): Promise<void> {
     await connectToDatabase(env.mongoUri);
     logger.info({ mongoUri: env.mongoUri.replace(/:\/\/.*@/, '://<redacted>@') }, 'MongoDB connected');
 
-    server.listen(env.port, () =>
-      logger.info({ port: env.port, env: env.isProd ? 'production' : 'development' }, 'HTTP server listening'),
-    );
+    server.listen(env.port, () => {
+      logger.info({ port: env.port, env: env.isProd ? 'production' : 'development' }, 'HTTP server listening');
+      console.log(`Server started at http://localhost:${env.port}`);
+    });
   } catch (err) {
     logger.error({ errorName: (err as Error).name, errorMessage: (err as Error).message }, 'Database connection failed');
     process.exit(1);

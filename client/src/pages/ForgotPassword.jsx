@@ -34,16 +34,18 @@ export default function ForgotPassword() {
 
   return (
     <div className="auth-root">
-      <div className="mb-8 flex flex-col items-center gap-2 text-center">
-        <Logo className="text-xl" />
+      <div className="auth-card">
+        <div className="mb-1 flex items-center gap-2">
+          <Logo className="text-lg" />
+        </div>
         <p className="text-xs tracking-wide text-[var(--ds-color-text-muted)]">
           Where sparks become plans.
         </p>
-      </div>
 
-      <div className="auth-card">
-        <h1 className="mb-1 text-base font-semibold text-[var(--ds-color-text)]">Reset password</h1>
-        <p className="mb-6 text-sm text-[var(--ds-color-text-muted)]">
+        <div className="auth-card-divider" />
+
+        <h1 className="mb-0.5 text-xl font-semibold text-[var(--ds-color-text)]">Reset password</h1>
+        <p className="mb-5 text-sm text-[var(--ds-color-text-muted)]">
           Enter your email to receive a reset link.
         </p>
 

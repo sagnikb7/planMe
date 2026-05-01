@@ -70,6 +70,12 @@ describe('forgotPassword', () => {
     expect(userRepository.setResetToken).not.toHaveBeenCalled();
   });
 
+  it('returns {} and skips DB for Google-only account (no password)', async () => {
+    vi.mocked(userRepository.findByEmail).mockResolvedValue({ ...mockUser, password: null } as never);
+    expect(await authService.forgotPassword('alice@example.com', 'http://localhost:5173')).toEqual({});
+    expect(userRepository.setResetToken).not.toHaveBeenCalled();
+  });
+
   it('stores token hash in DB for known email', async () => {
     vi.mocked(userRepository.findByEmail).mockResolvedValue(mockUser as never);
     vi.mocked(userRepository.setResetToken).mockResolvedValue(undefined as never);
@@ -129,6 +135,12 @@ describe('changePassword', () => {
     await expect(authService.changePassword('id', 'old', 'NewPass1!')).rejects.toThrow(ValidationError);
   });
 
+  it('throws ValidationError for Google-only account (no password)', async () => {
+    vi.mocked(userRepository.findById).mockResolvedValue({ ...mockUser, password: null } as never);
+    await expect(authService.changePassword('id', 'anything', 'NewPass1!')).rejects.toThrow(ValidationError);
+    expect(userRepository.updatePassword).not.toHaveBeenCalled();
+  });
+
   it('throws ValidationError when current password is wrong', async () => {
     const hashed = await bcrypt.hash('correct', 4);
     vi.mocked(userRepository.findById).mockResolvedValue({ ...mockUser, password: hashed } as never);
@@ -158,21 +170,39 @@ describe('deleteAccount', () => {
 });
 
 describe('sanitize', () => {
-  it('strips password and reset token fields', () => {
+  it('strips password, googleId, and reset token fields; computes hasPassword', () => {
     const raw = {
       _id: oid,
       name: 'Alice',
       email: 'a@b.com',
       createdAt: new Date(),
       password: 'secret',
+      googleId: 'g-123',
       resetPasswordTokenHash: 'hash',
       resetPasswordExpiresAt: new Date(),
     };
     const safe = authService.sanitize(raw);
     expect((safe as Record<string, unknown>).password).toBeUndefined();
+    expect((safe as Record<string, unknown>).googleId).toBeUndefined();
     expect((safe as Record<string, unknown>).resetPasswordTokenHash).toBeUndefined();
     expect((safe as Record<string, unknown>).resetPasswordExpiresAt).toBeUndefined();
     expect(safe.name).toBe('Alice');
     expect(safe.email).toBe('a@b.com');
+    expect(safe.hasPassword).toBe(true);
+  });
+
+  it('returns hasPassword: false when password is null (Google-only account)', () => {
+    const raw = {
+      _id: oid,
+      name: 'Bob',
+      email: 'b@b.com',
+      password: null,
+      googleId: 'g-456',
+      resetPasswordTokenHash: null,
+      resetPasswordExpiresAt: null,
+    };
+    const safe = authService.sanitize(raw);
+    expect(safe.hasPassword).toBe(false);
+    expect((safe as Record<string, unknown>).googleId).toBeUndefined();
   });
 });

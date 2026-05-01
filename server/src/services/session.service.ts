@@ -44,17 +44,17 @@ export class SessionService {
     return docs.map((doc) => toSessionInfo(doc, currentSessionId));
   }
 
+  async findSession(id: string, userId: Types.ObjectId): Promise<IUserSession | null> {
+    return userSessionRepository.findByIdAndUser(id, userId);
+  }
+
   /**
    * Terminate a session by its opaque UserSession._id.
-   * Returns the raw express sessionId so the caller can destroy it from the store.
    * Returns null if not found or not owned by userId.
    */
-  async terminateSession(id: string, userId: Types.ObjectId): Promise<string | null> {
+  async terminateSession(id: string, userId: Types.ObjectId): Promise<void> {
     const doc = await userSessionRepository.findByIdAndUser(id, userId);
-    if (!doc) return null;
-    const rawSessionId = doc.sessionId;
-    await userSessionRepository.deleteById(doc._id);
-    return rawSessionId;
+    if (doc) await userSessionRepository.deleteById(doc._id);
   }
 
   async deleteBySessionId(sessionId: string): Promise<void> {

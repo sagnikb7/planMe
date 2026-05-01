@@ -83,17 +83,16 @@ describe('listSessions', () => {
 });
 
 describe('terminateSession', () => {
-  it('returns null when session not found', async () => {
+  it('does nothing when session not found', async () => {
     vi.mocked(userSessionRepository.findByIdAndUser).mockResolvedValue(null);
-    expect(await sessionService.terminateSession('nonexistent', userId)).toBeNull();
+    await sessionService.terminateSession('nonexistent', userId);
     expect(userSessionRepository.deleteById).not.toHaveBeenCalled();
   });
 
-  it('deletes the doc and returns the raw express sessionId', async () => {
+  it('deletes the doc when found', async () => {
     vi.mocked(userSessionRepository.findByIdAndUser).mockResolvedValue(mockDoc as never);
     vi.mocked(userSessionRepository.deleteById).mockResolvedValue(undefined as never);
-    const result = await sessionService.terminateSession(docId.toString(), userId);
-    expect(result).toBe('express-session-id');
+    await sessionService.terminateSession(docId.toString(), userId);
     expect(userSessionRepository.deleteById).toHaveBeenCalledWith(docId);
   });
 });

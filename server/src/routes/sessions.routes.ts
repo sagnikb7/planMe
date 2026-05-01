@@ -24,20 +24,23 @@ router.get('/', ensureAuthOrPending, async (req, res) => {
 router.delete('/:id', ensureAuthOrPending, async (req, res) => {
   try {
     const userId = getRequestUserId(req);
-    const rawSessionId = await sessionService.terminateSession(req.params.id as string, userId);
 
-    if (!rawSessionId) {
+    // Resolve the raw session ID first so we can guard before mutating anything
+    const targetSession = await sessionService.findSession(req.params.id as string, userId);
+    if (!targetSession) {
       return res.status(404).json({ error: 'Session not found' });
     }
 
     // Prevent terminating the current session (use logout for that)
-    if (req.isAuthenticated() && rawSessionId === req.session.id) {
+    if (req.isAuthenticated() && targetSession.sessionId === req.session.id) {
       return res.status(400).json({ error: 'Use logout to end your current session' });
     }
 
+    await sessionService.terminateSession(req.params.id as string, userId);
+
     // Destroy the express session from the store so it stops working immediately
     await new Promise<void>((resolve) => {
-      req.sessionStore.destroy(rawSessionId, () => resolve());
+      req.sessionStore.destroy(targetSession.sessionId, () => resolve());
     });
 
     res.json({ ok: true });

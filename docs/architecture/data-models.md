@@ -9,12 +9,14 @@ Collection: users
 | `_id` | ObjectId | |
 | `name` | String | required |
 | `email` | String | required, unique, lowercase |
-| `password` | String | bcrypt hash, BCRYPT_ROUNDS=12 |
+| `password` | String\|null | bcrypt hash (BCRYPT_ROUNDS=12); null for Google-only accounts |
+| `googleId` | String (optional) | Google profile ID; sparse unique index; absent for local accounts |
+| `authProvider` | `'local'`\|`'google'` | default `'local'` |
 | `resetPasswordTokenHash` | String\|null | SHA-256 of raw token |
 | `resetPasswordExpiresAt` | Date\|null | 2hr TTL |
 | `createdAt` / `updatedAt` | Date | auto (timestamps) |
 
-Sanitized response strips: `password`, `resetPasswordTokenHash`, `resetPasswordExpiresAt`.
+Sanitized response strips: `password`, `googleId`, `resetPasswordTokenHash`, `resetPasswordExpiresAt`. Adds `hasPassword: boolean`.
 
 ---
 

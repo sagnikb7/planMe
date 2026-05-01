@@ -108,6 +108,23 @@ Format: `[date] scope — description`
 
 ---
 
+## 2026-05-01 (security + Google OAuth)
+
+### Security hardening
+- **[HIGH fixed]** `app.set('trust proxy', 1)` moved before all middleware — rate limiters now see real client IPs in production (`app.ts`)
+- **[MEDIUM fixed]** `deserializeUser` uses `.select()` projection — `password`, `googleId`, `resetPasswordTokenHash`, `resetPasswordExpiresAt` are never loaded into `req.user` (`passport.ts`)
+- **[MEDIUM fixed]** Session self-delete TOCTOU in `DELETE /api/sessions/:id` — guard checks current session ID before `terminateSession` mutates DB (`sessions.routes.ts`, `session.service.ts`)
+- **[MEDIUM fixed]** Body size limits: `express.json({ limit: '64kb' })`, `urlencoded({ limit: '16kb' })` (`app.ts`)
+
+### Google OAuth
+- Added `passport-google-oauth20` strategy with account linking by email for existing local users
+- `AUTH_LOCAL_ENABLED` / `AUTH_GOOGLE_ENABLED` env switches — set `false` to disable a strategy; disabled routes return `503`
+- User model: `googleId` (sparse unique, absent for local users), `authProvider: 'local'|'google'`, `password` now nullable
+- `sanitizeUser` strips `googleId`; adds `hasPassword: boolean` to all `/me` responses
+- Server startup now logs `http://localhost:PORT` to stdout
+
+---
+
 ## Prior (from git log)
 | Commit | Summary |
 |---|---|

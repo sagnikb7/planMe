@@ -69,6 +69,10 @@ export function createApp({
 
   const app = express();
   app.disable('x-powered-by');
+
+  // Must be set before any middleware that reads req.ip (rate limiters, logging)
+  if (isProd) app.set('trust proxy', 1);
+
   app.use(securityHeaders(isProd, clientOrigin));
 
   if (enableHttpLogs) {
@@ -76,8 +80,8 @@ export function createApp({
   }
 
   app.use(cors({ origin: isProd ? false : clientOrigin, credentials: true }));
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: false }));
+  app.use(express.json({ limit: '64kb' }));
+  app.use(express.urlencoded({ extended: false, limit: '16kb' }));
 
   app.use(session({
     name: 'connect.sid',
@@ -103,7 +107,6 @@ export function createApp({
   app.use('/api/health', healthRouter);
 
   if (isProd) {
-    app.set('trust proxy', 1);
     const clientDist = path.join(__dirname, '../../client/dist');
     app.use(express.static(clientDist));
     app.get('*', (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));

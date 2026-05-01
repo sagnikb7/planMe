@@ -59,7 +59,9 @@ export function configurePassport(passport: PassportStatic): void {
 
   passport.deserializeUser(async (id, done) => {
     try {
-      const user = await UserModel.findById(id).lean();
+      const user = await UserModel.findById(id)
+        .select('-password -resetPasswordTokenHash -resetPasswordExpiresAt -googleId')
+        .lean();
       done(null, user as Express.User);
     } catch (err) {
       done(err);

@@ -66,3 +66,19 @@
 ## GET /me
 - Returns sanitized user from `req.user` (Passport session)
 - 401 if not authenticated (no redirect)
+
+---
+
+## Google OAuth — Login / Register
+1. GET `/api/auth/google` → redirects to Google consent screen
+2. Google redirects to GET `/api/auth/google/callback`
+3. Passport verifies the OAuth token with Google
+4. **Account resolution** (in order):
+   - Find existing user by `googleId` → use it
+   - Find existing user by email → attach `googleId`, use it (account link)
+   - No match → create new user (`authProvider: 'google'`, `password: null`)
+5. **Session limit check** → same flow as local login (pending state / resolve)
+6. `session.regenerate()` + `req.logIn(user)` → create `UserSession` record
+7. Redirect to `/ideas` (success) or `/login?error=google` (failure)
+
+**Disabled strategies**: set `AUTH_LOCAL_ENABLED=false` or `AUTH_GOOGLE_ENABLED=false` in `.env` to disable a strategy. Disabled routes return `503`.

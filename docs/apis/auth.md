@@ -60,8 +60,24 @@ All endpoints validated with Zod. Rate limits skip in `NODE_ENV=test`.
 
 ---
 
+## GET /google
+- Redirects to Google OAuth consent screen
+- Requires `AUTH_GOOGLE_ENABLED=true` (default); returns 503 if disabled
+
+## GET /google/callback
+- OAuth redirect target; handled by Passport
+- On success: redirects to `/ideas`
+- On failure: redirects to `/login?error=google`
+- Applies session-limit flow same as local login
+
+---
+
 ## SanitizedUser shape
 ```ts
-{ _id, name, email, createdAt, updatedAt }
-// stripped: password, resetPasswordTokenHash, resetPasswordExpiresAt
+{
+  _id, name, email, authProvider: 'local' | 'google',
+  hasPassword: boolean,   // false for Google-only accounts
+  createdAt, updatedAt
+}
+// stripped: password, googleId, resetPasswordTokenHash, resetPasswordExpiresAt
 ```

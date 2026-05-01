@@ -14,8 +14,8 @@ A private idea workspace. Capture thoughts, tag them, and come back to the ones 
 | Rich text | Tiptap v3 (StarterKit + task lists) |
 | Offline | Dexie.js (IndexedDB), Workbox (service worker, runtime cache) |
 | Forms | React Hook Form, Zod v4 |
-| Backend | Express 4, TypeScript strict, Passport.js local strategy |
-| Auth | express-session, connect-mongo, express-rate-limit |
+| Backend | Express 4, TypeScript strict, Passport.js (local + Google OAuth) |
+| Auth | express-session, connect-mongo, express-rate-limit, passport-google-oauth20 |
 | Database | MongoDB via Mongoose 8 |
 | Logging | Pino + pino-http |
 | Testing | Vitest (unit + integration, server), Vitest + fake-indexeddb (client) |
@@ -108,6 +108,15 @@ SMTP_PASS=
 SMTP_FROM=noreply@planme.app
 
 CLIENT_ORIGIN=http://localhost:5173
+
+# Auth strategy switches (set to "false" to disable)
+AUTH_LOCAL_ENABLED=true
+AUTH_GOOGLE_ENABLED=true
+
+# Google OAuth (leave blank if AUTH_GOOGLE_ENABLED=false)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CALLBACK_URL=http://localhost:5001/api/auth/google/callback
 ```
 
 ---
@@ -156,8 +165,10 @@ planMe/
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| POST | `/register` | — | 10 req/hr · password: 8+ chars, uppercase, number, symbol |
-| POST | `/login` | — | 20 req/15 min · returns session cookie · accepts `rememberMe: boolean` |
+| POST | `/register` | — | 10 req/hr · password: 8+ chars, uppercase, number, symbol · local auth only |
+| POST | `/login` | — | 20 req/15 min · returns session cookie · accepts `rememberMe: boolean` · local auth only |
+| GET | `/google` | — | Redirect to Google OAuth consent |
+| GET | `/google/callback` | — | OAuth callback → redirect to `/ideas` or `/login?error=google` |
 | POST | `/logout` | ✓ | Destroys session |
 | GET | `/me` | ✓ | Current user (sanitized) |
 | PATCH | `/me` | ✓ | Update display name |

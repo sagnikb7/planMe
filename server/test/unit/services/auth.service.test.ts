@@ -2,14 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-const mockEnv = vi.hoisted(() => ({
-  isProd: false,
-  clientOrigin: 'http://localhost:5173',
-  smtp: { host: '', port: 587, user: '', pass: '', from: 'noreply@planme.app' },
-}));
-
-vi.mock('../../../src/config/env', () => ({ env: mockEnv }));
-
 // Use cheap rounds so bcrypt doesn't slow down unit tests
 vi.mock('../../../src/constants', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/constants')>();
@@ -94,7 +86,7 @@ describe('forgotPassword', () => {
   });
 
   it('sends email and returns {} in production', async () => {
-    mockEnv.isProd = true;
+    vi.stubEnv('NODE_ENV', 'production');
     vi.mocked(isSmtpConfigured).mockReturnValue(true);
     vi.mocked(userRepository.findByEmail).mockResolvedValue(mockUser as never);
     vi.mocked(userRepository.setResetToken).mockResolvedValue(undefined as never);
@@ -102,7 +94,7 @@ describe('forgotPassword', () => {
     expect(await authService.forgotPassword('alice@example.com')).toEqual({});
     expect(sendPasswordResetEmail).toHaveBeenCalledOnce();
     vi.mocked(isSmtpConfigured).mockReturnValue(false);
-    mockEnv.isProd = false;
+    vi.unstubAllEnvs();
   });
 });
 

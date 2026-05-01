@@ -49,7 +49,7 @@ export class AuthService {
 
     // Always include resetUrl in non-production environments so developers
     // can test the flow without a real inbox (and without SMTP configured).
-    if (env.isProd) return {};
+    if (process.env.NODE_ENV === 'production') return {};
     return { resetUrl };
   }
 

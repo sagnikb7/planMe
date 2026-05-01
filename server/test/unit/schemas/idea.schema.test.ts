@@ -3,9 +3,11 @@ import {
   tagSchema,
   createIdeaSchema,
   patchIdeaStatusSchema,
+  patchIdeaPinSchema,
   reorderIdeasSchema,
   renameTagSchema,
 } from '../../../src/schemas/idea.schema';
+import { DETAILS_MAX_LENGTH, TITLE_MAX_LENGTH } from '../../../src/constants';
 
 const VALID_OID = '507f1f77bcf86cd799439011';
 
@@ -50,6 +52,24 @@ describe('tagSchema', () => {
 
   it('accepts alphanumeric only', () => {
     expect(tagSchema.safeParse('tag123').success).toBe(true);
+  });
+});
+
+describe('patchIdeaPinSchema', () => {
+  it('accepts pinned: true', () => {
+    expect(patchIdeaPinSchema.safeParse({ pinned: true }).success).toBe(true);
+  });
+
+  it('accepts pinned: false', () => {
+    expect(patchIdeaPinSchema.safeParse({ pinned: false }).success).toBe(true);
+  });
+
+  it('rejects a string value', () => {
+    expect(patchIdeaPinSchema.safeParse({ pinned: 'yes' }).success).toBe(false);
+  });
+
+  it('rejects missing pinned field', () => {
+    expect(patchIdeaPinSchema.safeParse({}).success).toBe(false);
   });
 });
 
@@ -100,6 +120,21 @@ describe('createIdeaSchema', () => {
   it('accepts exactly 3 tags', () => {
     const result = createIdeaSchema.safeParse({ details: 'ok', tags: ['a1', 'b2', 'c3'] });
     expect(result.success).toBe(true);
+  });
+
+  it('accepts title at exactly the max length', () => {
+    const result = createIdeaSchema.safeParse({ title: 'x'.repeat(TITLE_MAX_LENGTH), details: 'ok' });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts details at exactly the max length', () => {
+    const result = createIdeaSchema.safeParse({ details: 'x'.repeat(DETAILS_MAX_LENGTH) });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects details longer than the max length', () => {
+    const result = createIdeaSchema.safeParse({ details: 'x'.repeat(DETAILS_MAX_LENGTH + 1) });
+    expect(result.success).toBe(false);
   });
 });
 

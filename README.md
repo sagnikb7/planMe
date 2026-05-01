@@ -39,6 +39,30 @@ Vite proxies `/api/*` to the Express server in dev. The server runs via `tsx wat
 
 ---
 
+## Running with Docker
+
+The fastest way for teammates to get a working environment — no local MongoDB needed.
+
+**Requirements:** Docker Desktop (or Docker Engine + Compose)
+
+```bash
+cp example.env .env        # fill in COOKIE_SECRET at minimum
+docker compose build
+docker compose up
+```
+
+App is at `http://localhost:5001`. MongoDB runs inside Docker and persists data across restarts via a named volume.
+
+**SMTP (optional):** email is not required in dev. If you leave SMTP vars blank, the password reset link is returned directly in the API response. To enable email, set `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM` in your `.env`.
+
+```bash
+docker compose down          # stop
+docker compose down -v       # stop + wipe the database volume
+docker compose logs -f app   # tail app logs
+```
+
+---
+
 ## Scripts
 
 ```bash

@@ -57,5 +57,5 @@ async function _flushPendingQueue() {
 }
 
 export function isOfflineError(err) {
-  return !!(err?.isOffline || err?.code === 'ECONNABORTED' || err?.message === 'Network Error');
+  return !!(err?.isOffline || err?.code === 'ECONNABORTED' || err?.code === 'ERR_NETWORK' || err?.message === 'Network Error');
 }

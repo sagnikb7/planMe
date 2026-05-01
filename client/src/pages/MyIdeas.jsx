@@ -190,9 +190,6 @@ function IdeaBody({ idea, filterTag, setFilterTag, onDelete, onArchive, onRestor
           </span>
         )}
         {isArchived && !isLocal && <StatusBadge status="archived" />}
-        {compact && (
-          <span className="idea-card-date" style={{ marginLeft: 'auto' }}>{date}</span>
-        )}
       </div>
       <div
         className="idea-preview-rich"
@@ -200,6 +197,7 @@ function IdeaBody({ idea, filterTag, setFilterTag, onDelete, onArchive, onRestor
       />
       <div className="idea-meta">
         <div className="idea-meta-left">
+          {compact && <span className="idea-card-date">{date}</span>}
           <div className="idea-tags">
             {(idea.tags || []).map((tag) => (
               <button

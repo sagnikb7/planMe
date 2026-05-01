@@ -217,6 +217,12 @@
   align-items: center;
 }
 
+.idea-card .idea-meta-left {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
 .idea-card .idea-tags {
   flex-wrap: nowrap;
   overflow: hidden;

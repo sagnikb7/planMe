@@ -69,6 +69,34 @@ describe('GET /api/health', () => {
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
+describe('POST /api/auth/register — duplicate email', () => {
+  it('returns 409 when email is already registered', async () => {
+    await agent.post('/api/auth/register').send({ name: 'First', email: 'dup@example.com', password: 'Password1!' });
+    const res = await agent.post('/api/auth/register').send({ name: 'Second', email: 'dup@example.com', password: 'Password1!' });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/already registered/i);
+  });
+
+  it('stores email as lowercase regardless of input casing', async () => {
+    await agent.post('/api/auth/register').send({ name: 'Cased', email: 'CASED@EXAMPLE.COM', password: 'Password1!' });
+    const stored = await UserModel.findOne({ email: 'cased@example.com' }).lean();
+    expect(stored).toBeTruthy();
+  });
+});
+
+describe('POST /api/auth/login — failure cases', () => {
+  it('returns 401 for wrong password', async () => {
+    await agent.post('/api/auth/register').send({ name: 'Login', email: 'logintest@example.com', password: 'Password1!' });
+    const res = await agent.post('/api/auth/login').send({ email: 'logintest@example.com', password: 'WrongPass1!' });
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 401 for non-existent email', async () => {
+    const res = await agent.post('/api/auth/login').send({ email: 'nobody@example.com', password: 'Password1!' });
+    expect(res.status).toBe(401);
+  });
+});
+
 describe('auth flow: register → login → /me → logout', () => {
   it('completes full auth cycle', async () => {
     const register = await agent
@@ -317,6 +345,70 @@ describe('idea CRUD', () => {
     await b.post('/api/auth/login').send({ email: 'two@example.com', password: 'Password1!' });
 
     expect((await b.get(`/api/ideas/${idea.body._id}`)).status).toBe(404);
+  });
+
+  it("cannot update another user's idea", async () => {
+    const { app } = createSharedTestSetup();
+    const a = request.agent(app);
+    const b = request.agent(app);
+
+    await a.post('/api/auth/register').send({ name: 'Ua', email: 'isola@example.com', password: 'Password1!' });
+    await a.post('/api/auth/login').send({ email: 'isola@example.com', password: 'Password1!' });
+    const idea = await a.post('/api/ideas').send({ title: 'Mine', details: 'Private.' });
+
+    await b.post('/api/auth/register').send({ name: 'Ub', email: 'isolb@example.com', password: 'Password1!' });
+    await b.post('/api/auth/login').send({ email: 'isolb@example.com', password: 'Password1!' });
+
+    expect((await b.put(`/api/ideas/${idea.body._id}`).send({ title: 'Stolen', details: 'Nope' })).status).toBe(404);
+  });
+
+  it("cannot delete another user's idea", async () => {
+    const { app } = createSharedTestSetup();
+    const a = request.agent(app);
+    const b = request.agent(app);
+
+    await a.post('/api/auth/register').send({ name: 'Uc', email: 'isolc@example.com', password: 'Password1!' });
+    await a.post('/api/auth/login').send({ email: 'isolc@example.com', password: 'Password1!' });
+    const idea = await a.post('/api/ideas').send({ title: 'Keep', details: 'Mine.' });
+
+    await b.post('/api/auth/register').send({ name: 'Ud', email: 'isold@example.com', password: 'Password1!' });
+    await b.post('/api/auth/login').send({ email: 'isold@example.com', password: 'Password1!' });
+
+    expect((await b.delete(`/api/ideas/${idea.body._id}`)).status).toBe(404);
+  });
+
+  it('preserves tags on update', async () => {
+    await agent.post('/api/auth/register').send({ name: 'Taggy', email: 'taggy@example.com', password: 'Password1!' });
+    await agent.post('/api/auth/login').send({ email: 'taggy@example.com', password: 'Password1!' });
+    const id = (await agent.post('/api/ideas').send({ title: 'Tagged', details: 'ok', tags: ['alpha'] })).body._id;
+
+    const updated = await agent.put(`/api/ideas/${id}`).send({ title: 'Tagged', details: 'ok', tags: ['beta', 'gamma'] });
+    expect(updated.status).toBe(200);
+    expect(updated.body.tags).toEqual(expect.arrayContaining(['beta', 'gamma']));
+    expect(updated.body.tags).not.toContain('alpha');
+  });
+});
+
+describe('PATCH /api/ideas/:id/pin', () => {
+  it('pins and unpins an idea', async () => {
+    await agent.post('/api/auth/register').send({ name: 'Pinner', email: 'pinner@example.com', password: 'Password1!' });
+    await agent.post('/api/auth/login').send({ email: 'pinner@example.com', password: 'Password1!' });
+    const id = (await agent.post('/api/ideas').send({ title: 'Pinnable', details: 'yes' })).body._id;
+
+    const pinned = await agent.patch(`/api/ideas/${id}/pin`).send({ pinned: true });
+    expect(pinned.status).toBe(200);
+    expect(pinned.body.pinned).toBe(true);
+
+    const unpinned = await agent.patch(`/api/ideas/${id}/pin`).send({ pinned: false });
+    expect(unpinned.status).toBe(200);
+    expect(unpinned.body.pinned).toBe(false);
+  });
+
+  it('rejects pinning a non-boolean value', async () => {
+    await agent.post('/api/auth/register').send({ name: 'BadPin', email: 'badpin@example.com', password: 'Password1!' });
+    await agent.post('/api/auth/login').send({ email: 'badpin@example.com', password: 'Password1!' });
+    const id = (await agent.post('/api/ideas').send({ title: 'T', details: 'D' })).body._id;
+    expect((await agent.patch(`/api/ideas/${id}/pin`).send({ pinned: 'yes' })).status).toBe(400);
   });
 });
 

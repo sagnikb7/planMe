@@ -9,10 +9,12 @@ vi.mock('../../../src/repositories/idea.repository', () => ({
     getDistinctTagsByUser: vi.fn(),
     renameTag: vi.fn(),
     countByUser: vi.fn(),
+    countPinnedByUser: vi.fn(),
     getMaxSortOrder: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     patchStatus: vi.fn(),
+    patchPin: vi.fn(),
     delete: vi.fn(),
     reorder: vi.fn(),
     deleteAllByUser: vi.fn(),
@@ -22,7 +24,7 @@ vi.mock('../../../src/repositories/idea.repository', () => ({
 import { ideaService } from '../../../src/services/idea.service';
 import { ideaRepository } from '../../../src/repositories/idea.repository';
 import { AppError } from '../../../src/utils/errors';
-import { IDEA_LIMIT, WORKSPACE_MAX_TAGS } from '../../../src/constants';
+import { IDEA_LIMIT, WORKSPACE_MAX_TAGS, PIN_LIMIT } from '../../../src/constants';
 
 const userId = new Types.ObjectId();
 const ideaId = new Types.ObjectId().toString();
@@ -91,6 +93,28 @@ describe('update', () => {
     vi.mocked(ideaRepository.getDistinctTagsByUser).mockResolvedValue([]);
     vi.mocked(ideaRepository.update).mockResolvedValue(mockIdea as never);
     expect(await ideaService.update(ideaId, userId, { title: 'New', details: 'x', tags: [], status: 'draft' })).toEqual(mockIdea);
+  });
+});
+
+describe('patchPin', () => {
+  it('throws AppError(400) when pin limit is reached', async () => {
+    vi.mocked(ideaRepository.countPinnedByUser).mockResolvedValue(PIN_LIMIT);
+    await expect(ideaService.patchPin(ideaId, userId, true)).rejects.toThrow(AppError);
+    expect(ideaRepository.patchPin).not.toHaveBeenCalled();
+  });
+
+  it('calls repository when pinning within limit', async () => {
+    vi.mocked(ideaRepository.countPinnedByUser).mockResolvedValue(PIN_LIMIT - 1);
+    vi.mocked(ideaRepository.patchPin).mockResolvedValue(mockIdea as never);
+    await ideaService.patchPin(ideaId, userId, true);
+    expect(ideaRepository.patchPin).toHaveBeenCalledWith(ideaId, userId, true);
+  });
+
+  it('unpins without checking the pin count', async () => {
+    vi.mocked(ideaRepository.patchPin).mockResolvedValue(mockIdea as never);
+    await ideaService.patchPin(ideaId, userId, false);
+    expect(ideaRepository.countPinnedByUser).not.toHaveBeenCalled();
+    expect(ideaRepository.patchPin).toHaveBeenCalledWith(ideaId, userId, false);
   });
 });
 

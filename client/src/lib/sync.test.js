@@ -45,6 +45,10 @@ describe('isOfflineError', () => {
     expect(isOfflineError(null)).toBe(false);
     expect(isOfflineError(undefined)).toBe(false);
   });
+
+  it('returns true for ERR_NETWORK code', () => {
+    expect(isOfflineError({ code: 'ERR_NETWORK' })).toBe(true);
+  });
 });
 
 // ─── seedCache ───────────────────────────────────────────────────────────────
@@ -100,6 +104,14 @@ describe('seedCache', () => {
   it('handles an empty array without error', async () => {
     await expect(seedCache([])).resolves.toBeUndefined();
     expect(await db.ideas.count()).toBe(0);
+  });
+
+  it('does not overwrite pending-delete ideas', async () => {
+    await db.ideas.put({ _id: 'server4', title: 'About to die', syncStatus: 'pending-delete' });
+    await seedCache([makeIdea('server4', { title: 'Server version' })]);
+    const stored = await db.ideas.get('server4');
+    expect(stored.syncStatus).toBe('pending-delete');
+    expect(stored.title).toBe('About to die');
   });
 });
 

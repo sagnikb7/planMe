@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { ShortcutsModal } from '@/components/ShortcutsModal';
 import { OfflineBanner } from '@/components/OfflineBanner';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { flushPendingQueue } from '@/lib/sync';
 
 const navItems = [
@@ -49,10 +48,9 @@ function NavItem({ to, icon: Icon, label, mobile = false }) {
 export function AppShell() {
   const location = useLocation();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const isOnline = useOnlineStatus();
   const [bannerStatus, setBannerStatus] = useState('idle');
   const syncedTimer = useRef(null);
-  const prevOnline = useRef(isOnline);
+  const reachable = useRef(true);
   useKeyboardShortcuts();
 
   useEffect(() => {
@@ -77,23 +75,34 @@ export function AppShell() {
 
   // Flush on mount — handles app restart and "opened while online with queued ops"
   useEffect(() => {
-    if (navigator.onLine) tryFlush(false);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (navigator.onLine) setTimeout(() => tryFlush(false), 0);
+  }, []);
 
-  // Flush on online transition (tab stays open, connectivity changes)
+  // React to real server reachability (browser events + API-level signals)
   useEffect(() => {
-    if (!isOnline) {
-      setBannerStatus('offline');
-      prevOnline.current = false;
-      return;
-    }
-    if (prevOnline.current === false) {
-      tryFlush();
-    } else {
-      setBannerStatus('idle');
-    }
-    prevOnline.current = true;
-  }, [isOnline]); // eslint-disable-line react-hooks/exhaustive-deps
+    const goOffline = () => {
+      if (reachable.current) {
+        reachable.current = false;
+        setBannerStatus('offline');
+      }
+    };
+    const goOnline = () => {
+      if (!reachable.current) {
+        reachable.current = true;
+        tryFlush();
+      }
+    };
+    window.addEventListener('offline', goOffline);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('planme:server-offline', goOffline);
+    window.addEventListener('planme:server-back-online', goOnline);
+    return () => {
+      window.removeEventListener('offline', goOffline);
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('planme:server-offline', goOffline);
+      window.removeEventListener('planme:server-back-online', goOnline);
+    };
+  }, []);
 
   // Flush on visibilitychange — Android backgrounded WebView misses the `online` event
   useEffect(() => {
@@ -104,7 +113,7 @@ export function AppShell() {
     };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const sectionTitle = navItems.find((item) => location.pathname.startsWith(item.to))?.label || 'Workspace';
 

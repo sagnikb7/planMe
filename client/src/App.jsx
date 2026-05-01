@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/toast-context';
 import { AppShell } from '@/components/AppShell';
@@ -17,6 +18,10 @@ import Settings from '@/pages/Settings';
 import SessionLimit from '@/pages/SessionLimit';
 
 export default function App() {
+  useEffect(() => {
+    fetch('/api/health').catch(() => {});
+  }, []);
+
   return (
     <BrowserRouter>
       <ToastProvider>

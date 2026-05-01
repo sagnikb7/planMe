@@ -1,0 +1,44 @@
+# Design System
+
+Source: `client/src/styles/design-system.css`
+
+## Rule
+All styling through CSS custom properties. No raw hex or hard-coded px in component files.
+
+## Token Families
+| Family | Examples |
+|---|---|
+| Colors | `--ds-color-text`, `--ds-color-text-muted`, `--ds-color-text-soft` |
+| Surfaces | `--ds-color-surface`, `--ds-color-surface-strong`, `--ds-color-bg` |
+| Accent | `--ds-color-accent`, `--ds-color-accent-soft`, `--ds-color-accent-hover`, `--ds-color-accent-fg` |
+| Danger | `--ds-color-danger`, `--ds-color-danger-soft` |
+| Glow | `--ds-color-glow` (#f59e0b amber), `--ds-color-glow-fg`, `--ds-color-glow-shadow`, `--ds-color-glow-medium`, `--ds-color-glow-soft` |
+| Borders | `--ds-color-border`, `--ds-color-border-strong` |
+| Shadows | `--ds-shadow-sm/md/lg`, `--ds-shadow-focus` (amber ring) |
+| Radius | `--ds-radius-sm/md/lg/pill` |
+| Spacing | `--ds-space-1` → `--ds-space-12` |
+| Sizes | `--ds-size-control-sm/md/lg` |
+
+## Amber Glow Accent
+`--ds-color-glow: #f59e0b` — **single chromatic accent**  
+Allowed uses: active nav indicator, spark button, focus rings, idea index numbers, tag chips, blockquote borders.  
+Do not introduce other accent colors.
+
+## Semantic Classes (already exist — check before writing new CSS)
+`.surface-card`, `.surface-glass`, `.feedback-error`, `.feedback-success`, `.tag-chip`, `.status-badge`, `.rich-editor`, `.idea-row`, `.idea-card`, `.idea-title`, `.idea-meta`, `.idea-row-actions`, `.ideas-list`, `.ideas-grid`, `.ideas-empty`, `.idea-drag-handle`, `.idea-index`, `.idea-date`, `.idea-preview-rich`, `.idea-title-row`, `.idea-card-date`, `.idea-row-body`, `.idea-row-left`, `.app-shell`, `.status-badge-dot`
+
+## Button Variants (`components/ui/button.jsx`)
+| Variant | Use |
+|---|---|
+| `default` | Standard CTA |
+| `spark` | Amber glow — primary creative action (new idea, capture) |
+| `destructive` | Filled red — critical destructions |
+| `outline` | Secondary bordered |
+| `ghost` | Text-only, hover bg |
+| `ghost-danger` | Inline destructive (row-level delete) |
+| `link` | Underline text |
+
+Sizes: `default` (md), `sm`, `lg`, `icon`
+
+## Mobile-First Rule
+Every UI feature works on both desktop and mobile. Touch targets ≥ 44px. Bottom nav + swipe gestures on mobile.

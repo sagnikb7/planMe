@@ -30,16 +30,19 @@ export default defineConfig({
         ],
       },
       workbox: {
+        clientsClaim: true,
+        skipWaiting: true,
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname === '/api/ideas',
-            handler: 'StaleWhileRevalidate',
+            handler: 'NetworkFirst',
             options: {
-              cacheName: 'planme-api',
-              expiration: { maxEntries: 5, maxAgeSeconds: 86400 },
+              cacheName: 'planme-api-v1',
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 5, maxAgeSeconds: 3600 },
             },
           },
         ],

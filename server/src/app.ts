@@ -9,9 +9,11 @@ import { Store } from 'express-session';
 import logger from './utils/logger';
 import { SESSION_MAX_AGE_MS } from './constants';
 import { configurePassport } from './config/passport';
+import { pinoHttpConfig } from './config/logger-http';
 import authRouter from './routes/auth.routes';
 import ideasRouter from './routes/ideas.routes';
 import sessionsRouter from './routes/sessions.routes';
+import healthRouter from './routes/health.routes';
 
 interface AppOptions {
   mongoUri: string;
@@ -20,17 +22,6 @@ interface AppOptions {
   clientOrigin?: string;
   sessionStore?: Store;
   enableHttpLogs?: boolean;
-}
-
-function buildHttpLogPayload(req: Request, res: Response) {
-  return {
-    method: req.method,
-    path: req.originalUrl || req.url,
-    statusCode: res.statusCode,
-    durationMs: (res as unknown as { responseTime: number }).responseTime,
-    ip: req.ip || req.socket?.remoteAddress,
-    userAgent: req.headers['user-agent'],
-  };
 }
 
 export function createApp({
@@ -47,24 +38,7 @@ export function createApp({
   const app = express();
 
   if (enableHttpLogs) {
-    app.use(pinoHttp({
-      logger,
-      autoLogging: { ignore: (req) => req.url === '/api/health' },
-      customLogLevel: (_req, res, err) => {
-        if (err || res.statusCode >= 500) return 'error';
-        if (res.statusCode >= 400) return 'warn';
-        return 'info';
-      },
-      customSuccessMessage: () => 'HTTP request completed',
-      customErrorMessage: () => 'HTTP request failed',
-      customSuccessObject: (req, res) => buildHttpLogPayload(req as Request, res as Response),
-      customErrorObject: (req, res, err) => ({
-        ...buildHttpLogPayload(req as Request, res as Response),
-        errorName: (err as Error).name,
-        errorMessage: (err as Error).message,
-      }),
-      serializers: { req: () => undefined, res: () => undefined },
-    }));
+    app.use(pinoHttp(pinoHttpConfig));
   }
 
   app.use(cors({ origin: isProd ? false : clientOrigin, credentials: true }));
@@ -92,7 +66,7 @@ export function createApp({
   app.use('/api/auth', authRouter);
   app.use('/api/ideas', ideasRouter);
   app.use('/api/sessions', sessionsRouter);
-  app.get('/api/health', (_req, res) => res.json({ ok: true }));
+  app.use('/api/health', healthRouter);
 
   if (isProd) {
     app.set('trust proxy', 1);

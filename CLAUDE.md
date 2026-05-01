@@ -4,21 +4,54 @@ Guidance for Claude Code when working in this repository.
 
 ---
 
+## Knowledge Base
+
+All project documentation lives in [`/docs`](./docs/INDEX.md). Use it as the primary reference — before answering questions, planning features, or making changes.
+
+**Lookup protocol:**
+1. Check `/docs/INDEX.md` to locate the relevant file
+2. Read that file before proceeding
+3. If docs are missing or clearly stale, update them first, then proceed
+
+**When to consult `/docs`:**
+- Before implementing any feature → read the relevant flow + API docs
+- Before adding a constant or limit → check [`/docs/guidelines/constants.md`](./docs/guidelines/constants.md)
+- Before adding UI → check [`/docs/guidelines/design-system.md`](./docs/guidelines/design-system.md) **and** [`DESIGN.md`](./DESIGN.md)
+- Before touching auth or sessions → read [`/docs/flows/auth.md`](./docs/flows/auth.md) and [`/docs/flows/session-limit.md`](./docs/flows/session-limit.md)
+- Before touching offline behavior → read [`/docs/flows/offline-sync.md`](./docs/flows/offline-sync.md)
+- To understand any module → [`/docs/modules/server.md`](./docs/modules/server.md) or [`/docs/modules/client.md`](./docs/modules/client.md)
+
+**For any frontend UI work — visual design, layout, components, spacing, color:**
+Read [`DESIGN.md`](./DESIGN.md) first. It is the canonical source for:
+- The one-font rule (Geist only), weight conventions, type scale
+- The amber accent rule — only for active states, focus rings, CTAs; never introduce a second hue
+- Surface hierarchy (bg → surface → surface-strong), border and shadow tokens
+- Spacing and sizing scale, touch target minimums (≥ 44px)
+- What constitutes a valid UI pattern for planMe vs. what violates the design direction
+
+**After any significant change:**
+- Patch only the affected doc sections (do not rewrite everything)
+- Append a dated entry to [`/docs/CHANGELOG.md`](./docs/CHANGELOG.md)
+
+---
+
 ## Commands
 
 pnpm monorepo — always run from the repo root unless filtering explicitly.
 
 ```bash
-pnpm install                         # install all workspace deps
-pnpm dev                             # server (5001) + client (5173) concurrently
-pnpm build                           # production build of client → client/dist/
-pnpm test                            # server integration tests (requires local MongoDB)
-pnpm lint                            # ESLint on client
+pnpm install                                          # install all workspace deps
+pnpm dev                                              # server (5001) + client (5173) concurrently
+pnpm build                                            # production build of client → client/dist/
+pnpm test                                             # server unit + integration tests
+pnpm lint                                             # ESLint on client
 
-pnpm --filter planme-server dev      # server only
-pnpm --filter planme-server test     # server tests only
-pnpm --filter client dev             # client only
-pnpm --filter client test            # client unit tests (Vitest, no MongoDB needed)
+pnpm --filter planme-server dev                       # server only
+pnpm --filter planme-server test:unit                 # unit tests only (no MongoDB needed, ~1 s)
+pnpm --filter planme-server test:integration          # integration tests (requires local MongoDB)
+pnpm --filter planme-server test:coverage             # unit tests + v8 coverage report
+pnpm --filter client dev                              # client only
+pnpm --filter client test                             # client unit tests (Vitest, no MongoDB needed)
 ```
 
 ---

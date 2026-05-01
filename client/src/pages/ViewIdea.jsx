@@ -5,7 +5,7 @@ import { Archive, ArrowLeft, Pencil, RotateCcw, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useToast } from '@/context/toast-context';
 
 function wordCount(html) {
@@ -256,29 +256,15 @@ export default function ViewIdea() {
         </div>
       )}
 
-      {/* Delete confirmation */}
-      <Dialog open={showDeleteDialog} onOpenChange={(open) => !open && setShowDeleteDialog(false)}>
-        <DialogContent>
-          <DialogTitle>Delete idea</DialogTitle>
-          <DialogDescription>
-            This cannot be undone. The idea will be permanently removed.
-          </DialogDescription>
-          <DialogFooter className="flex-col gap-2 sm:flex-row">
-            <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => setShowDeleteDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="ghost-danger"
-              size="sm"
-              className="w-full sm:w-auto"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              {deleting ? <><Loader /> Deleting…</> : 'Delete permanently'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => !open && setShowDeleteDialog(false)}
+        title="Delete idea"
+        description="This cannot be undone. The idea will be permanently removed."
+        confirmLabel="Delete permanently"
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

@@ -18,7 +18,7 @@ A private idea workspace. Capture thoughts, tag them, and come back to the ones 
 | Auth | express-session, connect-mongo, express-rate-limit |
 | Database | MongoDB via Mongoose 8 |
 | Logging | Pino + pino-http |
-| Testing | `node:test` + supertest (server), Vitest + fake-indexeddb (client) |
+| Testing | Vitest (unit + integration, server), Vitest + fake-indexeddb (client) |
 | Tooling | pnpm workspaces, concurrently, ESLint |
 
 ---
@@ -47,7 +47,10 @@ pnpm build                     # compile client → client/dist/ + server → se
 pnpm start                     # start the compiled server (production)
 pnpm prod:local                # build + run production server locally
 
-pnpm test                      # server integration tests (requires local MongoDB)
+pnpm test                      # server: unit + integration tests (integration requires local MongoDB)
+pnpm --filter planme-server test:unit         # unit tests only — no MongoDB needed
+pnpm --filter planme-server test:integration  # integration tests — requires MongoDB
+pnpm --filter planme-server test:coverage     # unit tests + v8 coverage report
 pnpm --filter client test      # client unit tests (Vitest, no MongoDB needed)
 pnpm lint                      # ESLint on client
 ```
@@ -108,12 +111,15 @@ planMe/
 │   ├── repositories/      all DB queries
 │   ├── schemas/           Zod validation (never inline in routes)
 │   ├── services/          business logic
-│   ├── routes/            auth.routes.ts, ideas.routes.ts, sessions.routes.ts
-│   ├── middleware/        auth.ts (ensureAuthenticated), validate.ts
-│   ├── utils/             logger, email, geo, user-agent, password-policy
+│   ├── routes/            auth.routes.ts, ideas.routes.ts, sessions.routes.ts, health.routes.ts
+│   ├── middleware/        auth.ts, validate.ts, rate-limit.ts
+│   ├── utils/             logger, email, geo, user-agent, password-policy, ip
+│   ├── config/            env.ts, database.ts, passport.ts, logger-http.ts
 │   ├── app.ts             createApp() factory (used by tests too)
-│   └── index.ts           startup
-├── server/test/api.test.ts
+│   └── index.ts           startup + graceful shutdown (SIGTERM/SIGINT)
+├── server/test/
+│   ├── unit/              schemas/, utils/, middleware/, services/
+│   └── integration/       api.test.ts (migrated from node:test → Vitest)
 ├── example.env
 └── pnpm-workspace.yaml
 ```
@@ -160,7 +166,19 @@ planMe/
 
 ### Health
 
-`GET /api/health` → `{ ok: true }` — excluded from HTTP logs.
+`GET /api/health` — excluded from HTTP logs. Returns `200 ok` or `503 degraded`.
+
+```json
+{
+  "status": "ok",
+  "uptime": 847,
+  "timestamp": "2026-05-01T12:00:00.000Z",
+  "services": { "mongodb": { "status": "ok", "state": "connected" } },
+  "process": { "nodeVersion": "v22.x", "env": "production", "memoryMB": { "rss": 52, "heapUsed": 28, "heapTotal": 41 } }
+}
+```
+
+Also used as a Render warm-up signal: the client fires `fetch('/api/health')` on app mount so the server starts waking before the user takes any action.
 
 ---
 
@@ -199,16 +217,23 @@ Single dark-first design token set in `design-system.css`. One chromatic accent:
 
 ## Testing
 
-### Server (`pnpm test`)
-- `node:test` + supertest against a real MongoDB (`planme_test` db — separate from dev).
-- 31 tests covering auth, password reset, sessions, idea CRUD, status updates, and geo utilities.
-- `createApp()` factory pattern — tests pass their own `mongoUri` + `MemoryStore`, never read `.env`.
-- `NODE_ENV=test` is set by the test script — rate limiters are bypassed automatically.
+### Server unit tests (`pnpm --filter planme-server test:unit`)
+- Vitest — no MongoDB required, runs in seconds.
+- Covers: Zod schemas (auth + idea), utils (password policy, user-agent, geo, IP), middleware (auth, validate).
+- `vi.mock()` intercepts repository/email modules — no real DB needed.
+
+### Server integration tests (`pnpm --filter planme-server test:integration`)
+- Vitest + supertest against a real MongoDB (`planme_test` db — never touches dev data).
+- Sequential (`pool: 'forks', singleFork: true`) to avoid DB race conditions.
+- `createApp()` factory — tests pass `mongoUri` + `MemoryStore`, never read `.env`.
+- `NODE_ENV=test` bypasses all rate limiters automatically.
+
+### Coverage (`pnpm --filter planme-server test:coverage`)
+- v8 coverage via `@vitest/coverage-v8`. Report written to `server/coverage/`.
 
 ### Client (`pnpm --filter client test`)
 - Vitest + `fake-indexeddb` — no browser or MongoDB required.
-- 19 tests in `sync.test.js`: `isOfflineError` (5), `seedCache` (6), `flushPendingQueue` (8).
-- Add new test files alongside their module: `foo.test.js` next to `foo.js`.
+- Tests in `sync.test.js` and alongside modules as `*.test.js`.
 
 ---
 

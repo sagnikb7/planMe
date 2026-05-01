@@ -1,6 +1,6 @@
 {
   "name": "planme",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Idea capture app — Express API + React frontend",
   "private": true,
   "engines": {
@@ -13,10 +13,14 @@
     "start": "node server/dist/index.js",
     "prod:local": "pnpm build && NODE_ENV=production pnpm start",
     "test": "pnpm --filter planme-server test",
-    "lint": "pnpm --filter client lint"
+    "test:unit": "pnpm --filter planme-server test:unit && pnpm --filter client test",
+    "test:coverage": "pnpm --filter planme-server test:coverage",
+    "lint": "pnpm --filter client lint",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "husky": "^9.1.7"
   },
   "pnpm": {
     "overrides": {

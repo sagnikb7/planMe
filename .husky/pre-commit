@@ -1,0 +1,1 @@
+pnpm lint && pnpm --filter planme-server test:unit && pnpm --filter client test

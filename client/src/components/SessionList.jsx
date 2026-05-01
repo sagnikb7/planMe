@@ -1,7 +1,7 @@
 import { Monitor, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -118,32 +118,24 @@ export function SessionList({
       </ul>
 
       {showConfirm && (
-        <Dialog open={!!pendingTerminate} onOpenChange={(open) => !open && setPendingTerminate(null)}>
-          <DialogContent>
-            <DialogTitle>Terminate session?</DialogTitle>
-            <DialogDescription>
+        <ConfirmDialog
+          open={!!pendingTerminate}
+          onOpenChange={(open) => !open && setPendingTerminate(null)}
+          title="Terminate session?"
+          description={
+            <>
               This will immediately sign out the device listed below. This cannot be undone.
               {pendingTerminate && (
                 <span className="mt-2 block font-medium text-[var(--ds-color-text)]">
                   {pendingTerminate.device} — {pendingTerminate.ip}
                 </span>
               )}
-            </DialogDescription>
-            <DialogFooter className="flex-col gap-2 sm:flex-row">
-              <Button variant="ghost" size="sm" onClick={() => setPendingTerminate(null)}>
-                Cancel
-              </Button>
-              <Button
-                variant="ghost-danger"
-                size="sm"
-                disabled={!!terminating}
-                onClick={() => handleTerminate(pendingTerminate.id)}
-              >
-                {terminating ? <Loader /> : 'Terminate'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </>
+          }
+          confirmLabel="Terminate"
+          loading={!!terminating}
+          onConfirm={() => handleTerminate(pendingTerminate.id)}
+        />
       )}
     </>
   );

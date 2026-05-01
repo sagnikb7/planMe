@@ -6,10 +6,22 @@ const api = axios.create({
   timeout: 8000,
 });
 
+let serverKnownOnline = true;
+
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    if (!serverKnownOnline) {
+      serverKnownOnline = true;
+      window.dispatchEvent(new Event('planme:server-back-online'));
+    }
+    return res;
+  },
   (err) => {
     if (!err.response || err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+      if (serverKnownOnline) {
+        serverKnownOnline = false;
+        window.dispatchEvent(new Event('planme:server-offline'));
+      }
       const offline = new Error('offline');
       offline.isOffline = true;
       offline.originalError = err;

@@ -1,56 +1,28 @@
-import { Router, Request } from 'express';
+import { Router } from 'express';
 import { Types } from 'mongoose';
 import passport from 'passport';
-import rateLimit from 'express-rate-limit';
 import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
+import {
+  loginLimiter,
+  registerLimiter,
+  forgotPasswordLimiter,
+  resetPasswordLimiter,
+  changePasswordLimiter,
+} from '../middleware/rate-limit';
 import { registerSchema, forgotPasswordSchema, resetPasswordSchema, updateNameSchema, changePasswordSchema } from '../schemas/auth.schema';
 import { authService, ConflictError, ValidationError } from '../services/auth.service';
 import { sessionService } from '../services/session.service';
 import { env } from '../config/env';
 import { parseUserAgent } from '../utils/user-agent';
-import {
-  REMEMBER_ME_MAX_AGE_MS,
-  RATE_LIMIT_LOGIN,
-  RATE_LIMIT_REGISTER,
-  RATE_LIMIT_FORGOT_PASSWORD,
-  RATE_LIMIT_RESET_PASSWORD,
-  RATE_LIMIT_CHANGE_PASSWORD,
-} from '../constants';
-
-function makeRateLimiter(opts: { windowMs: number; max: number }) {
-  return rateLimit({
-    windowMs: opts.windowMs,
-    max: opts.max,
-    standardHeaders: true,
-    legacyHeaders: false,
-    skip: () => process.env.NODE_ENV === 'test',
-    handler: (_req, res) => {
-      res.status(429).json({ error: 'Too many requests — please try again later.' });
-    },
-  });
-}
-
-const loginLimiter          = makeRateLimiter(RATE_LIMIT_LOGIN);
-const registerLimiter       = makeRateLimiter(RATE_LIMIT_REGISTER);
-const forgotPasswordLimiter = makeRateLimiter(RATE_LIMIT_FORGOT_PASSWORD);
-const resetPasswordLimiter  = makeRateLimiter(RATE_LIMIT_RESET_PASSWORD);
-const changePasswordLimiter = makeRateLimiter(RATE_LIMIT_CHANGE_PASSWORD);
+import { getClientIp } from '../utils/ip';
+import { REMEMBER_ME_MAX_AGE_MS } from '../constants';
 
 const router = Router();
 
 const GENERIC_RESET_RESPONSE = {
   message: 'If an account exists for that email, a reset link has been generated.',
 };
-
-function getClientIp(req: Request): string {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (forwarded) {
-    const first = (Array.isArray(forwarded) ? forwarded[0] : forwarded).split(',')[0].trim();
-    if (first) return first;
-  }
-  return req.ip || req.socket?.remoteAddress || 'Unknown';
-}
 
 router.post('/register', registerLimiter, validate(registerSchema), async (req, res) => {
   try {

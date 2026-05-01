@@ -5,7 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/context/toast-context';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader } from '@/components/ui/loader';
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import api from '@/lib/api';
 import { TAG_MIN_LENGTH, TAG_MAX_LENGTH, WORKSPACE_MAX_TAGS } from '@/lib/constants';
 
@@ -463,7 +463,7 @@ export default function Settings() {
       <div className="px-1 pb-2">
         <div className="flex items-baseline justify-between mb-1.5">
           <span className="text-xs font-medium text-[var(--ds-color-text-soft)]">planMe</span>
-          <span className="text-xs text-[var(--ds-color-text-soft)] tabular-nums">v2.0.0</span>
+          <span className="text-xs text-[var(--ds-color-text-soft)] tabular-nums">v{__APP_VERSION__}</span>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap text-xs text-[var(--ds-color-text-soft)]">
           <span className="flex items-center gap-1">
@@ -485,39 +485,25 @@ export default function Settings() {
         </div>
       </div>
 
-      <Dialog open={showDeleteDialog} onOpenChange={(open) => !open && setShowDeleteDialog(false)}>
-        <DialogContent>
-          <DialogTitle>Delete account</DialogTitle>
-          <DialogDescription>
-            This will permanently delete your account and all your ideas. Type <strong>delete</strong> to confirm.
-          </DialogDescription>
-          <input
-            type="text"
-            className="tag-picker-create-input w-full mb-4"
-            placeholder="Type delete to confirm"
-            value={deleteConfirm}
-            onChange={(e) => setDeleteConfirm(e.target.value)}
-            autoFocus
-          />
-          <DialogFooter>
-            <button
-              type="button"
-              onClick={() => setShowDeleteDialog(false)}
-              className="rounded-[var(--ds-radius-sm)] px-3 py-1.5 text-xs font-medium text-[var(--ds-color-text-muted)] hover:bg-[var(--ds-color-accent-soft)] transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleDeleteAccount}
-              disabled={deleteConfirm !== 'delete' || deleting}
-              className="flex items-center gap-1.5 rounded-[var(--ds-radius-sm)] px-3 py-1.5 text-xs font-medium text-[var(--ds-color-danger)] hover:bg-[var(--ds-color-danger-soft)] transition-colors disabled:pointer-events-none disabled:opacity-40"
-            >
-              {deleting ? <><Loader /> Deleting…</> : 'Delete permanently'}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => { if (!open) setShowDeleteDialog(false); }}
+        title="Delete account"
+        description={<>This will permanently delete your account and all your ideas. Type <strong>delete</strong> to confirm.</>}
+        confirmLabel="Delete permanently"
+        loading={deleting}
+        confirmDisabled={deleteConfirm !== 'delete'}
+        onConfirm={handleDeleteAccount}
+      >
+        <input
+          type="text"
+          className="tag-picker-create-input w-full mb-4"
+          placeholder="Type delete to confirm"
+          value={deleteConfirm}
+          onChange={(e) => setDeleteConfirm(e.target.value)}
+          autoFocus
+        />
+      </ConfirmDialog>
     </div>
   );
 }

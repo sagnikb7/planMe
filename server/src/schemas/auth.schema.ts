@@ -3,12 +3,12 @@ import { isStrongPassword, passwordPolicyMessage } from '../utils/password-polic
 
 export const registerSchema = z.object({
   name: z.string().trim().min(2),
-  email: z.string().trim().email(),
+  email: z.string().trim().toLowerCase().email(),
   password: z.string().refine(isStrongPassword, passwordPolicyMessage),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().trim().email(),
+  email: z.string().trim().toLowerCase().email(),
 });
 
 export const resetPasswordSchema = z.object({

@@ -20,7 +20,7 @@ import { SORT_OPTIONS, SEARCH_MIN_LENGTH, IDEA_LIMIT, PROMPT_TEMPLATES } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader } from '@/components/ui/loader';
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useToast } from '@/context/toast-context';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +37,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, openActionDialog, onSwipeArchive }) {
+function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, onDelete, onArchive, onRestore, onSwipeArchive }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: idea._id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -104,14 +104,16 @@ function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, openAct
         idea={idea}
         filterTag={filterTag}
         setFilterTag={setFilterTag}
-        openActionDialog={openActionDialog}
+        onDelete={onDelete}
+        onArchive={onArchive}
+        onRestore={onRestore}
         isArchived={isArchived}
       />
     </div>
   );
 }
 
-function SortableIdeaCard({ idea, sortBy, filterTag, setFilterTag, openActionDialog }) {
+function SortableIdeaCard({ idea, sortBy, filterTag, setFilterTag, onDelete, onArchive, onRestore }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: idea._id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -140,7 +142,9 @@ function SortableIdeaCard({ idea, sortBy, filterTag, setFilterTag, openActionDia
         idea={idea}
         filterTag={filterTag}
         setFilterTag={setFilterTag}
-        openActionDialog={openActionDialog}
+        onDelete={onDelete}
+        onArchive={onArchive}
+        onRestore={onRestore}
         isArchived={isArchived}
         compact
       />
@@ -148,7 +152,7 @@ function SortableIdeaCard({ idea, sortBy, filterTag, setFilterTag, openActionDia
   );
 }
 
-function IdeaBody({ idea, filterTag, setFilterTag, openActionDialog, isArchived, compact = false }) {
+function IdeaBody({ idea, filterTag, setFilterTag, onDelete, onArchive, onRestore, isArchived, compact = false }) {
   const navigate = useNavigate();
   const isLocal = idea._id?.startsWith('local_');
 
@@ -201,20 +205,29 @@ function IdeaBody({ idea, filterTag, setFilterTag, openActionDialog, isArchived,
           )}
         </div>
         <div className="idea-row-actions">
-          {isArchived && (
+          {isArchived ? (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => openActionDialog(idea)}
+              onClick={() => onRestore(idea._id)}
               aria-label="Restore idea"
             >
               <RotateCcw className="w-3.5 h-3.5" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onArchive(idea._id)}
+              aria-label="Archive idea"
+            >
+              <Archive className="w-3.5 h-3.5" />
             </Button>
           )}
           <Button
             variant="ghost-danger"
             size="sm"
-            onClick={() => openActionDialog(idea)}
+            onClick={() => onDelete(idea)}
             aria-label="Delete idea"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -248,7 +261,8 @@ export default function MyIdeas() {
   const [view, setView] = useState(() => localStorage.getItem(VIEW_KEY) || 'list');
   const [activeId, setActiveId] = useState(null);
 
-  const [pendingIdea, setPendingIdea] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const reorderTimeoutRef = useRef(null);
   const searchRef = useRef(null);
@@ -298,8 +312,6 @@ export default function MyIdeas() {
     localStorage.setItem(SORT_KEY, key);
   };
 
-  const openActionDialog = (idea) => setPendingIdea(idea);
-
   const handleSwipeArchive = useCallback(async (ideaId) => {
     if (ideaId.startsWith('local_')) return;
     const doLocalArchive = async () => {
@@ -323,47 +335,37 @@ export default function MyIdeas() {
     }
   }, [toast, isOnline]);
 
-  const handleArchive = async () => {
-    if (!pendingIdea) return;
+  const handleRestore = useCallback(async (ideaId) => {
     try {
-      await api.patch(`/ideas/${pendingIdea._id}/status`, { status: 'archived' });
-      setIdeas((prev) => prev.map((i) => i._id === pendingIdea._id ? { ...i, status: 'archived' } : i));
-      setPendingIdea(null);
-      toast('Idea archived');
-    } catch {
-      toast('Failed to archive idea');
-    }
-  };
-
-  const handleRestore = async () => {
-    if (!pendingIdea) return;
-    try {
-      await api.patch(`/ideas/${pendingIdea._id}/status`, { status: 'draft' });
-      setIdeas((prev) => prev.map((i) => i._id === pendingIdea._id ? { ...i, status: 'draft' } : i));
-      setPendingIdea(null);
+      await api.patch(`/ideas/${ideaId}/status`, { status: 'draft' });
+      setIdeas((prev) => prev.map((i) => i._id === ideaId ? { ...i, status: 'draft' } : i));
       toast('Idea restored');
     } catch {
       toast('Failed to restore idea');
     }
-  };
+  }, [toast]);
 
   const handleDelete = async () => {
-    if (!pendingIdea) return;
-    if (pendingIdea._id.startsWith('local_')) {
-      await db.ideas.delete(pendingIdea._id);
-      await db.pendingQueue.where('ideaId').equals(pendingIdea._id).delete();
-      setIdeas((prev) => prev.filter((i) => i._id !== pendingIdea._id));
-      setPendingIdea(null);
+    if (!pendingDelete) return;
+    setDeleting(true);
+    if (pendingDelete._id.startsWith('local_')) {
+      await db.ideas.delete(pendingDelete._id);
+      await db.pendingQueue.where('ideaId').equals(pendingDelete._id).delete();
+      setIdeas((prev) => prev.filter((i) => i._id !== pendingDelete._id));
+      setPendingDelete(null);
+      setDeleting(false);
       toast('Idea deleted');
       return;
     }
     try {
-      await api.delete(`/ideas/${pendingIdea._id}`);
-      setIdeas((prev) => prev.filter((i) => i._id !== pendingIdea._id));
-      setPendingIdea(null);
+      await api.delete(`/ideas/${pendingDelete._id}`);
+      setIdeas((prev) => prev.filter((i) => i._id !== pendingDelete._id));
+      setPendingDelete(null);
       toast('Idea deleted');
     } catch {
       toast('Failed to delete idea');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -675,7 +677,9 @@ export default function MyIdeas() {
                         sortBy={sortBy}
                         filterTag={filterTag}
                         setFilterTag={setFilterTag}
-                        openActionDialog={openActionDialog}
+                        onDelete={setPendingDelete}
+                        onArchive={handleSwipeArchive}
+                        onRestore={handleRestore}
                         onSwipeArchive={handleSwipeArchive}
                       />
                     ))}
@@ -689,7 +693,9 @@ export default function MyIdeas() {
                         sortBy={sortBy}
                         filterTag={filterTag}
                         setFilterTag={setFilterTag}
-                        openActionDialog={openActionDialog}
+                        onDelete={setPendingDelete}
+                        onArchive={handleSwipeArchive}
+                        onRestore={handleRestore}
                       />
                     ))}
                   </div>
@@ -708,57 +714,15 @@ export default function MyIdeas() {
         </>
       )}
 
-      <Dialog open={!!pendingIdea} onOpenChange={(open) => !open && setPendingIdea(null)}>
-        <DialogContent>
-          <DialogTitle>
-            {pendingIdea?.status === 'archived' ? 'Archived idea' : 'Remove idea'}
-          </DialogTitle>
-          <DialogDescription>
-            {pendingIdea?.status === 'archived'
-              ? 'Restore brings it back to drafts. Permanent delete cannot be undone.'
-              : 'Archive keeps the idea hidden but recoverable. Permanent delete cannot be undone.'}
-          </DialogDescription>
-          <DialogFooter className="flex-col gap-2 sm:flex-row">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full sm:w-auto"
-              onClick={() => setPendingIdea(null)}
-            >
-              Cancel
-            </Button>
-            {pendingIdea?.status === 'archived' ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full sm:w-auto flex items-center gap-1.5"
-                onClick={handleRestore}
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Restore
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full sm:w-auto flex items-center gap-1.5"
-                onClick={handleArchive}
-              >
-                <Archive className="w-3.5 h-3.5" />
-                Archive
-              </Button>
-            )}
-            <Button
-              variant="ghost-danger"
-              size="sm"
-              className="w-full sm:w-auto"
-              onClick={handleDelete}
-            >
-              Delete permanently
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        title="Delete idea"
+        description="This cannot be undone. The idea will be permanently removed."
+        confirmLabel="Delete permanently"
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </main>
   );
 }

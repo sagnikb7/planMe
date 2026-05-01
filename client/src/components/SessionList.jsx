@@ -1,4 +1,10 @@
-import { Monitor, Trash2 } from 'lucide-react';
+import { Laptop, Monitor, Smartphone, Trash2 } from 'lucide-react';
+
+function getDeviceIcon(device) {
+  if (/Android|iOS/i.test(device)) return Smartphone;
+  if (/macOS|ChromeOS/i.test(device)) return Laptop;
+  return Monitor;
+}
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -63,6 +69,7 @@ export function SessionList({
     <>
       <ul className="space-y-2">
         {sessions.map((session) => {
+          const DeviceIcon = getDeviceIcon(session.device);
           const canTerminate = onTerminate && !(hideCurrentTerminate && session.isCurrent);
           return (
             <li
@@ -73,7 +80,7 @@ export function SessionList({
               )}
             >
               <div className="flex min-w-0 items-start gap-3">
-                <Monitor className="mt-0.5 h-4 w-4 shrink-0 text-[var(--ds-color-text-muted)]" />
+                <DeviceIcon className="mt-0.5 h-4 w-4 shrink-0 text-[var(--ds-color-text-muted)]" />
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-medium text-[var(--ds-color-text)] truncate">

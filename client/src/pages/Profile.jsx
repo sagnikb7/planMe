@@ -1,3 +1,4 @@
+import '../components/ui/tag-picker.css';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, LogOut, Pencil, X } from 'lucide-react';

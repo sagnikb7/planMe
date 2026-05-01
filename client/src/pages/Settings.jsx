@@ -1,3 +1,4 @@
+import '../components/ui/tag-picker.css';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Download, Keyboard, Moon, Sun, Check, Pencil, X, Heart, WifiOff, Smartphone } from 'lucide-react';

@@ -17,41 +17,6 @@
   box-shadow: var(--ds-shadow-focus);
 }
 
-.tag-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.1rem 0.45rem;
-  border-radius: var(--ds-radius-pill);
-  background: var(--ds-color-glow-soft);
-  border: 1px solid var(--ds-color-glow-medium);
-  color: var(--ds-color-glow);
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.6;
-  white-space: nowrap;
-  user-select: none;
-}
-
-.tag-chip-remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.1s;
-  background: none;
-  border: none;
-  padding: 0;
-  color: inherit;
-  line-height: 1;
-  /* Expand touch target without affecting chip layout */
-  min-width: 1.5rem;
-  min-height: 1.5rem;
-  margin: -0.25rem -0.25rem -0.25rem 0;
-}
-
-.tag-chip-remove:hover { opacity: 1; }
 
 .tag-input-field {
   border: none;

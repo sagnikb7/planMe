@@ -66,21 +66,21 @@ describe('register', () => {
 describe('forgotPassword', () => {
   it('returns {} and skips DB for unknown email', async () => {
     vi.mocked(userRepository.findByEmail).mockResolvedValue(null);
-    expect(await authService.forgotPassword('x@x.com')).toEqual({});
+    expect(await authService.forgotPassword('x@x.com', 'http://localhost:5173')).toEqual({});
     expect(userRepository.setResetToken).not.toHaveBeenCalled();
   });
 
   it('stores token hash in DB for known email', async () => {
     vi.mocked(userRepository.findByEmail).mockResolvedValue(mockUser as never);
     vi.mocked(userRepository.setResetToken).mockResolvedValue(undefined as never);
-    await authService.forgotPassword('alice@example.com');
+    await authService.forgotPassword('alice@example.com', 'http://localhost:5173');
     expect(userRepository.setResetToken).toHaveBeenCalledOnce();
   });
 
   it('returns resetUrl in non-production', async () => {
     vi.mocked(userRepository.findByEmail).mockResolvedValue(mockUser as never);
     vi.mocked(userRepository.setResetToken).mockResolvedValue(undefined as never);
-    const result = await authService.forgotPassword('alice@example.com');
+    const result = await authService.forgotPassword('alice@example.com', 'http://localhost:5173');
     expect(result.resetUrl).toMatch(/\/reset-password\?token=/);
     expect(sendPasswordResetEmail).not.toHaveBeenCalled();
   });
@@ -91,7 +91,7 @@ describe('forgotPassword', () => {
     vi.mocked(userRepository.findByEmail).mockResolvedValue(mockUser as never);
     vi.mocked(userRepository.setResetToken).mockResolvedValue(undefined as never);
     vi.mocked(sendPasswordResetEmail).mockResolvedValue(undefined as never);
-    expect(await authService.forgotPassword('alice@example.com')).toEqual({});
+    expect(await authService.forgotPassword('alice@example.com', 'http://localhost:5173')).toEqual({});
     expect(sendPasswordResetEmail).toHaveBeenCalledOnce();
     vi.mocked(isSmtpConfigured).mockReturnValue(false);
     vi.unstubAllEnvs();

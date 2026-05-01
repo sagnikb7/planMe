@@ -72,7 +72,7 @@ Copy `example.env` → `.env` at the repo root. Key vars:
 | `SMTP_USER` | _(empty)_ | Brevo: your login email |
 | `SMTP_PASS` | _(empty)_ | Brevo: SMTP key from dashboard → SMTP & API tab |
 | `SMTP_FROM` | `noreply@planme.app` | Sender address shown in email client |
-| `CLIENT_ORIGIN` | `http://localhost:5173` | Allowed CORS origin; set to your frontend URL in production |
+| `CLIENT_ORIGIN` | `http://localhost:5173` | Allowed CORS origin in dev only; not used in production |
 | `MAX_SESSIONS_PER_USER` | `3` (from constants) | Max concurrent sessions per account |
 
 ---

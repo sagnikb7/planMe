@@ -123,7 +123,8 @@ router.get('/me', (req, res) => {
 
 router.post('/forgot-password', forgotPasswordLimiter, validate(forgotPasswordSchema), async (req, res) => {
   try {
-    const result = await authService.forgotPassword(req.body.email);
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const result = await authService.forgotPassword(req.body.email, baseUrl);
     if (result.resetUrl) {
       return res.json({ ...GENERIC_RESET_RESPONSE, resetUrl: result.resetUrl });
     }

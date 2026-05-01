@@ -24,7 +24,7 @@ export class AuthService {
     await userRepository.create({ name, email: normalizedEmail, password: hashed });
   }
 
-  async forgotPassword(email: string): Promise<{ resetUrl?: string }> {
+  async forgotPassword(email: string, baseUrl: string): Promise<{ resetUrl?: string }> {
     const user = await userRepository.findByEmail(email.toLowerCase());
     if (!user) return {};
 
@@ -35,7 +35,7 @@ export class AuthService {
 
     await userRepository.setResetToken(String(user._id), tokenHash, expiresAt);
 
-    const resetUrl = `${env.clientOrigin}/reset-password?token=${token}`;
+    const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
     if (isSmtpConfigured()) {
       try {

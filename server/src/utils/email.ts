@@ -1,7 +1,8 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env';
+import logger from './logger';
 
-function isSmtpConfigured(): boolean {
+export function isSmtpConfigured(): boolean {
   return Boolean(env.smtp.host && env.smtp.user && env.smtp.pass);
 }
 
@@ -10,6 +11,7 @@ function createTransporter() {
     host: env.smtp.host,
     port: env.smtp.port,
     secure: env.smtp.port === 465,
+    requireTLS: env.smtp.port === 587,
     auth: { user: env.smtp.user, pass: env.smtp.pass },
   });
 }
@@ -111,14 +113,18 @@ This link expires in ${expiryHours} hour${expiryHours !== 1 ? 's' : ''}. If you 
 }
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string, expiryHours = 2): Promise<void> {
-  if (!isSmtpConfigured()) return;
+  if (!isSmtpConfigured()) {
+    logger.warn('SMTP not configured — skipping password reset email');
+    return;
+  }
 
   const transporter = createTransporter();
-  await transporter.sendMail({
+  const info = await transporter.sendMail({
     from: `"planMe" <${env.smtp.from}>`,
     to,
     subject: 'Reset your planMe password',
     text: resetEmailText(resetUrl, expiryHours),
     html: resetEmailHtml(resetUrl, expiryHours),
   });
+  logger.info({ messageId: info.messageId, to }, 'Password reset email sent');
 }

@@ -2,6 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+const mockEnv = vi.hoisted(() => ({
+  isProd: false,
+  clientOrigin: 'http://localhost:5173',
+  smtp: { host: '', port: 587, user: '', pass: '', from: 'noreply@planme.app' },
+}));
+
+vi.mock('../../../src/config/env', () => ({ env: mockEnv }));
+
 // Use cheap rounds so bcrypt doesn't slow down unit tests
 vi.mock('../../../src/constants', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/constants')>();
@@ -31,13 +39,14 @@ vi.mock('../../../src/repositories/user-session.repository', () => ({
 
 vi.mock('../../../src/utils/email', () => ({
   sendPasswordResetEmail: vi.fn(),
+  isSmtpConfigured: vi.fn().mockReturnValue(false),
 }));
 
 import { authService, ConflictError, ValidationError } from '../../../src/services/auth.service';
 import { userRepository } from '../../../src/repositories/user.repository';
 import { ideaRepository } from '../../../src/repositories/idea.repository';
 import { userSessionRepository } from '../../../src/repositories/user-session.repository';
-import { sendPasswordResetEmail } from '../../../src/utils/email';
+import { sendPasswordResetEmail, isSmtpConfigured } from '../../../src/utils/email';
 
 const oid = new Types.ObjectId();
 const mockUser = { _id: oid, name: 'Alice', email: 'alice@example.com', password: 'hashed' };
@@ -85,13 +94,15 @@ describe('forgotPassword', () => {
   });
 
   it('sends email and returns {} in production', async () => {
-    vi.stubEnv('NODE_ENV', 'production');
+    mockEnv.isProd = true;
+    vi.mocked(isSmtpConfigured).mockReturnValue(true);
     vi.mocked(userRepository.findByEmail).mockResolvedValue(mockUser as never);
     vi.mocked(userRepository.setResetToken).mockResolvedValue(undefined as never);
     vi.mocked(sendPasswordResetEmail).mockResolvedValue(undefined as never);
     expect(await authService.forgotPassword('alice@example.com')).toEqual({});
     expect(sendPasswordResetEmail).toHaveBeenCalledOnce();
-    vi.unstubAllEnvs();
+    vi.mocked(isSmtpConfigured).mockReturnValue(false);
+    mockEnv.isProd = false;
   });
 });
 

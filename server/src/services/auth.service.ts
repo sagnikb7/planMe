@@ -6,7 +6,8 @@ import { ideaRepository } from '../repositories/idea.repository';
 import { userSessionRepository } from '../repositories/user-session.repository';
 import { env } from '../config/env';
 import { RESET_TOKEN_TTL_MS, BCRYPT_ROUNDS } from '../constants';
-import { sendPasswordResetEmail } from '../utils/email';
+import { sendPasswordResetEmail, isSmtpConfigured } from '../utils/email';
+import logger from '../utils/logger';
 
 function sanitizeUser(user: { _id: unknown; name: string; email: string; createdAt?: Date; password?: string; resetPasswordTokenHash?: unknown; resetPasswordExpiresAt?: unknown }) {
   const { password: _p, resetPasswordTokenHash: _t, resetPasswordExpiresAt: _e, ...safe } = user;
@@ -36,11 +37,19 @@ export class AuthService {
 
     const resetUrl = `${env.clientOrigin}/reset-password?token=${token}`;
 
-    if (process.env.NODE_ENV === 'production') {
-      await sendPasswordResetEmail(user.email, resetUrl, expiryHours);
-      return {};
+    if (isSmtpConfigured()) {
+      try {
+        await sendPasswordResetEmail(user.email, resetUrl, expiryHours);
+      } catch (err) {
+        // Log but don't propagate — an email failure must not return 500
+        // (that would leak whether the email address exists in the DB)
+        logger.error({ err, to: user.email }, 'Failed to send password reset email');
+      }
     }
 
+    // Always include resetUrl in non-production environments so developers
+    // can test the flow without a real inbox (and without SMTP configured).
+    if (env.isProd) return {};
     return { resetUrl };
   }
 

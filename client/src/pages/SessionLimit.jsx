@@ -1,3 +1,4 @@
+import './auth-layout.css';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';

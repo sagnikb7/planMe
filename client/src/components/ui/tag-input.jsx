@@ -1,3 +1,4 @@
+import './tag-input.css';
 import { useRef, useState } from 'react';
 import { TAG_MAX_LENGTH, MAX_TAGS } from '@/lib/constants';
 

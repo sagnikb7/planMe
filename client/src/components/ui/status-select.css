@@ -1,0 +1,27 @@
+.status-select {
+  display: flex;
+  overflow: hidden;
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid var(--ds-color-border-strong);
+  width: fit-content;
+}
+
+.status-select-btn {
+  padding: 0.3rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--ds-color-text-muted);
+  transition: background 0.1s, color 0.1s;
+}
+
+.status-select-btn:hover {
+  color: var(--ds-color-text);
+}
+
+.status-select-btn.is-active {
+  background: var(--ds-color-surface-strong);
+  color: var(--ds-color-text);
+}

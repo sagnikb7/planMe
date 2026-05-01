@@ -1,0 +1,77 @@
+.tag-input-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.5rem;
+  min-height: var(--ds-size-control-md);
+  border: 1px solid var(--ds-color-border-strong);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-color-surface-strong);
+  cursor: text;
+  transition: box-shadow 0.15s;
+}
+
+.tag-input-wrap:focus-within {
+  border-color: transparent;
+  box-shadow: var(--ds-shadow-focus);
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-color-glow-soft);
+  border: 1px solid var(--ds-color-glow-medium);
+  color: var(--ds-color-glow);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.6;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tag-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.1s;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  line-height: 1;
+  /* Expand touch target without affecting chip layout */
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  margin: -0.25rem -0.25rem -0.25rem 0;
+}
+
+.tag-chip-remove:hover { opacity: 1; }
+
+.tag-input-field {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.8125rem;
+  color: var(--ds-color-text);
+  min-width: 6rem;
+  flex: 1;
+  padding: 0.1rem 0;
+}
+
+.tag-input-field::placeholder {
+  color: var(--ds-color-text-soft);
+}
+
+.tag-input-count {
+  font-size: 0.6875rem;
+  color: var(--ds-color-text-soft);
+  margin-left: auto;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}

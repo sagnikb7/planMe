@@ -1,3 +1,4 @@
+import './MyIdeas.css';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import DOMPurify from 'dompurify';
 import { Link, useNavigate } from 'react-router-dom';

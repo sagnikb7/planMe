@@ -1,3 +1,4 @@
+import './status-select.css';
 import { cn } from '@/lib/utils';
 import { IDEA_STATUSES, IDEA_STATUS_LABELS } from '@/lib/constants';
 

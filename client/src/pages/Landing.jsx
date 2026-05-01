@@ -1,3 +1,4 @@
+import './Landing.css';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTypewriter } from '@/hooks/useTypewriter';

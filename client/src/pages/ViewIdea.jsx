@@ -1,3 +1,4 @@
+import './ViewIdea.css';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import DOMPurify from 'dompurify';
 import { Link, useNavigate, useParams } from 'react-router-dom';

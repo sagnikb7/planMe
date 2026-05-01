@@ -24,8 +24,29 @@ All styling through CSS custom properties. No raw hex or hard-coded px in compon
 Allowed uses: active nav indicator, spark button, focus rings, idea index numbers, tag chips, blockquote borders.  
 Do not introduce other accent colors.
 
+## CSS co-location
+Component-specific styles are co-located with their component/page as plain CSS imports (no CSS Modules, no class renaming — classes are still global). Only shared primitives used in 3+ unrelated files live in `design-system.css`.
+
+| File | Owns |
+|---|---|
+| `design-system.css` | Tokens, keyframes, shell, surfaces, feedback, `.tag-chip`, `.tag-chip-remove`, `.status-badge` |
+| `pages/Landing.css` | All `.landing-*` classes |
+| `pages/auth-layout.css` | `.auth-root`, `.auth-logo`, `.auth-card` |
+| `pages/MyIdeas.css` | `.ideas-*`, `.idea-row`, `.idea-card`, `.idea-drag-handle`, `.idea-preview-rich` |
+| `pages/ViewIdea.css` | `.idea-view-title`, `.idea-content` |
+| `components/ui/rich-editor.css` | `.rich-editor` + ProseMirror |
+| `components/ui/tag-input.css` | `.tag-input-wrap`, `.tag-input-field`, `.tag-input-count` |
+| `components/ui/tag-picker.css` | `.tag-picker` + nested |
+| `components/ui/status-select.css` | `.status-select`, `.status-select-btn` |
+| `context/toast-context.css` | `.toast-viewport`, `.toast`, `.toast-dismiss` |
+
+Note: pages that use a component's CSS class *without* importing the component must add an explicit CSS import (e.g. `Profile.jsx` and `Settings.jsx` import `tag-picker.css` directly).
+
 ## Semantic Classes (already exist — check before writing new CSS)
-`.surface-card`, `.surface-glass`, `.feedback-error`, `.feedback-success`, `.tag-chip`, `.status-badge`, `.rich-editor`, `.idea-row`, `.idea-card`, `.idea-title`, `.idea-meta`, `.idea-row-actions`, `.ideas-list`, `.ideas-grid`, `.ideas-empty`, `.idea-drag-handle`, `.idea-index`, `.idea-date`, `.idea-preview-rich`, `.idea-title-row`, `.idea-card-date`, `.idea-row-body`, `.idea-row-left`, `.app-shell`, `.status-badge-dot`
+`.surface-card`, `.surface-glass`, `.feedback-error`, `.feedback-success`, `.tag-chip`, `.tag-chip-remove`, `.status-badge`, `.status-badge-dot`, `.app-shell`, `.nav-shell`, `.link-accent`
+
+Component-scoped classes (see their co-located CSS files above):
+`.rich-editor`, `.idea-row`, `.idea-card`, `.idea-title`, `.idea-meta`, `.idea-row-actions`, `.ideas-list`, `.ideas-grid`, `.ideas-empty`, `.idea-drag-handle`, `.idea-index`, `.idea-date`, `.idea-preview-rich`, `.idea-title-row`, `.idea-card-date`, `.idea-row-body`, `.idea-row-left`
 
 ## Button Variants (`components/ui/button.jsx`)
 | Variant | Use |

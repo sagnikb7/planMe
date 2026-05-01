@@ -4,6 +4,51 @@ Format: `[date] scope — description`
 
 ---
 
+## 2026-05-01 (session 3)
+
+### Landing page — product/investment-grade polish
+- **Updated**: `client/src/pages/Landing.jsx` — full section overhaul
+  - Hero: amber pill badge (`Free forever · Open source`), benefit-led subhead, stats strip with `Check` icons replacing old feature pills
+  - **New section**: Product preview mockup — browser-chrome container with titlebar (3 dots + label) showing 4 static realistic idea rows with tag chips and timestamps
+  - Features: 3-col broken grid → clean 2×2; all icons + copy refreshed (`Zap`, `Hash`, `ShieldCheck`, `WifiOff`); section label added
+  - **New section**: How it works — 3-column grid with amber step numbers (`01`/`02`/`03`), `1px` border dividers; collapses vertically on mobile
+  - **New section**: Manifesto quote — `"Not a doc. Not a database. Just a place to think."` centered, last clause in amber, font-weight 300
+  - Footer CTA: updated headline + sub-text copy; spark button unchanged
+- **Updated**: `client/src/pages/Landing.css` — new classes for all new sections; all within amber-only accent and Geist font constraints
+
+### CSS refactor — co-located styles
+- **Updated**: `client/src/styles/design-system.css` — trimmed from ~1616 → ~290 lines; now contains only design tokens, keyframes, shell/surface/feedback primitives, `.tag-chip`, `.tag-chip-remove`, `.status-badge`
+- **New**: 9 co-located CSS files (plain imports, no CSS Modules, no class renaming):
+  - `client/src/pages/auth-layout.css` — auth form layout (Login, Register, ForgotPassword, SessionLimit)
+  - `client/src/pages/Landing.css` — all landing page styles
+  - `client/src/pages/MyIdeas.css` — ideas list/grid/row/card, drag handle, preview
+  - `client/src/pages/ViewIdea.css` — idea view title + content
+  - `client/src/components/ui/rich-editor.css` — ProseMirror + task list editor
+  - `client/src/components/ui/tag-input.css` — tag input wrap/field/count
+  - `client/src/components/ui/tag-picker.css` — tag picker dropdown
+  - `client/src/components/ui/status-select.css` — status select button
+  - `client/src/context/toast-context.css` — toast viewport + animation
+- `.tag-chip` / `.tag-chip-remove` kept in `design-system.css` — used in 5+ unrelated files; treated as shared primitive
+- `Profile.jsx` and `Settings.jsx` gained `import '../components/ui/tag-picker.css'` — both use `tag-picker-create-input` directly without importing TagPicker
+
+### Service worker — reliability fixes
+- **Updated**: `client/vite.config.js` — workbox: `StaleWhileRevalidate` → `NetworkFirst`, `networkTimeoutSeconds: 4`, `clientsClaim: true`, `skipWaiting: true`, cache renamed `planme-api-v1`, TTL 86400 → 3600
+
+### Offline detection — API-level signal
+- **Updated**: `client/src/lib/api.js` — `serverKnownOnline` flag + custom events (`planme:server-offline`, `planme:server-back-online`) dispatched from axios interceptors; replaces `navigator.onLine`-only detection
+- **Updated**: `client/src/components/AppShell.jsx` — listens to 4 events: `online`, `offline`, `planme:server-offline`, `planme:server-back-online`; removed `useOnlineStatus` import; fixed `react-hooks/set-state-in-effect` lint error with `setTimeout`
+
+### Session list — device icons
+- **Updated**: `client/src/components/SessionList.jsx` — `getDeviceIcon()` selects `Smartphone` (Android/iOS), `Laptop` (macOS/ChromeOS), or `Monitor` (fallback) based on `session.device` string
+
+### Security — dependency patch
+- **Updated**: `package.json` (root) — `pnpm.overrides` forces `serialize-javascript@^7.0.5` (fixes RCE CVE and DoS vulnerability in transitive dep)
+
+### File rename
+- `client/src/components/ui/ConfirmDialog.jsx` → `confirm-dialog.jsx` (kebab-case consistency); 4 import paths updated
+
+---
+
 ## 2026-05-01 (continued)
 
 ### Backend: production-grade health endpoint + Render warm-up

@@ -76,6 +76,8 @@
   color: var(--ds-color-text);
 }
 
+/* ─── Hero ───────────────────────────────────────────────── */
+
 .landing-hero {
   display: flex;
   flex-direction: column;
@@ -83,6 +85,22 @@
   max-width: 52rem;
   margin: 0 auto;
   width: 100%;
+}
+
+/* Pill badge above headline */
+.landing-hero-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--ds-radius-pill);
+  border: 1px solid var(--ds-color-glow-medium);
+  background: var(--ds-color-glow-soft);
+  color: var(--ds-color-glow);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-bottom: 1.5rem;
 }
 
 .landing-headline {
@@ -130,37 +148,170 @@
   flex-wrap: wrap;
 }
 
-.landing-secondary-link {
-  font-size: 0.875rem;
-  color: var(--ds-color-text-muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  transition: color 0.12s;
-}
-
-.landing-secondary-link:hover {
-  color: var(--ds-color-text);
-}
-
-/* Feature pills row */
-.landing-pills {
+/* Stats strip — replaces old landing-pills */
+.landing-stats-strip {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  margin-top: 1.5rem;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
   flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
 }
 
-.landing-pills span {
+.landing-stats-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
   font-size: 0.8125rem;
   color: var(--ds-color-text-soft);
 }
 
-.landing-pills span[aria-hidden] {
-  opacity: 0.35;
+.landing-stats-check {
+  color: var(--ds-color-glow);
+  flex-shrink: 0;
 }
 
-/* Feature cards section */
+/* Scroll cue — bouncing chevron at the base of the hero */
+@keyframes landing-scroll-bounce {
+  0%, 100% { transform: translateY(0);   opacity: 0.35; }
+  50%       { transform: translateY(6px); opacity: 0.65; }
+}
+
+.landing-scroll-cue {
+  display: flex;
+  justify-content: center;
+  padding-top: 2rem;
+  color: var(--ds-color-text-soft);
+  animation: landing-scroll-bounce 2.2s ease-in-out infinite;
+}
+
+/* ─── Section label ──────────────────────────────────────── */
+
+.landing-section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-color-glow);
+  margin: 0 0 0.875rem;
+  opacity: 0.85;
+}
+
+/* ─── Product preview mockup ─────────────────────────────── */
+
+.landing-preview {
+  padding: clamp(1.5rem, 3vh, 2.5rem) 2rem clamp(2.5rem, 5vh, 4rem);
+  max-width: 52rem;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.landing-preview-window {
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--ds-color-border-strong);
+  background: var(--ds-color-bg-elevated);
+  box-shadow:
+    var(--ds-shadow-lg),
+    0 0 0 1px rgba(245, 158, 11, 0.08);
+}
+
+.landing-preview-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--ds-color-border);
+  background: var(--ds-color-surface);
+}
+
+.landing-preview-dots {
+  position: absolute;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.landing-preview-dots span {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ds-color-surface-strong);
+}
+
+.landing-preview-tab {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ds-color-text-muted);
+  letter-spacing: 0.01em;
+}
+
+.landing-preview-body {
+  padding: 0;
+}
+
+.landing-preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--ds-color-border);
+  transition: background 0.1s;
+}
+
+.landing-preview-row:last-child {
+  border-bottom: none;
+}
+
+.landing-preview-title {
+  font-size: 0.875rem;
+  color: var(--ds-color-text);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.landing-preview-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-shrink: 0;
+}
+
+.landing-preview-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-color-glow-soft);
+  border: 1px solid var(--ds-color-glow-medium);
+  color: var(--ds-color-glow);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.landing-preview-time {
+  font-size: 0.75rem;
+  color: var(--ds-color-text-soft);
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .landing-preview-time { display: none; }
+  .landing-preview-row { padding: 0.75rem 1rem; }
+}
+
+/* ─── Features grid ──────────────────────────────────────── */
+
 .landing-features {
   padding: clamp(1.5rem, 3vh, 2.5rem) 2rem clamp(2.5rem, 5vh, 4rem);
   max-width: 60rem;
@@ -170,11 +321,11 @@
 
 .landing-features-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
 }
 
-@media (max-width: 680px) {
+@media (max-width: 520px) {
   .landing-features-grid {
     grid-template-columns: 1fr;
     max-width: 28rem;
@@ -228,13 +379,124 @@
   margin: 0;
 }
 
-/* Footer CTA section */
+/* ─── How it works ───────────────────────────────────────── */
+
+.landing-howitworks {
+  padding: clamp(2.5rem, 5vh, 4rem) 2rem;
+  max-width: 60rem;
+  margin: 0 auto;
+  width: 100%;
+  text-align: center;
+  border-top: 1px solid var(--ds-color-border);
+}
+
+.landing-howitworks-headline {
+  font-size: clamp(1.375rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--ds-color-text);
+  margin: 0 0 3rem;
+}
+
+.landing-howitworks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: left;
+}
+
+.landing-howitworks-col {
+  padding: 0 2rem;
+  border-right: 1px solid var(--ds-color-border);
+}
+
+.landing-howitworks-col:first-child {
+  padding-left: 0;
+}
+
+.landing-howitworks-col:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.landing-step-num {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--ds-color-glow);
+  opacity: 0.7;
+  margin: 0 0 0.75rem;
+  line-height: 1;
+}
+
+.landing-step-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ds-color-text);
+  margin: 0 0 0.5rem;
+}
+
+.landing-step-body {
+  font-size: 0.875rem;
+  color: var(--ds-color-text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .landing-howitworks-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .landing-howitworks-col {
+    padding: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--ds-color-border);
+    padding-bottom: 2rem;
+  }
+  .landing-howitworks-col:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+/* ─── Manifesto ──────────────────────────────────────────── */
+
+.landing-manifesto {
+  padding: clamp(3rem, 6vh, 5rem) 2rem;
+  max-width: 44rem;
+  margin: 0 auto;
+  width: 100%;
+  text-align: center;
+}
+
+.landing-manifesto-quote {
+  font-size: clamp(1.375rem, 3.5vw, 2.25rem);
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 1.3;
+  color: var(--ds-color-text);
+  margin: 0 0 1rem;
+  font-style: normal;
+}
+
+.landing-manifesto-accent {
+  color: var(--ds-color-glow);
+}
+
+.landing-manifesto-sub {
+  font-size: 0.875rem;
+  color: var(--ds-color-text-soft);
+  margin: 0;
+}
+
+/* ─── Footer CTA ─────────────────────────────────────────── */
+
 .landing-footer-cta {
   padding: clamp(2.5rem, 5vh, 4rem) 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
+  gap: 0.75rem;
   border-top: 1px solid var(--ds-color-border);
   max-width: 52rem;
   margin: 0 auto;
@@ -243,28 +505,21 @@
 }
 
 .landing-footer-cta-text {
-  font-size: 1.25rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--ds-color-text);
   margin: 0;
 }
 
-/* Scroll cue — bouncing chevron at the base of the hero */
-@keyframes landing-scroll-bounce {
-  0%, 100% { transform: translateY(0);   opacity: 0.35; }
-  50%       { transform: translateY(6px); opacity: 0.65; }
+.landing-footer-cta-sub {
+  font-size: 0.875rem;
+  color: var(--ds-color-text-muted);
+  margin: 0 0 0.5rem;
 }
 
-.landing-scroll-cue {
-  display: flex;
-  justify-content: center;
-  padding-top: 2rem;
-  color: var(--ds-color-text-soft);
-  animation: landing-scroll-bounce 2.2s ease-in-out infinite;
-}
+/* ─── Footer ─────────────────────────────────────────────── */
 
-/* Landing footer */
 .landing-footer {
   border-top: 1px solid var(--ds-color-border);
   padding: 3rem 2rem 2rem;
@@ -354,6 +609,8 @@
 .landing-footer-heart {
   color: var(--ds-color-glow);
 }
+
+/* ─── Reduced motion ─────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
   .landing-feature-card { animation: none; }

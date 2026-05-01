@@ -54,7 +54,7 @@ BrowserRouter
 ## Pages
 | Page | Key behavior |
 |---|---|
-| `Landing` | Hero + CTA (hides CTA if logged in) |
+| `Landing` | Hero badge + typewriter + CTA + product preview mockup + features 2×2 + how-it-works 3-step + manifesto + footer CTA (hides CTA sections if logged in) |
 | `Login` | Form → `auth.login()` → session-limit redirect or `/ideas` |
 | `Register` | Form → `auth.register()` → `/login` |
 | `MyIdeas` | List/grid DnD, filter/sort, tag filter, search, swipe-archive, offline-aware |

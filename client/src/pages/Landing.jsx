@@ -4,39 +4,72 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
-import { PenLine, Hash, Lock, WifiOff, ChevronDown, ExternalLink } from 'lucide-react';
+import { Zap, Hash, ShieldCheck, WifiOff, ChevronDown, ExternalLink, Check } from 'lucide-react';
 
 const TYPEWRITER_WORDS = [
   'ideas',
   'sparks',
   'notes',
   'plans',
-  'tasks',     // short + useful
-  'drafts',    // common in note apps
-  'lists',     // fits well with productivity theme
-  'goals'      // concise and meaningful
+  'tasks',
+  'drafts',
+  'lists',
+  'goals'
 ];
+
 const FEATURES = [
   {
-    icon: PenLine,
-    title: 'Capture richly',
-    body: 'Bold, bullets, or a single sentence. The editor steps aside so you can think.',
+    icon: Zap,
+    title: 'Capture in seconds',
+    body: 'One tap to a blank editor. No folders to pick, no templates to fill. Just write.',
   },
   {
     icon: Hash,
-    title: 'Tag and find',
-    body: 'Organize by topic. Filter at a glance. No folders, no hierarchy, no friction.',
+    title: 'Find it instantly',
+    body: 'Tag once, filter forever. No deep folder trees or complex search syntax.',
   },
   {
-    icon: Lock,
+    icon: ShieldCheck,
     title: 'Yours alone',
-    body: 'Your ideas stay private by default. No feeds, no algorithms, no noise.',
+    body: 'No feeds, no algorithms, no one reading your drafts. Private by default.',
   },
   {
     icon: WifiOff,
-    title: 'Works offline',
-    body: 'Create and read ideas without a connection. Everything syncs automatically when you\'re back.',
+    title: 'Works without Wi-Fi',
+    body: 'Create and read offline. Everything syncs automatically when you\'re back online.',
   },
+];
+
+const STEPS = [
+  {
+    num: '01',
+    title: 'Capture it',
+    body: 'Open the app, hit the spark button. Write your idea before it disappears.',
+  },
+  {
+    num: '02',
+    title: 'Tag it',
+    body: 'Add a tag or two. Skip the folders. planMe stays out of your way.',
+  },
+  {
+    num: '03',
+    title: 'Come back',
+    body: 'Filter by tag, search by keyword. Your idea is exactly where you left it.',
+  },
+];
+
+const PREVIEW_IDEAS = [
+  { title: 'Shower thought: what if the search was a command palette', tag: 'product', time: '3 ideas ago' },
+  { title: 'Series A pitch — questions to prep', tag: 'work', time: 'yesterday' },
+  { title: 'Mom Test — key lessons from the book', tag: 'reading', time: 'last week' },
+  { title: 'Building in public: tweet thread outline', tag: 'content', time: '2 weeks ago' },
+];
+
+const STATS = [
+  'No credit card',
+  'No tracking',
+  'Works offline',
+  'Open source',
 ];
 
 export default function Landing() {
@@ -64,7 +97,11 @@ export default function Landing() {
       </header>
 
       <main>
+        {/* Hero */}
         <section className="landing-hero" aria-label="Introduction">
+          <div className="landing-hero-badge" aria-hidden="true">
+            Free forever · Open source
+          </div>
           <h1 className="landing-headline">
             A place for the{' '}
             <span className="landing-headline-accent typewriter-word">
@@ -74,8 +111,8 @@ export default function Landing() {
             worth coming back to.
           </h1>
           <p className="landing-subhead">
-            Capture notes, half-formed thoughts, and sparks before they disappear.
-            Private, simple, yours.
+            The fastest way to capture an idea and actually find it later.
+            Private, offline-ready, and free.
           </p>
           {!user && (
             <>
@@ -84,17 +121,14 @@ export default function Landing() {
                   <Link to="/register">Get started — it&apos;s free</Link>
                 </Button>
               </div>
-              <p className="landing-pills" aria-label="Key features">
-                <span>Rich notes</span>
-                <span aria-hidden="true">·</span>
-                <span>Tags</span>
-                <span aria-hidden="true">·</span>
-                <span>Private</span>
-                <span aria-hidden="true">·</span>
-                <span>Offline-ready</span>
-                <span aria-hidden="true">·</span>
-                <span>Free</span>
-              </p>
+              <ul className="landing-stats-strip" aria-label="Key features">
+                {STATS.map((s) => (
+                  <li key={s} className="landing-stats-item">
+                    <Check aria-hidden="true" className="landing-stats-check" size={13} strokeWidth={2.5} />
+                    {s}
+                  </li>
+                ))}
+              </ul>
             </>
           )}
           <div className="landing-scroll-cue" aria-hidden="true">
@@ -102,7 +136,33 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* Product preview mockup */}
+        <section className="landing-preview" aria-label="Product preview">
+          <p className="landing-section-label" aria-hidden="true">What it looks like</p>
+          <div className="landing-preview-window" role="img" aria-label="planMe app screenshot mockup">
+            <div className="landing-preview-titlebar" aria-hidden="true">
+              <div className="landing-preview-dots">
+                <span /><span /><span />
+              </div>
+              <span className="landing-preview-tab">planMe · Ideas</span>
+            </div>
+            <div className="landing-preview-body">
+              {PREVIEW_IDEAS.map((idea) => (
+                <div key={idea.title} className="landing-preview-row">
+                  <p className="landing-preview-title">{idea.title}</p>
+                  <div className="landing-preview-meta">
+                    <span className="landing-preview-tag">{idea.tag}</span>
+                    <span className="landing-preview-time">{idea.time}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Features */}
         <section className="landing-features" aria-label="Features">
+          <p className="landing-section-label" aria-hidden="true">Why planMe</p>
           <div className="landing-features-grid">
             {FEATURES.map(({ icon: Icon, title, body }, i) => (
               <div
@@ -120,9 +180,35 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* How it works */}
+        <section className="landing-howitworks" aria-label="How it works">
+          <p className="landing-section-label" aria-hidden="true">Simple by design</p>
+          <h2 className="landing-howitworks-headline">Three steps. That&apos;s all.</h2>
+          <div className="landing-howitworks-grid">
+            {STEPS.map(({ num, title, body }) => (
+              <div key={num} className="landing-howitworks-col">
+                <p className="landing-step-num" aria-hidden="true">{num}</p>
+                <h3 className="landing-step-title">{title}</h3>
+                <p className="landing-step-body">{body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Manifesto */}
+        <section className="landing-manifesto" aria-label="Mission">
+          <blockquote className="landing-manifesto-quote">
+            Not a doc. Not a database.{' '}
+            <span className="landing-manifesto-accent">Just a place to think.</span>
+          </blockquote>
+          <p className="landing-manifesto-sub">planMe is intentionally minimal.</p>
+        </section>
+
+        {/* Footer CTA */}
         {!user && (
           <section className="landing-footer-cta" aria-label="Call to action">
-            <p className="landing-footer-cta-text">Ready to start capturing?</p>
+            <p className="landing-footer-cta-text">Ready to stop losing your best ideas?</p>
+            <p className="landing-footer-cta-sub">No credit card. No tracking. Just your ideas.</p>
             <Button asChild size="lg" variant="spark">
               <Link to="/register">Start for free</Link>
             </Button>

@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import { ideaRepository } from '../repositories/idea.repository';
 import type { CreateIdeaInput, UpdateIdeaInput } from '../schemas/idea.schema';
 import type { IdeaStatus } from '../models/idea.model';
-import { WORKSPACE_MAX_TAGS, IDEA_LIMIT } from '../constants';
+import { WORKSPACE_MAX_TAGS, IDEA_LIMIT, PIN_LIMIT } from '../constants';
 import { AppError } from '../utils/errors';
 
 export class IdeaService {
@@ -49,6 +49,16 @@ export class IdeaService {
 
   async patchStatus(id: string, userId: Types.ObjectId, status: IdeaStatus) {
     return ideaRepository.patchStatus(id, userId, status);
+  }
+
+  async patchPin(id: string, userId: Types.ObjectId, pinned: boolean) {
+    if (pinned) {
+      const count = await ideaRepository.countPinnedByUser(userId);
+      if (count >= PIN_LIMIT) {
+        throw new AppError(400, `You can pin up to ${PIN_LIMIT} ideas at a time`);
+      }
+    }
+    return ideaRepository.patchPin(id, userId, pinned);
   }
 
   async delete(id: string, userId: Types.ObjectId) {

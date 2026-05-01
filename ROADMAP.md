@@ -1,5 +1,5 @@
 # planMe Roadmap
-_Updated: 2026-05-01 (product + launch-readiness review)_
+_Updated: 2026-05-01 (session 4 — pinned ideas shipped)_
 
 ---
 
@@ -20,7 +20,7 @@ The biggest product gap is not capture. Capture is good. The gap is **retention*
 | UX polish | 7.5/10 | Strong visual identity; keep tightening mobile/card edge cases. |
 | Technical readiness | 8/10 | Build/tests pass; good server/client separation. |
 | Trust/security | 7.5/10 | Privacy/terms and baseline headers added; SMTP and deeper testing still matter. |
-| Retention potential | 6/10 | Needs review loops, reminders, pinned ideas, or another recurring pull. |
+| Retention potential | 6.5/10 | Pinned ideas shipped. Still needs review loops and stale/revisit views. |
 | Differentiation | 6.5/10 | Offline/private/open-source helps, but notes/ideas is a crowded space. |
 | Investor attractiveness | 6/10 | Good craft; needs a sharper wedge, usage proof, and retention signal. |
 | Launch readiness | 7.5/10 | Good for beta after SMTP is configured and key flows are smoke-tested. |
@@ -114,11 +114,13 @@ Mitigation:
 
 **Goal:** Give users a reason to return.
 
-**Pinned ideas**
-- Add `pinned: boolean` to idea model.
-- Float pinned ideas above normal sort.
-- Limit to 3 pinned ideas.
-- Add thumbtack action on idea rows/cards.
+**Pinned ideas** ✓ _Shipped 2026-05-01_
+- `pinned: boolean` on idea model (default `false`).
+- Pinned float above all sort modes; within pinned group sorted by most-recently-updated.
+- Limit of 3 pinned ideas enforced server-side (400) and client-side (toast).
+- Pin button in idea actions (amber when active); Pin icon badge in title row.
+- Archiving a pinned idea auto-unpins it (atomic in repository).
+- Card footer redesigned: date moved to title row, actions float as gradient overlay.
 
 **Review mode**
 - Add a simple review queue: recently untouched ideas, older drafts, or ideas with matching tags.
@@ -206,6 +208,7 @@ Mitigation:
 
 ### Ideas
 
+- Pinned ideas: `pinned: boolean` field, PIN_LIMIT of 3, float above all sort modes, auto-unpins on archive, pin button + amber indicator in rows and cards.
 - Full CRUD with Tiptap rich editor: headings, task lists, code, blockquote, bullet/ordered lists.
 - Archive / restore with contextual banners on ViewIdea and EditIdea.
 - Search, tag filter with counts, sort by newest / updated / A–Z / manual drag-and-drop.

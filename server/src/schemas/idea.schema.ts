@@ -35,6 +35,10 @@ export const patchIdeaStatusSchema = z.object({
   status: z.enum(IDEA_STATUSES),
 });
 
+export const patchIdeaPinSchema = z.object({
+  pinned: z.boolean(),
+});
+
 const OBJECT_ID_REGEX = /^[0-9a-f]{24}$/;
 
 export const reorderIdeasSchema = z.object({
@@ -44,5 +48,6 @@ export const reorderIdeasSchema = z.object({
 export type CreateIdeaInput = z.infer<typeof createIdeaSchema>;
 export type UpdateIdeaInput = z.infer<typeof updateIdeaSchema>;
 export type PatchIdeaStatusInput = z.infer<typeof patchIdeaStatusSchema>;
+export type PatchIdeaPinInput = z.infer<typeof patchIdeaPinSchema>;
 export type ReorderIdeasInput = z.infer<typeof reorderIdeasSchema>;
 export type RenameTagInput = z.infer<typeof renameTagSchema>;

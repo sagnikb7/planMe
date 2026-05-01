@@ -4,7 +4,7 @@ import DOMPurify from 'dompurify';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Trash2, Plus, Lightbulb, Search, X, Archive,
-  List, LayoutGrid, GripVertical, RotateCcw,
+  List, LayoutGrid, GripVertical, RotateCcw, Pin,
 } from 'lucide-react';
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay,
@@ -17,7 +17,7 @@ import api from '@/lib/api';
 import db from '@/lib/db';
 import { seedCache, isOfflineError } from '@/lib/sync';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { SORT_OPTIONS, SEARCH_MIN_LENGTH, IDEA_LIMIT, PROMPT_TEMPLATES } from '@/lib/constants';
+import { SORT_OPTIONS, SEARCH_MIN_LENGTH, IDEA_LIMIT, PIN_LIMIT, PROMPT_TEMPLATES } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader } from '@/components/ui/loader';
@@ -38,7 +38,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, onDelete, onArchive, onRestore, onSwipeArchive }) {
+function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, onDelete, onArchive, onRestore, onSwipeArchive, onPin }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: idea._id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -108,13 +108,14 @@ function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, onDelet
         onDelete={onDelete}
         onArchive={onArchive}
         onRestore={onRestore}
+        onPin={onPin}
         isArchived={isArchived}
       />
     </div>
   );
 }
 
-function SortableIdeaCard({ idea, sortBy, filterTag, setFilterTag, onDelete, onArchive, onRestore }) {
+function SortableIdeaCard({ idea, sortBy, filterTag, setFilterTag, onDelete, onArchive, onRestore, onPin }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: idea._id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -146,6 +147,7 @@ function SortableIdeaCard({ idea, sortBy, filterTag, setFilterTag, onDelete, onA
         onDelete={onDelete}
         onArchive={onArchive}
         onRestore={onRestore}
+        onPin={onPin}
         isArchived={isArchived}
         compact
       />
@@ -153,7 +155,7 @@ function SortableIdeaCard({ idea, sortBy, filterTag, setFilterTag, onDelete, onA
   );
 }
 
-function IdeaBody({ idea, filterTag, setFilterTag, onDelete, onArchive, onRestore, isArchived, compact = false }) {
+function IdeaBody({ idea, filterTag, setFilterTag, onDelete, onArchive, onRestore, onPin, isArchived, compact = false }) {
   const navigate = useNavigate();
   const isLocal = idea._id?.startsWith('local_');
 
@@ -167,6 +169,9 @@ function IdeaBody({ idea, filterTag, setFilterTag, onDelete, onArchive, onRestor
   return (
     <div className={cn('idea-row-body', !isLocal && 'cursor-pointer')} onClick={handleBodyClick}>
       <div className="idea-title-row">
+        {idea.pinned && (
+          <Pin className="h-3 w-3 shrink-0 text-[var(--ds-color-glow)]" aria-label="Pinned" />
+        )}
         <h3 className={cn('idea-title', !idea.title && 'text-[var(--ds-color-text-soft)] italic')}>
           {isLocal ? (
             <span>{idea.title || 'Untitled'}</span>
@@ -185,6 +190,9 @@ function IdeaBody({ idea, filterTag, setFilterTag, onDelete, onArchive, onRestor
           </span>
         )}
         {isArchived && !isLocal && <StatusBadge status="archived" />}
+        {compact && (
+          <span className="idea-card-date" style={{ marginLeft: 'auto' }}>{date}</span>
+        )}
       </div>
       <div
         className="idea-preview-rich"
@@ -203,11 +211,19 @@ function IdeaBody({ idea, filterTag, setFilterTag, onDelete, onArchive, onRestor
               </button>
             ))}
           </div>
-          {compact && (
-            <span className="idea-card-date">{date}</span>
-          )}
         </div>
         <div className="idea-row-actions">
+          {!isArchived && !isLocal && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onPin(idea._id, idea.pinned)}
+              aria-label={idea.pinned ? 'Unpin idea' : 'Pin idea'}
+              style={idea.pinned ? { color: 'var(--ds-color-glow)' } : {}}
+            >
+              <Pin className="w-3.5 h-3.5" />
+            </Button>
+          )}
           {isArchived ? (
             <Button
               variant="ghost"
@@ -348,6 +364,25 @@ export default function MyIdeas() {
     }
   }, [toast]);
 
+  const handlePin = useCallback(async (ideaId, currentlyPinned) => {
+    const newPinned = !currentlyPinned;
+    if (newPinned) {
+      const pinnedCount = ideas.filter((i) => i.pinned && i.status !== 'archived').length;
+      if (pinnedCount >= PIN_LIMIT) {
+        toast(`You can pin up to ${PIN_LIMIT} ideas at a time`);
+        return;
+      }
+    }
+    try {
+      const { data } = await api.patch(`/ideas/${ideaId}/pin`, { pinned: newPinned });
+      setIdeas((prev) => prev.map((i) => i._id === ideaId ? { ...i, pinned: data.pinned } : i));
+      toast(newPinned ? 'Idea pinned' : 'Idea unpinned');
+    } catch (err) {
+      const msg = err.response?.data?.error;
+      toast(msg || 'Failed to update pin');
+    }
+  }, [ideas, toast]);
+
   const handleDelete = async () => {
     if (!pendingDelete) return;
     setDeleting(true);
@@ -395,6 +430,11 @@ export default function MyIdeas() {
       return text.includes(q) || detailsText.toLowerCase().includes(q);
     })
     .sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      if (a.pinned && b.pinned) {
+        return new Date(b.updatedAt ?? b.createdAt) - new Date(a.updatedAt ?? a.createdAt);
+      }
       if (sortBy === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
       if (sortBy === 'updated') return new Date(b.updatedAt ?? b.createdAt) - new Date(a.updatedAt ?? a.createdAt);
       if (sortBy === 'a-z') return (a.title || 'Untitled').localeCompare(b.title || 'Untitled');
@@ -684,6 +724,7 @@ export default function MyIdeas() {
                         onArchive={handleSwipeArchive}
                         onRestore={handleRestore}
                         onSwipeArchive={handleSwipeArchive}
+                        onPin={handlePin}
                       />
                     ))}
                   </div>
@@ -699,6 +740,7 @@ export default function MyIdeas() {
                         onDelete={setPendingDelete}
                         onArchive={handleSwipeArchive}
                         onRestore={handleRestore}
+                        onPin={handlePin}
                       />
                     ))}
                   </div>

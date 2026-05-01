@@ -2,7 +2,7 @@ services:
   - type: web
     name: planme
     runtime: node
-    buildCommand: pnpm install && pnpm build && pnpm prune --prod  
+    buildCommand: pnpm install && pnpm build 
     startCommand: pnpm start
     healthCheckPath: /api/health
     envVars:

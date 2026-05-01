@@ -9,6 +9,7 @@ export interface IIdea extends Document {
   details: string;
   tags: string[];
   status: IdeaStatus;
+  pinned: boolean;
   sortOrder: number;
   user: Types.ObjectId;
   createdAt: Date;
@@ -21,6 +22,7 @@ const ideaSchema = new Schema<IIdea>(
     details: { type: String, required: true },
     tags: { type: [String], default: [] },
     status: { type: String, enum: IDEA_STATUSES, default: 'draft' },
+    pinned: { type: Boolean, default: false },
     sortOrder: { type: Number, default: 0 },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },

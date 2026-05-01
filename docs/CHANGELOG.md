@@ -4,6 +4,24 @@ Format: `[date] scope — description`
 
 ---
 
+## 2026-05-01 (session 4)
+
+### Phase 1 — Pinned ideas
+- **New**: `server/src/constants.ts` — `PIN_LIMIT = 3`
+- **New**: `client/src/lib/constants.js` — `PIN_LIMIT = 3`
+- **Updated**: `server/src/models/idea.model.ts` — `pinned: boolean` field (default `false`)
+- **Updated**: `server/src/schemas/idea.schema.ts` — `patchIdeaPinSchema` + `PatchIdeaPinInput`
+- **Updated**: `server/src/repositories/idea.repository.ts` — `countPinnedByUser`, `patchPin`; `patchStatus` now clears `pinned` when archiving
+- **Updated**: `server/src/services/idea.service.ts` — `patchPin` with PIN_LIMIT enforcement (throws 400 if limit exceeded)
+- **Updated**: `server/src/routes/ideas.routes.ts` — `PATCH /api/ideas/:id/pin`
+- **Updated**: `client/src/pages/MyIdeas.jsx` — `handlePin` callback; sort floats pinned to top (within pinned group: most-recently-updated first); amber Pin icon badge in title row; pin button in actions (amber when active); pin button hidden for archived/local ideas
+
+### Card footer — gradient bleed layout
+- **Updated**: `client/src/pages/MyIdeas.jsx` — date moved from footer to title row (right-aligned, `margin-left: auto`)
+- **Updated**: `client/src/pages/MyIdeas.css` — card actions are now `position: absolute` with a `linear-gradient` fade over tags; footer reduced to tags-only (clean single row); `.idea-card .idea-title-row` aligned `center`
+
+---
+
 ## 2026-05-01 (session 3)
 
 ### Landing page — product/investment-grade polish

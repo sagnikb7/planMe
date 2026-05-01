@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
-import { createIdeaSchema, updateIdeaSchema, patchIdeaStatusSchema, reorderIdeasSchema, renameTagSchema, tagSchema } from '../schemas/idea.schema';
+import { createIdeaSchema, updateIdeaSchema, patchIdeaStatusSchema, patchIdeaPinSchema, reorderIdeasSchema, renameTagSchema, tagSchema } from '../schemas/idea.schema';
 import { ideaService } from '../services/idea.service';
 import { AppError } from '../utils/errors';
 import { WORKSPACE_MAX_TAGS } from '../constants';
@@ -93,6 +93,17 @@ router.put('/:id', validateId, validate(updateIdeaSchema), async (req, res) => {
   } catch (err) {
     if (err instanceof AppError) return res.status(err.statusCode).json({ error: err.message });
     res.status(500).json({ error: 'Failed to update idea' });
+  }
+});
+
+router.patch('/:id/pin', validateId, validate(patchIdeaPinSchema), async (req, res) => {
+  try {
+    const idea = await ideaService.patchPin(req.params.id as string, req.user!._id, req.body.pinned);
+    if (!idea) return res.status(404).json({ error: 'Idea not found' });
+    res.json(idea);
+  } catch (err) {
+    if (err instanceof AppError) return res.status(err.statusCode).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to update pin' });
   }
 });
 

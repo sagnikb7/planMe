@@ -201,14 +201,20 @@
   overflow: hidden;
 }
 
+.idea-card .idea-title-row {
+  align-items: center;
+}
+
 .idea-card .idea-meta {
   margin-top: auto;
   padding-top: 0.5rem;
-  align-items: flex-end;
+  align-items: center;
+  position: relative;
+  min-height: 1.75rem;
 }
 
 .idea-card .idea-meta-left {
-  align-items: flex-end;
+  align-items: center;
 }
 
 .idea-card .idea-tags {
@@ -222,6 +228,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Actions float over tags with a gradient fade — no layout shift */
+.idea-card .idea-row-actions {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to right, transparent, var(--ds-color-surface) 2rem);
+  padding-left: 2rem;
 }
 
 .idea-card:hover {

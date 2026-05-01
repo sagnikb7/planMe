@@ -43,9 +43,23 @@ export class IdeaRepository {
   }
 
   async patchStatus(id: string, userId: Types.ObjectId, status: IdeaStatus): Promise<IIdea | null> {
+    const update: Record<string, unknown> = { status };
+    if (status === 'archived') update.pinned = false;
     return IdeaModel.findOneAndUpdate(
       { _id: id, user: userId },
-      { status },
+      update,
+      { new: true }
+    ).lean() as Promise<IIdea | null>;
+  }
+
+  async countPinnedByUser(userId: Types.ObjectId): Promise<number> {
+    return IdeaModel.countDocuments({ user: userId, pinned: true });
+  }
+
+  async patchPin(id: string, userId: Types.ObjectId, pinned: boolean): Promise<IIdea | null> {
+    return IdeaModel.findOneAndUpdate(
+      { _id: id, user: userId },
+      { pinned },
       { new: true }
     ).lean() as Promise<IIdea | null>;
   }

@@ -27,6 +27,7 @@ export const DETAILS_MAX_LENGTH = 50_000;
 export const IDEA_MAX_TAGS = 3;
 export const WORKSPACE_MAX_TAGS = 10;
 export const IDEA_LIMIT = 100;
+export const PIN_LIMIT = 3;
 
 // Rate limits — windowMs + max requests per IP per window
 export const RATE_LIMIT_LOGIN           = { windowMs: 15 * 60 * 1000, max: 20 } as const; // 20 / 15 min

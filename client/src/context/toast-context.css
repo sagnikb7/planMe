@@ -56,3 +56,26 @@
 }
 
 .toast-dismiss:hover { opacity: 1; }
+
+/* ── Mobile snackbar ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .toast-viewport {
+    top: auto;
+    right: var(--ds-space-4);
+    left: var(--ds-space-4);
+    bottom: calc(5rem + env(safe-area-inset-bottom, 0px) + var(--ds-space-3));
+    max-width: none;
+  }
+
+  .toast {
+    background: var(--ds-color-surface-strong);
+    border-color: var(--ds-color-border-strong);
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  /* Keep solid base for both variants — colored text + border is enough distinction */
+
+  .toast-dismiss { display: none; }
+}

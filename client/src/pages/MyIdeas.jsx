@@ -66,6 +66,7 @@ function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, onDelet
       const dx = e.changedTouches[0].clientX - touchRef.current.startX;
       const dy = e.changedTouches[0].clientY - touchRef.current.startY;
       if (dx < -72 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        navigator.vibrate?.(10);
         onSwipeArchive(idea._id);
       }
     };

@@ -35,7 +35,7 @@ function Toaster({ toasts, onDismiss }) {
   return (
     <div className="toast-viewport" aria-live="polite" aria-label="Notifications">
       {toasts.map((t) => (
-        <div key={t.id} className="toast" data-variant={t.variant} role="status">
+        <div key={t.id} className="toast" data-variant={t.variant} role="status" onClick={() => onDismiss(t.id)}>
           <span>{t.message}</span>
           <button className="toast-dismiss" onClick={() => onDismiss(t.id)} aria-label="Dismiss">
             ✕

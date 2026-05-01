@@ -16,6 +16,7 @@ import ViewIdea from '@/pages/ViewIdea';
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
 import SessionLimit from '@/pages/SessionLimit';
+import { PrivacyPolicy, TermsOfService } from '@/pages/Legal';
 
 export default function App() {
   useEffect(() => {
@@ -29,6 +30,8 @@ export default function App() {
         <div className="app-shell">
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
             <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
             <Route path="/session-limit" element={<SessionLimit />} />
             <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />

@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
-import { Zap, Hash, ShieldCheck, WifiOff, ChevronDown, ExternalLink, Check } from 'lucide-react';
+import { Zap, Hash, ShieldCheck, WifiOff, ChevronDown, ExternalLink, Check, Download, Trash2, Mail } from 'lucide-react';
 
 const TYPEWRITER_WORDS = [
   'ideas',
@@ -58,6 +58,24 @@ const STEPS = [
   },
 ];
 
+const TRUST_ITEMS = [
+  {
+    icon: ShieldCheck,
+    title: 'Private workspace',
+    body: 'Your ideas stay in your account. No ads, no public feed, no selling your notes.',
+  },
+  {
+    icon: Download,
+    title: 'Export anytime',
+    body: 'Download your workspace from Settings as JSON whenever you need a backup.',
+  },
+  {
+    icon: Trash2,
+    title: 'Delete when done',
+    body: 'Account deletion removes your account, ideas, and sessions from the server.',
+  },
+];
+
 const PREVIEW_IDEAS = [
   { title: 'Shower thought: what if the search was a command palette', tag: 'product', time: '3 ideas ago' },
   { title: 'Series A pitch — questions to prep', tag: 'work', time: 'yesterday' },
@@ -82,14 +100,20 @@ export default function Landing() {
         <Logo className="landing-logo text-base" />
         <nav className="landing-header-nav">
           {user ? (
-            <Button asChild variant="spark">
-              <Link to="/ideas">Open workspace</Link>
+            <Button asChild variant="spark" className="landing-header-cta">
+              <Link to="/ideas">
+                <span className="landing-header-cta-full">Open workspace</span>
+                <span className="landing-header-cta-short">Open</span>
+              </Link>
             </Button>
           ) : (
             <>
               <Link to="/login" className="landing-nav-link">Log in</Link>
-              <Button asChild variant="spark">
-                <Link to="/register">Get started</Link>
+              <Button asChild variant="spark" className="landing-header-cta">
+                <Link to="/register">
+                  <span className="landing-header-cta-full">Get started</span>
+                  <span className="landing-header-cta-short">Start</span>
+                </Link>
               </Button>
             </>
           )}
@@ -180,6 +204,29 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* Trust */}
+        <section className="landing-trust" aria-label="Privacy and control">
+          <div className="landing-trust-copy">
+            <p className="landing-section-label" aria-hidden="true">Trust basics</p>
+            <h2 className="landing-trust-headline">Private by default, portable when needed.</h2>
+            <p className="landing-trust-body">
+              planMe keeps the product simple: your ideas are private, offline-friendly, exportable,
+              and removable from your account settings.
+            </p>
+          </div>
+          <div className="landing-trust-grid">
+            {TRUST_ITEMS.map(({ icon: Icon, title, body }) => (
+              <div key={title} className="landing-trust-item">
+                <Icon className="landing-trust-icon" size={16} strokeWidth={1.8} />
+                <div>
+                  <h3>{title}</h3>
+                  <p>{body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* How it works */}
         <section className="landing-howitworks" aria-label="How it works">
           <p className="landing-section-label" aria-hidden="true">Simple by design</p>
@@ -241,6 +288,15 @@ export default function Landing() {
               >
                 <ExternalLink size={13} aria-hidden="true" />
                 GitHub
+              </a>
+            </div>
+            <div className="landing-footer-col">
+              <p className="landing-footer-col-label">Trust</p>
+              <Link to="/privacy" className="landing-footer-link">Privacy</Link>
+              <Link to="/terms" className="landing-footer-link">Terms</Link>
+              <a href="mailto:sagnikbetal@gmail.com" className="landing-footer-link landing-footer-gh">
+                <Mail size={13} aria-hidden="true" />
+                Contact
               </a>
             </div>
           </div>

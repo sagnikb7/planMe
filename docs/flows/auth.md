@@ -14,7 +14,7 @@
 1. POST `/api/auth/login` (rate: 20/15min)
 2. Passport local strategy → verify email+password
 3. **Session limit check**: count active (non-pending) sessions for user
-   - `≥ MAX_SESSIONS_PER_USER (5)` → **[Session Limit Flow](session-limit.md)**
+   - `≥ MAX_SESSIONS_PER_USER (3)` → **[Session Limit Flow](session-limit.md)**
 4. `session.regenerate()` (fixation prevention)
 5. `req.logIn(user)` → Passport serializes user to session
 6. If `rememberMe=true` → cookie.maxAge = 30 days (else 7 days)

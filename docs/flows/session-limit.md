@@ -1,6 +1,6 @@
 # Session Limit Flow
 
-Triggered when a login attempt would exceed `MAX_SESSIONS_PER_USER` (5).
+Triggered when a login attempt would exceed `MAX_SESSIONS_PER_USER` (3).
 
 ## Server-side
 1. `session.regenerate()` — creates fresh session

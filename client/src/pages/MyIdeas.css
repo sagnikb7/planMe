@@ -130,6 +130,14 @@
 .idea-meta-left {
   display: flex;
   flex: 1;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.idea-tags {
+  display: flex;
+  flex: 1;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.375rem;
@@ -196,6 +204,24 @@
 .idea-card .idea-meta {
   margin-top: auto;
   padding-top: 0.5rem;
+  align-items: flex-end;
+}
+
+.idea-card .idea-meta-left {
+  align-items: flex-end;
+}
+
+.idea-card .idea-tags {
+  flex-wrap: nowrap;
+  overflow: hidden;
+  min-height: 1.5rem;
+}
+
+.idea-card .idea-tags .tag-chip {
+  max-width: 6.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .idea-card:hover {

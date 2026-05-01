@@ -10,7 +10,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import api from '@/lib/api';
 import { TAG_MIN_LENGTH, TAG_MAX_LENGTH, WORKSPACE_MAX_TAGS } from '@/lib/constants';
 
-const TAG_PATTERN = /^[a-z][a-z-]*[a-z]$|^[a-z]{2}$/;
+const TAG_PATTERN = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]{2}$/;
 
 function isValidTag(tag) {
   return tag.length >= TAG_MIN_LENGTH && tag.length <= TAG_MAX_LENGTH && TAG_PATTERN.test(tag);
@@ -66,7 +66,7 @@ function TagRow({ entry, allTags, onRenamed }) {
     const normalized = draftName.trim().toLowerCase();
     if (normalized === entry.tag) { cancel(); return; }
     if (!isValidTag(normalized)) {
-      setError('Letters and hyphens only, min 2 chars, cannot start/end with hyphen.');
+      setError('Letters, digits, and hyphens only, min 2 chars, cannot start/end with hyphen.');
       return;
     }
     if (allTags.some((t) => t.tag === normalized && t.tag !== entry.tag)) {

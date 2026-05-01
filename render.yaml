@@ -15,4 +15,4 @@ services:
       - key: LOG_LEVEL
         value: info
       - key: MAX_SESSIONS_PER_USER
-        value: 2
+        value: 3

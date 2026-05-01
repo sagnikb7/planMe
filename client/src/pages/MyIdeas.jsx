@@ -192,15 +192,17 @@ function IdeaBody({ idea, filterTag, setFilterTag, onDelete, onArchive, onRestor
       />
       <div className="idea-meta">
         <div className="idea-meta-left">
-          {(idea.tags || []).map((tag) => (
-            <button
-              key={tag}
-              className="tag-chip"
-              onClick={() => setFilterTag(filterTag === tag ? '' : tag)}
-            >
-              {tag}
-            </button>
-          ))}
+          <div className="idea-tags">
+            {(idea.tags || []).map((tag) => (
+              <button
+                key={tag}
+                className="tag-chip"
+                onClick={() => setFilterTag(filterTag === tag ? '' : tag)}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
           {compact && (
             <span className="idea-card-date">{date}</span>
           )}

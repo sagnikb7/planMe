@@ -24,6 +24,38 @@ interface AppOptions {
   enableHttpLogs?: boolean;
 }
 
+function securityHeaders(isProd: boolean, clientOrigin: string) {
+  return (_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+
+    if (isProd) {
+      const connectSrc = ["'self'"];
+      if (clientOrigin) connectSrc.push(clientOrigin);
+
+      res.setHeader('Content-Security-Policy', [
+        "default-src 'self'",
+        "base-uri 'self'",
+        "object-src 'none'",
+        "frame-ancestors 'none'",
+        "form-action 'self'",
+        "img-src 'self' data: blob:",
+        "font-src 'self' https://fonts.gstatic.com data:",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "script-src 'self' 'unsafe-inline'",
+        `connect-src ${connectSrc.join(' ')}`,
+        "manifest-src 'self'",
+        "worker-src 'self'",
+      ].join('; '));
+    }
+
+    next();
+  };
+}
+
 export function createApp({
   mongoUri,
   cookieSecret,
@@ -36,6 +68,8 @@ export function createApp({
   if (!cookieSecret) throw new Error('cookieSecret is required');
 
   const app = express();
+  app.disable('x-powered-by');
+  app.use(securityHeaders(isProd, clientOrigin));
 
   if (enableHttpLogs) {
     app.use(pinoHttp(pinoHttpConfig));

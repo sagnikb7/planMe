@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/toast-context';
 import { AppShell } from '@/components/AppShell';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ProtectedRoute, PublicOnlyRoute } from '@/components/ProtectedRoute';
 import Landing from '@/pages/Landing';
 import Login from '@/pages/Login';
@@ -16,6 +17,7 @@ import ViewIdea from '@/pages/ViewIdea';
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
 import SessionLimit from '@/pages/SessionLimit';
+import NotFound from '@/pages/NotFound';
 import { PrivacyPolicy, TermsOfService } from '@/pages/Legal';
 
 export default function App() {
@@ -24,6 +26,7 @@ export default function App() {
   }, []);
 
   return (
+    <ErrorBoundary>
     <BrowserRouter>
       <ToastProvider>
       <AuthProvider>
@@ -45,10 +48,12 @@ export default function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
             </Route>
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
       </AuthProvider>
       </ToastProvider>
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }

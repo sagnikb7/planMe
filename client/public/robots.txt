@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /$
+Allow: /privacy
+Allow: /terms
+Disallow: /ideas
+Disallow: /profile
+Disallow: /settings
+Disallow: /api/

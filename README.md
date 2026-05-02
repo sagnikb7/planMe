@@ -2,7 +2,7 @@
 
 A private idea workspace. Capture thoughts, tag them, and come back to the ones worth pursuing. Works offline.
 
-**v0.9.0** — React + Vite frontend, Express + TypeScript API, MongoDB, deployed on Render.
+**v0.10.0** — React + Vite frontend, Express + TypeScript API, MongoDB, deployed on Render.
 
 ---
 
@@ -257,9 +257,13 @@ planMe is a full PWA with a native-feeling mobile experience:
 
 ---
 
-## Design system
+## Design system — Ember
 
-Single dark-first design token set in `design-system.css`. One chromatic accent: amber (`--ds-color-glow: #f59e0b`) — active nav, focus rings, tag chips, CTAs only. Light theme supported via `[data-theme="light"]`. Never use raw hex in component files — always reference a token.
+**Ember** is planMe's visual language. Dark-first, one chromatic accent (amber `#f59e0b`), Geist typography, glass surfaces over ambient gradients. Full design spec in [`DESIGN.md`](./DESIGN.md).
+
+All styling through CSS custom properties in `design-system.css`. Light theme supported via `[data-theme="light"]`. Never use raw hex in component files — always reference a token.
+
+In development, visit `/design-system` for an interactive showcase of every token, component, and animation.
 
 ---
 

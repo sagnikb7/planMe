@@ -41,6 +41,7 @@ BrowserRouter
 | PublicOnly | `/forgot-password` | ForgotPassword |
 | PublicOnly | `/reset-password` | ResetPassword |
 | None | `/session-limit` | SessionLimit (accessible in pending state) |
+| Dev only | `/design-system` | DesignSystem (Ember showcase, `import.meta.env.DEV` only) |
 | Protected | `/ideas` | MyIdeas |
 | Protected | `/ideas/add` | AddIdea |
 | Protected | `/ideas/:id` | ViewIdea |
@@ -64,6 +65,7 @@ BrowserRouter
 | `Profile` | User identity, session management (SessionList), logout |
 | `Settings` | Display name, change password, delete account |
 | `SessionLimit` | Show active sessions, terminate one, resolve pending session |
+| `DesignSystem` | Ember DS showcase — color swatches, type scale, surfaces, buttons, inputs, cards, tags, feedback, motion (dev only) |
 | `ForgotPassword` | Email form → dev shows link, prod sends email |
 | `ResetPassword` | Token + new password form |
 

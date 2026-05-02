@@ -1,6 +1,6 @@
 {
   "name": "planme",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "Idea capture app — Express API + React frontend",
   "private": true,
   "engines": {

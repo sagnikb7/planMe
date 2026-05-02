@@ -1,20 +1,40 @@
-# Visual System
+# Ember Design System
 
-## Direction
-
-planMe is a focused dark tool. The design removes friction — no decorative elements, no competing text, one font, one neutral palette. Every element on screen should earn its place.
-
-The rules that don't change:
-1. Nothing ornamental — no gradients on surfaces, no noise textures, no ghost words
-2. One font — Geist — at different weights and sizes
-3. The background is never pure black (#111, not #000) and never light
-4. One chromatic accent — amber (`--ds-color-glow`) — used only for active states, the spark CTA, focus rings, and index numbers. Never introduce a second hue.
+> Warm light in a dark room. One accent. No noise.
 
 ---
 
-## Font
+## Philosophy
 
-**Geist** is the only typeface. Loaded via Google Fonts in `client/index.html`. Code blocks use **Geist Mono**.
+Ember is the visual language of planMe — a design system built on the belief that dark interfaces don't have to feel cold, and minimal interfaces don't have to feel sterile.
+
+The name comes from what it looks like: a single warm glow (amber) against deep charcoal surfaces. Like an ember in the dark — alive, focused, not trying to illuminate everything at once.
+
+### Principles
+
+1. **One chromatic accent.** Amber (`#f59e0b`) is the entire color budget. It appears only where attention belongs — active states, the spark CTA, focus rings, idea indices. No second hue. No gradients on surfaces. If you can't justify it with amber alone, the design is too complex.
+
+2. **Depth through value, not shadow.** Three background levels — `#111` → `#1a1a1a` → `#222` — create hierarchy without drop shadows. Borders do separation. Glass does elevation. Shadows are reserved for floating layers (modals, toasts).
+
+3. **One font, three weights.** Geist at 400/500/600 carries the entire type hierarchy. No italic for emphasis (use weight or color). No display sizing. Let the type scale do the work.
+
+4. **Translucency as atmosphere.** Glass surfaces (`backdrop-filter: blur(20px)`) sit over a dual ambient gradient — amber top-left, indigo bottom-right — creating a living quality that pure flat surfaces lack. The glow is felt, not seen.
+
+5. **Nothing decorative.** Every pixel earns its place. No grain textures, no ornamental dividers, no ghost text. The dot-grid on the landing page is the single exception — it establishes the brand boundary between marketing and product.
+
+### Inspiration
+
+Ember draws from the intersection of tool design and atmosphere:
+- **Linear** — the benchmark for dark product UI: precise, fast, zero decoration
+- **Vercel** — Geist font family, the idea that a tool can have warmth without being playful
+- **Terminal aesthetics** — the glow of a cursor in a dark room, information-dense but calm
+- **Analog warmth** — amber is the color of candlelight, vacuum tubes, warm film stock. It's the antidote to cold blue-gray tech defaults
+
+---
+
+## Typography
+
+**Geist** — the only typeface. Loaded via Google Fonts. Code blocks use **Geist Mono**.
 
 ```css
 --font-sans:    "Geist", system-ui, sans-serif
@@ -22,152 +42,367 @@ The rules that don't change:
 --font-mono:    "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace
 ```
 
+### Type scale
+
+| Token | Size | Use |
+|---|---|---|
+| `--ds-text-xs` | 0.75rem (12px) | Metadata, badges, field hints, timestamps |
+| `--ds-text-sm` | 0.875rem (14px) | Body text, form labels, nav items |
+| `--ds-text-md` | 1rem (16px) | Default body, input text |
+| `--ds-text-lg` | 1.125rem (18px) | Page headings inside the app shell |
+| `--ds-text-xl` | 1.375rem (22px) | Section headings, card titles |
+| `--ds-text-2xl` | clamp(2rem, 5vw, 3rem) | Landing hero only — responsive |
+
 ### Weight usage
 
-| Weight | Use |
-|---|---|
-| 400 | Body text, descriptions, secondary content |
-| 500 | Labels, nav items, interactive text, sub-headings |
-| 600 | Page headings, card titles, primary labels |
+| Weight | Token | Use |
+|---|---|---|
+| 400 | `font-normal` | Body text, descriptions, secondary content |
+| 500 | `font-medium` | Labels, nav items, interactive text, sub-headings |
+| 600 | `font-semibold` | Page headings, card titles, primary labels |
 
-No italic. No decorative sizing. Let weight and color carry hierarchy.
+**Rules:**
+- No italic — ever. Use weight or `--ds-color-text-muted` for de-emphasis.
+- No decorative sizing. The scale above covers everything.
+- Minimum functional text size: `0.75rem` (12px). Nothing smaller for text that conveys information.
 
 ---
 
-## Color palette
+## Color
 
-Dark-only. Grayscale base with one chromatic accent (amber).
+Dark-only palette. Grayscale base with one chromatic accent.
 
-### Base tokens
+### Core tokens
 
 | Token | Value | Role |
 |---|---|---|
-| `--ds-color-bg` | `#111111` | Page background |
-| `--ds-color-bg-elevated` | `#161616` | Slightly elevated bg layer |
+| `--ds-color-bg` | `#111111` | Page background — never pure black |
+| `--ds-color-bg-elevated` | `#161616` | Slightly elevated layer |
 | `--ds-color-surface` | `#1a1a1a` | Cards, panels |
-| `--ds-color-surface-strong` | `#222222` | Inputs, elevated elements |
+| `--ds-color-surface-strong` | `#222222` | Inputs, elevated interactive elements |
 | `--ds-color-text` | `#e8e8e8` | Primary text |
 | `--ds-color-text-muted` | `#888888` | Secondary text |
-| `--ds-color-text-soft` | `#666666` | Tertiary / very dim |
+| `--ds-color-text-soft` | `#666666` | Tertiary, very dim — hints, placeholders |
 | `--ds-color-border` | `rgba(255,255,255, 0.07)` | Hairline separators |
-| `--ds-color-border-strong` | `rgba(255,255,255, 0.12)` | Borders on interactive elements |
-| `--ds-color-accent` | `#ffffff` | Standard primary button bg |
-| `--ds-color-accent-hover` | `rgba(255,255,255,0.88)` | Button hover |
-| `--ds-color-accent-fg` | `#111111` | Text placed ON a white/accent bg |
-| `--ds-color-accent-soft` | `rgba(255,255,255,0.05)` | Hover bg |
-| `--ds-color-danger` | `#e05555` | Errors, destructive actions |
-| `--ds-color-danger-soft` | `rgba(224,85,85, 0.12)` | Error bg tint |
-| `--ds-color-success` | `#5aab80` | Success states |
-| `--ds-color-success-soft` | `rgba(90,171,128, 0.12)` | Success bg tint |
+| `--ds-color-border-strong` | `rgba(255,255,255, 0.12)` | Interactive element borders |
 
-### Glow / chromatic tokens
-
-The single chromatic note. Amber is warm, rare in dark UIs, and reads as creative energy — right for an ideas tool.
+### Accent tokens
 
 | Token | Value | Role |
 |---|---|---|
-| `--ds-color-glow` | `#f59e0b` | Active nav, idea index numbers, spark button bg, logo icon |
-| `--ds-color-glow-soft` | `rgba(245,158,11, 0.07)` | Active nav bg, hover tints for glow elements |
-| `--ds-color-glow-medium` | `rgba(245,158,11, 0.13)` | Stronger amber tint |
-| `--ds-color-glow-ring` | `rgba(245,158,11, 0.28)` | Focus rings — 2px solid amber ring on inputs and buttons |
-| `--ds-color-glow-shadow` | `rgba(245,158,11, 0.28)` dark / `rgba(192,96,0, 0.12)` light | Ambient glow on the spark button only. Kept separate from `--ds-color-glow-ring` so it can be tuned per theme without affecting focus ring visibility. |
-| `--ds-color-glow-fg` | `#0a0a0a` (dark) / `#111111` (light) | Text ON the spark button — always dark text on amber |
+| `--ds-color-accent` | `#ffffff` | Primary button background |
+| `--ds-color-accent-hover` | `rgba(255,255,255, 0.88)` | Primary button hover |
+| `--ds-color-accent-fg` | `#111111` | Text on accent background |
+| `--ds-color-accent-soft` | `rgba(255,255,255, 0.05)` | Hover tint — ghost buttons, row hover |
 
-### Contrast rules
+### Amber glow tokens
 
-- `--ds-color-text` (#e8e8e8) on `--ds-color-surface` (#1a1a1a): ~11:1 ✓
-- `--ds-color-text-muted` (#888) on `--ds-color-surface` (#1a1a1a): ~4.6:1 ✓
-- `--ds-color-text-soft` (#666) on `--ds-color-bg` (#111): ~4.6:1 ✓
-- `--ds-color-accent-fg` (#111) on `--ds-color-accent` (#fff): 18:1 ✓
-- `--ds-color-glow-fg` (#0a0a0a) on `--ds-color-glow` (#f59e0b, dark): ~10:1 ✓
-- `--ds-color-glow-fg` (#111111) on `--ds-color-glow` (#c06000, light): ~5.2:1 ✓
+The single chromatic note. Amber is warm, rare in dark UIs, and reads as creative energy.
 
-All functional text (dates, index numbers, status badges, tag chips) is set at `0.75rem` minimum (12px). Never go below 12px for text that conveys information.
+| Token | Value | Role |
+|---|---|---|
+| `--ds-color-glow` | `#f59e0b` | Active nav, spark button, focus rings, idea indices |
+| `--ds-color-glow-soft` | `rgba(245,158,11, 0.07)` | Active nav background, subtle tints |
+| `--ds-color-glow-medium` | `rgba(245,158,11, 0.13)` | Tag chip borders, stronger amber tint |
+| `--ds-color-glow-ring` | `rgba(245,158,11, 0.28)` | Focus ring — `0 0 0 2px` on inputs and buttons |
+| `--ds-color-glow-shadow` | `rgba(245,158,11, 0.28)` | Spark button ambient glow |
+| `--ds-color-glow-fg` | `#0a0a0a` | Text on amber background |
+
+### Semantic tokens
+
+| Token | Value | Role |
+|---|---|---|
+| `--ds-color-danger` | `#e05555` | Errors, destructive actions |
+| `--ds-color-danger-soft` | `rgba(224,85,85, 0.12)` | Error background tint |
+| `--ds-color-success` | `#5aab80` | Success states |
+| `--ds-color-success-soft` | `rgba(90,171,128, 0.12)` | Success background tint |
+
+### Contrast ratios
+
+| Pair | Ratio |
+|---|---|
+| `--ds-color-text` on `--ds-color-surface` | ~11:1 |
+| `--ds-color-text-muted` on `--ds-color-surface` | ~4.6:1 |
+| `--ds-color-accent-fg` on `--ds-color-accent` | 18:1 |
+| `--ds-color-glow-fg` on `--ds-color-glow` | ~10:1 |
 
 ### Adding new colors
 
-Don't add additional chromatic colors. The amber glow is the single hue budget — it's been carefully chosen to feel intentional rather than random. If a new semantic state is needed, add it as a grayscale-adjacent token first.
+Don't. The amber glow is the single hue budget. If a new semantic state is needed, add it as a grayscale-adjacent token first.
 
 ---
 
 ## Surfaces
 
-| Class | What it is |
-|---|---|
-| `.surface-card` | `#1a1a1a` bg with hairline border, `8px` radius — default container |
-| `.surface-panel` | Same as card but `12px` radius — auth pages, larger shells |
-| `.surface-glass` | Frosted-glass panel (`rgba(20,20,20,0.6)`, `backdrop-filter: blur(20px)`) — sidebar only |
-| `.nav-shell` | Dark blurred bg for mobile bottom nav, amber hairline shadow |
-| `.feedback-error` | Red-tinted error notice |
-| `.feedback-success` | Green-tinted success notice |
+| Class | Treatment | Use |
+|---|---|---|
+| `.surface-card` | `#1a1a1a`, hairline border, `8px` radius | Default container — cards, sections |
+| `.surface-panel` | Same as card, `12px` radius | Auth pages, larger shells |
+| `.surface-glass` | `rgba(20,20,20, 0.72)`, `blur(20px)`, hairline border | Sidebar, auth card — over ambient gradient only |
 
 ### Rules
-- Surfaces are flat — no `::before` highlights, no gradient fills, no shadows on cards
-- Borders do the separation work (`var(--ds-color-border)`)
-- Depth is expressed by background value: `#111` → `#1a1a1a` → `#222` — not by shadows
-- `.surface-glass` is for panels over the ambient-glow background only (sidebar). Don't use on forms or cards inside content.
+
+- Surfaces are flat. No `::before` highlights, no gradient fills, no shadows on cards.
+- Borders do separation (`var(--ds-color-border)`).
+- Depth = background value: `#111` → `#1a1a1a` → `#222`. Not shadows.
+- `.surface-glass` lives over the ambient-glow background only. Never on forms or content cards.
 
 ---
 
 ## Ambient background
 
-The `.app-shell` wrapper and `.auth-root` page carry a very subtle dual radial gradient:
+The `.app-shell` wrapper carries a dual radial gradient:
 - Top-left: amber glow at ~4.5% opacity
 - Bottom-right: indigo glow at ~3% opacity
 
-This creates atmosphere and makes the glassmorphism sidebar legible. The gradient is imperceptible on its own but provides the "something alive" quality the dark theme would otherwise lack.
+Imperceptible on its own but provides the "something alive" quality. This is what makes the glass surfaces work — they blur this gradient, creating depth without shadows.
 
-The landing page additionally uses a dot-grid texture (`::after` pseudo) and a stronger amber radial behind the hero section.
+The landing page adds a dot-grid texture and a stronger amber radial behind the hero.
 
 ---
 
 ## Buttons
 
+Six variants, three sizes. Every button in the app maps to exactly one combination.
+
 ### Variants
 
-| Variant | When |
-|---|---|
-| `default` | Primary form submit — white bg, dark text. Save, Sign in, Create account. |
-| `spark` | Single primary creative CTA per view — amber bg + glow. New idea, Get started. |
-| `outline` | Standalone secondary — transparent bg with border. Sign out, destructive confirm. |
-| `ghost` | Tertiary inline — no bg until hover. Cancel in card footers, nav-adjacent actions. |
-| `ghost-danger` | Inline destructive row action — no bg until hover, danger color. Delete in lists. Never use `className` overrides on `ghost` for danger — use this variant. |
-| `destructive` | Full destructive confirmation — red bg, white text. Reserved for modal confirm dialogs. |
+| Variant | Appearance | When to use |
+|---|---|---|
+| `default` | White bg, dark text | Primary form submits — Save, Sign in, Create |
+| `spark` | Amber bg + ambient glow | Single creative CTA per view — New idea, Get started |
+| `outline` | Transparent + border | Secondary standalone — Sign out, cancel confirmation |
+| `ghost` | No bg until hover | Tertiary inline — Cancel in footers, nav-adjacent |
+| `ghost-danger` | No bg, danger text | Inline destructive — Delete in rows. Never className-override `ghost` for this. |
+| `destructive` | Red bg, white text | Modal confirmation dialogs only |
+| `link` | Underline on hover | Inline text links styled as buttons |
 
 ### Sizes
 
 | Size | Height | When |
 |---|---|---|
-| `sm` | 2rem (h-8) | Inline row actions (Edit, Delete inside idea rows), controls alongside inputs |
-| `default` | 2.5rem (h-10) | Form CTAs, card footer actions, standalone buttons |
-| `lg` | 2.75rem (h-11) | Hero CTAs on landing page only |
+| `sm` | 2rem (32px) | Inline row actions — Edit, Delete inside idea rows |
+| `default` | 2.5rem (40px) | Form CTAs, card footer actions, standalone |
+| `lg` | 2.75rem (44px) | Hero CTAs on landing page only |
+| `icon` | 2.5rem × 2.5rem | Square icon-only buttons |
 
-**Rule**: Don't mix `sm` and `default` in the same button group. Card footer Save + Cancel are both `default`. Row Edit + Delete are both `sm`.
-
-Buttons use `--ds-radius-sm` (6px). Not pill-shaped — clean geometric rectangle.
+**Rules:**
+- Don't mix `sm` and `default` in the same button group.
+- Buttons use `--ds-radius-sm` (6px). Not pill-shaped.
+- Never use `spark` for form submits — that's what `default` is for.
+- Focus ring: `--ds-shadow-focus` (amber 2px ring).
 
 ---
 
-## Tokens reference
+## Inputs
 
-### Spacing scale
+All input elements share the same visual treatment:
 
-`--ds-space-1` through `--ds-space-12` in 0.25rem increments. Available values: 1 (0.25), 2 (0.5), 3 (0.75), 4 (1), 5 (1.25), 6 (1.5), **7 (1.75)**, 8 (2), **9 (2.25)**, 10 (2.5), 12 (3). Always use these tokens — never raw `px` or `rem` for spacing.
+- Background: `--ds-color-surface-strong`
+- Border: `1px solid var(--ds-color-border-strong)`
+- Radius: `--ds-radius-sm` (6px)
+- Focus: border goes transparent, `--ds-shadow-focus` amber ring appears
+- Placeholder: `--ds-color-text-soft`
 
-### Z-index scale
+### Components
+
+| Component | Notes |
+|---|---|
+| `Input` | Standard single-line. Height: `--ds-size-control-md` |
+| `Textarea` | Multi-line. `min-height: 96px`, resize-y |
+| `PasswordField` | Input + show/hide toggle (Eye icon) |
+| `TagInput` | Chip container + inline input. Shows tag count. |
+| `RichEditor` | TipTap editor with toolbar. Active toolbar buttons use `--ds-color-glow-soft` bg. |
+| `StatusSelect` | Segmented button group. Active segment: `--ds-color-surface-strong` bg. |
+
+---
+
+## Tags
+
+`.tag-chip` — amber-tinted pill badges for idea categorization.
+
+- Background: `--ds-color-glow-soft`
+- Border: `1px solid var(--ds-color-glow-medium)`
+- Text: `--ds-color-glow` (amber)
+- Size: `0.75rem` text, `font-weight: 500`
+- Shape: `--ds-radius-pill` (fully rounded)
+- Remove button: `×` with expanded touch target (1.5rem min)
+
+Tags are the only element that uses pill radius. Everything else is rectangular.
+
+---
+
+## Status badges
+
+`.status-badge` — uppercase, small, with a colored dot indicator.
+
+- Font: `0.75rem`, weight 500, uppercase, `0.04em` letter-spacing
+- Dot: 5px circle, color-matched to status
+- Archived status: `--ds-color-text-muted` at 60% opacity
+
+---
+
+## Cards
+
+Built from `.surface-card` with consistent internal spacing.
+
+| Component | Class/Style |
+|---|---|
+| `Card` | `.surface-card` wrapper |
+| `CardHeader` | `p-6`, flex column, `gap-1.5` |
+| `CardTitle` | `text-lg`, `font-semibold`, `--ds-color-text` |
+| `CardDescription` | `text-sm`, `--ds-color-text-muted` |
+| `CardContent` | `p-6 pt-0` |
+| `CardFooter` | `p-6 pt-0`, flex row |
+
+---
+
+## Dialog
+
+Modal dialogs use Radix primitives with Ember treatment:
+
+- **Overlay:** black/50 + `blur-sm`, fade-in animation
+- **Content:** `.surface-card` + `--ds-shadow-lg`, scale+fade entrance
+- **Title:** `text-sm`, `font-semibold`
+- **Description:** `text-xs`, `--ds-color-text-muted`
+- Z-index: overlay at `--ds-z-overlay` (40), content at `--ds-z-modal` (50)
+
+---
+
+## Toast
+
+Transient confirmation system — glass-morphism treatment.
+
+- Background: `rgba(28,28,28, 0.82)` + `blur(20px)`
+- Position: top-right (desktop), bottom snackbar (mobile, above nav)
+- Variants: default (neutral glass), `success` (green tint), `error` (red tint)
+- Auto-dismiss: 3 seconds
+- Z-index: `--ds-z-toast` (60)
+- Animation: `ds-fade-up`
+
+**Rules:**
+- Never use toasts for validation or auth errors — those are blocking (use inline feedback).
+- Never use inline banners for post-navigation success — use toasts.
+
+---
+
+## Feedback
+
+Two inline classes for blocking, contextual messages:
+
+| Class | Color | Use |
+|---|---|---|
+| `.feedback-error` | `--ds-color-danger` on `--ds-color-danger-soft` | Auth errors, form-level errors, data load failures |
+| `.feedback-success` | `--ds-color-success` on `--ds-color-success-soft` | Success states that need to persist (not navigated away) |
+
+These stay visible until the user acts. Always show in context — near the form or failing element.
+
+---
+
+## Loader
+
+Three-dot bounce animation. `<Loader />` component.
+
+- Inherits `currentColor` — works on any background
+- Used in every submit button during loading, and full-page data states
+- Pattern: `<><Loader /> Label text</>` inside buttons
+- Never use raw "Loading..." text — always the Loader component
+
+---
+
+## Motion
+
+### Keyframes
+
+| Name | Use | Duration |
+|---|---|---|
+| `ds-bounce` | Loader dots — staggered scale + opacity | 1.4s loop |
+| `ds-fade-up` | Page entrance — opacity + translateY(7px) | 0.22s |
+| `ds-fade-in` | Overlay/scrim — pure opacity | 0.15s |
+| `ds-modal-enter` | Dialog — scale(0.96) + opacity | 0.18s |
+
+### Transitions
+
+| Element | Properties | Duration |
+|---|---|---|
+| Nav items | color, background, box-shadow | 150ms |
+| Idea row hover | background, box-shadow | 150ms |
+| Actions reveal | opacity | 120ms |
+| Input focus | box-shadow | 150ms |
+
+### Stagger
+
+Idea rows stagger at 40ms intervals via inline `animationDelay`. Capped at ~10 visible rows.
+
+### Reduced motion
+
+All decorative animations respect `prefers-reduced-motion: reduce`. Page entrances are disabled. Loader slows to 3s (still functional).
+
+---
+
+## Spacing
+
+`--ds-space-{n}` in 0.25rem increments.
+
+| Token | Value |
+|---|---|
+| `--ds-space-1` | 0.25rem (4px) |
+| `--ds-space-2` | 0.5rem (8px) |
+| `--ds-space-3` | 0.75rem (12px) |
+| `--ds-space-4` | 1rem (16px) |
+| `--ds-space-5` | 1.25rem (20px) |
+| `--ds-space-6` | 1.5rem (24px) |
+| `--ds-space-7` | 1.75rem (28px) |
+| `--ds-space-8` | 2rem (32px) |
+| `--ds-space-9` | 2.25rem (36px) |
+| `--ds-space-10` | 2.5rem (40px) |
+| `--ds-space-12` | 3rem (48px) |
+
+Always use tokens. Never raw `px` or `rem` for spacing.
+
+---
+
+## Sizing
+
+| Token | Value | Use |
+|---|---|---|
+| `--ds-size-control-sm` | 2rem (32px) | Small buttons, inline actions |
+| `--ds-size-control-md` | 2.5rem (40px) | Default buttons, inputs |
+| `--ds-size-control-lg` | 2.75rem (44px) | Hero CTAs (meets 44px touch target) |
+| `--ds-size-container` | 72rem | Max content width |
+
+---
+
+## Radius
+
+| Token | Value | Use |
+|---|---|---|
+| `--ds-radius-sm` | 6px | Buttons, inputs, small controls |
+| `--ds-radius-md` | 8px | Cards (`.surface-card`) |
+| `--ds-radius-lg` | 12px | Panels (`.surface-panel`) |
+| `--ds-radius-pill` | 999px | Tag chips only |
+
+---
+
+## Z-index
 
 | Token | Value | Layer |
 |---|---|---|
-| `--ds-z-sticky` | 10 | Landing header, other sticky elements |
-| `--ds-z-overlay` | 40 | Dialog backdrop / scrim |
+| `--ds-z-sticky` | 10 | Sticky headers |
+| `--ds-z-overlay` | 40 | Dialog backdrop |
 | `--ds-z-modal` | 50 | Dialog content |
-| `--ds-z-toast` | 60 | Toast notifications (future) |
+| `--ds-z-toast` | 60 | Toast notifications |
 
-Use these tokens via Tailwind arbitrary values: `z-[var(--ds-z-modal)]`.
+---
 
-### Viewport height
+## Shadow
 
-All full-height containers use `min-height: 100dvh` (not `100vh`) to account for mobile browser chrome. This applies to `.app-shell`, `.auth-root`, `.landing-root`, and `#root`.
+| Token | Value | Use |
+|---|---|---|
+| `--ds-shadow-sm` | `0 1px 3px rgba(0,0,0,0.4)` | Subtle elevation |
+| `--ds-shadow-md` | `0 4px 12px rgba(0,0,0,0.5)` | Toast, dropdown |
+| `--ds-shadow-lg` | `0 8px 24px rgba(0,0,0,0.6)` | Modal content |
+| `--ds-shadow-focus` | `0 0 0 2px var(--ds-color-glow-ring)` | Focus ring — amber |
 
 ---
 
@@ -176,192 +411,59 @@ All full-height containers use `min-height: 100dvh` (not `100vh`) to account for
 ### App shell (authenticated)
 
 ```
-#111 + ambient glow background
-  ├── skip-link (sr-only, visible on focus — keyboard a11y)
-  ├── sidebar (w-56, surface-glass) — logo w/ sparkles icon, nav, logout
-  └── content area
+.app-shell (ambient gradient bg)
+  ├── skip-link (sr-only, visible on focus)
+  ├── sidebar (w-56, surface-glass) — logo, nav, logout
+  └── content column
         ├── header (page title)
-        └── <main id="main-content"> <Outlet /> </main>
+        └── <main> — scroll container on mobile
 ```
 
-Mobile: content full-width, fixed bottom nav dock (`nav-shell`) with amber active icon.
-
-The skip-link targets `#main-content` and is visually hidden until focused via keyboard (`sr-only focus:not-sr-only`). It must remain the first focusable element inside `.app-shell`.
+Mobile: full-width content, fixed bottom nav dock (`.nav-shell`) with amber active icon.
 
 ### Auth pages
 
-Centered single-column layout using `.auth-root`. Auth card uses glass treatment (frosted). No split panel, no story content.
+Centered single-column. Glass card over ambient gradient.
 
 ```
-auth-root (centered flex, full height, amber ambient glow)
-  auth-logo  ← Logo with Sparkles icon
-  auth-card  ← max-w-[22rem] glass form
+.auth-root (centered flex, full height, amber glow)
+  ├── auth-logo
+  └── auth-card (max-w-[22rem], glass)
 ```
 
-### Public landing
+### Landing
 
-`.landing-root` → `.landing-header` + `.landing-hero`. Dot-grid texture, amber radial glow, amber-accented headline word.
+`.landing-root` → header + hero. Dot-grid texture, amber radial, amber-accented headline.
 
----
+### Viewport height
 
-## Components
-
-### Existing shared components
-
-- `Button` — `client/src/components/ui/button.jsx` — 5 variants: default, spark, outline, ghost, destructive
-- `Input`, `Textarea` — `--ds-color-surface-strong` bg, amber focus ring via `--ds-shadow-focus`
-- `PasswordField` — same as Input with show/hide toggle
-- `Label` — small text above inputs
-- `Logo` — `client/src/components/Logo.jsx` — includes amber Sparkles icon
-- `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter` — wrappers around `.surface-card`
-
-### About section (Settings page)
-
-A single `surface-card` at the bottom of `/settings`. Content that earns its place:
-
-- **App name + version** (top row, space-between) — useful for bug reports and version identification
-- **One-line description** — factual, not marketing (that belongs on the landing page)
-- **Made with + GitHub + copyright** — ownership metadata, quiet footer row
-
-The `Heart` icon from Lucide uses `--ds-color-glow` (amber) — the one controlled extension of the amber accent beyond CTAs/active states. It reads as warmth, not as a button or active indicator. Don't add other icon colors here.
-
-Text hierarchy: `text-sm/500` for name, `text-xs/muted` for description, `text-xs/soft` for footer row.
-
-### Adding a new component
-
-1. Use `--ds-color-*` tokens for all colors
-2. Use `--ds-radius-sm` (6px) for small controls, `--ds-radius-md` (8px) for cards
-3. No italic, no display-font sizing, no decorative treatments
-4. Hover state: `--ds-color-accent-soft` bg tint (`rgba(255,255,255,0.05)`)
-5. Focus: `--ds-shadow-focus` = `0 0 0 2px var(--ds-color-glow-ring)` (amber ring)
-6. New utility classes go in `design-system.css` — never inline `style={}` for theme values
-
-### Ideas list
-
-`.ideas-list` / `.idea-row`. Each row is a 2-column grid: narrow left column with amber index number + muted date, right column with title + preview + actions. Actions hide on desktop and reveal on hover **or keyboard focus** (`:focus-within`). Always visible on touch. Row hover adds amber left-border accent via `box-shadow: inset 2px 0 0 var(--ds-color-glow)`.
-
-### Nav active state
-
-Active nav items use `--ds-color-glow-soft` bg tint and white text (desktop) or amber text + icon (mobile). The icon on active desktop items is tinted amber. Never use `--ds-color-accent-soft` for the active state — that 5% white tint is too invisible.
+All full-height containers use `min-height: 100dvh` (not `100vh`) for mobile browser chrome.
 
 ---
 
-## Motion
+## Light theme
 
-Purposeful and minimal. Every animation either communicates state or reduces perceived wait time — never decorative.
+Solarized-inspired. Amber accent adjusts to `#c06000` for contrast on cream backgrounds.
 
-### Reduced motion
-
-All decorative animations respect `prefers-reduced-motion: reduce`. Page entrances (`.ds-page-enter`, `.auth-card`, `.idea-row`) are disabled outright. The loader slows to 3s instead of being removed — it's functional feedback, not decoration.
-
-### Keyframes
-
-| Name | Use |
-|---|---|
-| `ds-bounce` | 3-dot loader — staggered scale + opacity pulse |
-| `ds-fade-up` | Entrance — opacity 0→1 + translateY 7px→0, 0.22s |
-| `ds-fade-in` | Overlay/scrim — pure opacity fade, no translate |
-| `ds-modal-enter` | Dialog — scale 0.96→1 + opacity, centered via transform |
-
-### Loader — `<Loader />`
-
-`client/src/components/ui/loader.jsx` — three dots using `.ds-loader` / `.ds-loader-dot` CSS classes.
-
-- Inherits `currentColor` — works on any button variant or background
-- Used in every form submit button during `isSubmitting`, and in full-page data loading states
-- Rendered as `<><Loader /> Label text</>` inside buttons so the label stays visible
-
-**Never** use raw "Loading…" or "Saving…" text strings — always `<Loader />` + short label.
-
-### Page entrance — `.ds-page-enter`
-
-Applied to `<main key={location.pathname}>` in `AppShell`. The `key` forces a remount on every route change, replaying the `ds-fade-up` animation (0.22s). Auth cards use the same animation with a 0.06s delay so the logo lands first.
-
-### Nav active indicator
-
-Desktop sidebar active items use `shadow-[inset_2px_0_0_var(--ds-color-glow)]` — an amber left-border effect rendered via `box-shadow` (no layout shift). Transitions via `transition-[color,background-color,box-shadow] duration-150`.
-
-### All transitions
-
-| Element | Property | Duration |
-|---|---|---|
-| Nav items | color, background-color, box-shadow | 150ms |
-| Idea row hover | background, box-shadow | 150ms |
-| Actions reveal | opacity | 120ms |
-| Button hover | color, background, box-shadow | built-in |
-| Spark button glow | box-shadow | built-in |
-
-### Stagger
-
-Idea rows use `style={{ animationDelay: '${index * 40}ms' }}` with the `.idea-row` base animation (`ds-fade-up`). First row enters immediately, subsequent rows stagger at 40ms intervals. Cap visible at ~10 rows before delay becomes noticeable.
-
-No entrance animations on hover states, tooltips, or dropdowns. No typewriter effects. No looping motion outside the Loader.
+All tokens are overridden under `[data-theme="light"]` in `design-system.css`. The structure and components are identical — only values change.
 
 ---
 
-## Feedback system
+## What Ember is not
 
-Two tiers — choose based on whether the feedback is blocking or informational.
-
-### Inline — blocking, context-dependent
-
-Use `feedback-error` / `feedback-success` CSS classes for:
-- Auth errors (login failure, registration failure)
-- Form-level errors (`errors.root`)
-- Field validation errors (below each field, `text-xs text-[var(--ds-color-danger)]`)
-- Data load failures (ideas list, view page)
-
-These stay visible until the user acts. They must appear in context — near the form or the failing element.
-
-### Toast — transient confirmations
-
-Use `useToast()` from `@/context/toast-context` for actions that succeed silently:
-
-| Action | Message |
-|---|---|
-| Create idea | "Idea saved" |
-| Update idea | "Idea updated" |
-| Delete idea | "Idea deleted" |
-| Archive idea | "Idea archived" |
-| Restore idea | "Idea restored" |
-
-Toast API: `toast(message, variant?)` where variant is `'success'` (default) or `'error'`.
-Auto-dismiss at 3 s. Position: top-right, z-index `--ds-z-toast` (60).
-
-**Never** use toasts for validation or auth errors — those are blocking and need inline treatment.
-**Never** use inline banners for success confirmations after navigation — use toasts.
+- **Not colorful.** One hue. Period.
+- **Not playful.** No rounded-everything, no bouncing animations, no emoji in UI.
+- **Not shadowed.** Borders and value shifts create hierarchy.
+- **Not decorative.** No grain, no noise, no gradients on surfaces.
+- **Not cold.** The amber glow exists specifically to prevent the "government office" dark theme.
 
 ---
 
-## Tailwind v4 — cascade layer rule
+## Contribution rules
 
-Tailwind v4 puts all utilities into `@layer utilities`. **Unlayered CSS beats all layered CSS** regardless of specificity. This means any global element rule written outside a `@layer` in `index.css` will silently override Tailwind utility classes on those elements.
-
-**The invariant:** Every global element selector in `index.css` that sets a property also set by Tailwind utilities must live inside `@layer base`:
-
-```css
-/* CORRECT */
-@layer base {
-  a { color: inherit; text-decoration: none; }
-}
-
-/* WRONG — overrides text-[var(--ds-color-glow-fg)] on <Link> components */
-a { color: inherit; }
-```
-
-The `*`, `html`, `body`, and `#root` rules in `index.css` are currently unlayered but don't conflict with utility classes in practice (no components apply Tailwind color utilities directly to those elements). If that ever changes, move them into `@layer base` too.
-
----
-
-## What to avoid
-
-- Any second chromatic color beyond amber (no blues, greens, purples as accent)
-- Italic or serif typography
-- Gradient backgrounds on surfaces or cards
-- Decorative elements: noise, grain, dot grids **inside the app shell** (dot grid is landing-only)
-- Split-panel auth layouts with marketing copy
-- Tip cards or info blocks inside the shell UI
-- Shadows on regular content cards (borders handle separation)
-- Pill-shaped buttons (use `--ds-radius-sm` rectangles)
-- Using `spark` variant for form submits — that's what `default` (white) is for
-- Using `surface-glass` on content cards — glass is sidebar + auth card only
+1. Use `--ds-color-*` tokens for all colors. No raw hex in components.
+2. Use `--ds-radius-sm` for controls, `--ds-radius-md` for cards. No `rounded-lg` on buttons.
+3. Hover: `--ds-color-accent-soft` bg tint. Focus: `--ds-shadow-focus` amber ring.
+4. New utility classes go in `design-system.css`. Never inline `style={}` for theme values.
+5. Touch targets ≥ 44px on mobile.
+6. Every UI feature works on desktop and mobile. No desktop-only features.

@@ -4,6 +4,22 @@ Format: `[date] scope — description`
 
 ---
 
+## 2026-05-02 (session 6)
+
+### Version bump → 0.10.0
+
+### Ember Design System — naming, manifesto, showcase
+- **Rewritten**: `DESIGN.md` — renamed the design system to "Ember"; added philosophy, inspiration, principles; reorganized all token/component documentation into a manifesto-style reference
+- **New**: `client/src/pages/DesignSystem.jsx` + `DesignSystem.css` — dev-only (`/design-system`) showcase page: hero with amber title, philosophy cards, color swatches (click-to-copy), type scale, surface stage with ambient orbs behind glass, 2-column components layout (buttons + inputs), cards with tags/badges, feedback/dialog/loader/motion demos, primitives (radius/shadows/spacing), logo strip
+- **Updated**: `client/src/App.jsx` — added `/design-system` route gated behind `import.meta.env.DEV`
+- **Fixed**: `client/src/components/ui/tag-input.jsx` — `MAX_TAGS` import renamed to `IDEA_MAX_TAGS` (matching actual export from constants)
+- **Updated**: `README.md` — version bump, Ember DS mention with dev showcase note
+- **Updated**: `docs/guidelines/design-system.md` — renamed to Ember, added DESIGN.md and showcase references, added DesignSystem.css to co-location table
+- **Updated**: `docs/modules/client.md` — added DesignSystem page and dev-only route
+- **Updated**: `docs/INDEX.md` — renamed design system entry to Ember
+
+---
+
 ## 2026-05-02 (session 5)
 
 ### Mobile UX — scroll, layout, and safe-area fixes

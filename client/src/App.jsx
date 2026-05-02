@@ -19,6 +19,9 @@ import Settings from '@/pages/Settings';
 import SessionLimit from '@/pages/SessionLimit';
 import NotFound from '@/pages/NotFound';
 import { PrivacyPolicy, TermsOfService } from '@/pages/Legal';
+import DesignSystem from '@/pages/DesignSystem';
+
+const isDev = import.meta.env.DEV;
 
 export default function App() {
   useEffect(() => {
@@ -33,6 +36,7 @@ export default function App() {
         <div className="app-shell">
           <Routes>
             <Route path="/" element={<Landing />} />
+            {isDev && <Route path="/design-system" element={<DesignSystem />} />}
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />

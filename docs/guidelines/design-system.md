@@ -1,6 +1,6 @@
-# Design System
+# Ember Design System
 
-Source: `client/src/styles/design-system.css`
+Source: `client/src/styles/design-system.css` | Full spec: [`DESIGN.md`](../../DESIGN.md) | Dev showcase: `/design-system` (dev only)
 
 ## Rule
 All styling through CSS custom properties. No raw hex or hard-coded px in component files.
@@ -39,6 +39,7 @@ Component-specific styles are co-located with their component/page as plain CSS 
 | `components/ui/tag-picker.css` | `.tag-picker` + nested |
 | `components/ui/status-select.css` | `.status-select`, `.status-select-btn` |
 | `context/toast-context.css` | `.toast-viewport`, `.toast`, `.toast-dismiss` |
+| `pages/DesignSystem.css` | `.ds-showcase`, `.ds-hero`, `.ds-section`, etc. (dev-only showcase page) |
 
 Note: pages that use a component's CSS class *without* importing the component must add an explicit CSS import (e.g. `Profile.jsx` and `Settings.jsx` import `tag-picker.css` directly).
 

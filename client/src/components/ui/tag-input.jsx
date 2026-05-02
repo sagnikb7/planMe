@@ -1,11 +1,11 @@
 import './tag-input.css';
 import { useRef, useState } from 'react';
-import { TAG_MAX_LENGTH, MAX_TAGS } from '@/lib/constants';
+import { TAG_MAX_LENGTH, IDEA_MAX_TAGS } from '@/lib/constants';
 
 export function TagInput({ value = [], onChange, disabled, placeholder = 'Add tag…' }) {
   const [inputVal, setInputVal] = useState('');
   const inputRef = useRef(null);
-  const atLimit = value.length >= MAX_TAGS;
+  const atLimit = value.length >= IDEA_MAX_TAGS;
 
   const commit = () => {
     const tag = inputVal.trim().toLowerCase().replace(/,/g, '');
@@ -61,7 +61,7 @@ export function TagInput({ value = [], onChange, disabled, placeholder = 'Add ta
       )}
       {!disabled && (
         <span className="tag-input-count" aria-live="polite">
-          {value.length}/{MAX_TAGS}
+          {value.length}/{IDEA_MAX_TAGS}
         </span>
       )}
     </div>

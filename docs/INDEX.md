@@ -23,7 +23,7 @@ Quick-nav for the knowledge base. Start here.
 
 ## Guidelines
 - [Constants](guidelines/constants.md) — all shared constants and their values
-- [Design System](guidelines/design-system.md) — tokens, classes, button variants, amber accent rule
+- [Ember Design System](guidelines/design-system.md) — tokens, classes, button variants, amber accent rule, dev showcase
 
 ## History
 - [CHANGELOG](CHANGELOG.md)

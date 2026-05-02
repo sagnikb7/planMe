@@ -4,6 +4,24 @@ Format: `[date] scope — description`
 
 ---
 
+## 2026-05-02 (session 7)
+
+### Design System public + haptics + PWA splash
+- **Updated**: `client/src/App.jsx` — removed dev gate on `/design-system` route, now publicly accessible
+- **Updated**: `client/src/pages/Landing.jsx` — added "Design System" link in footer Product column
+- **Updated**: `client/src/pages/Settings.jsx` — added Home link in about section for mobile users to reach landing page
+- **New**: `client/src/lib/haptics.js` — `haptic(style)` utility wrapping `navigator.vibrate()` with light/medium/heavy patterns
+- **Updated**: `client/src/components/ui/button.jsx` — haptic feedback on spark button clicks
+- **Updated**: `client/src/context/toast-context.jsx` — haptic on toast creation
+- **Updated**: `client/src/components/AppShell.jsx` — haptic on mobile nav item taps
+- **Updated**: `client/src/components/ui/dialog.jsx` — haptic on dialog open
+- **Updated**: `client/src/components/ui/confirm-dialog.jsx` — heavy haptic on destructive confirm
+- **Updated**: `client/index.html` — inline splash screen (sparkle icon + wordmark) shows before React hydrates
+- **Updated**: `client/src/main.jsx` — removes splash div on mount
+- **Updated**: `client/src/pages/DesignSystem.css` — smooth scroll, safe-area footer padding
+
+---
+
 ## 2026-05-02 (session 6)
 
 ### Version bump → 0.10.0

@@ -1,6 +1,6 @@
 # Ember Design System
 
-Source: `client/src/styles/design-system.css` | Full spec: [`DESIGN.md`](../../DESIGN.md) | Dev showcase: `/design-system` (dev only)
+Source: `client/src/styles/design-system.css` | Full spec: [`DESIGN.md`](../../DESIGN.md) | Showcase: `/design-system`
 
 ## Rule
 All styling through CSS custom properties. No raw hex or hard-coded px in component files.

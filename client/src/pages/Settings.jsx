@@ -1,7 +1,7 @@
 import '../components/ui/tag-picker.css';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Download, Keyboard, Moon, Sun, Check, Pencil, X, Heart, Smartphone } from 'lucide-react';
+import { Download, Keyboard, Moon, Sun, Check, Pencil, X, Heart, Smartphone, Home } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/context/toast-context';
 import { useAuth } from '@/hooks/useAuth';
@@ -445,6 +445,14 @@ export default function Settings() {
             <Heart className="w-3 h-3 text-[var(--ds-color-glow)]" aria-hidden="true" />
             by sagnikbetal
           </span>
+          <span aria-hidden="true" className="select-none">·</span>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-[var(--ds-color-text-muted)] transition-colors"
+          >
+            <Home className="w-3 h-3" />
+            Home
+          </Link>
           <span aria-hidden="true" className="select-none">·</span>
           <a
             href="https://github.com/sagnikb7/planMe"

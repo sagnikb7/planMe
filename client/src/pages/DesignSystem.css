@@ -5,6 +5,7 @@
   min-height: 100dvh;
   background: var(--ds-color-bg);
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 /* ── Ambient orbs (fixed) ──────────────────────────────────── */
@@ -631,7 +632,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2.5rem 2rem 3rem;
+  padding: 2.5rem 2rem calc(3rem + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--ds-color-border);
 }
 

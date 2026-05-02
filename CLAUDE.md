@@ -174,7 +174,7 @@ Session location is resolved at list time via `geoip-lite` (offline DB). Private
 
 | Type | Paths |
 |------|-------|
-| Public | `/`, `/login`, `/register`, `/forgot-password`, `/reset-password` |
+| Public | `/`, `/login`, `/register`, `/forgot-password`, `/reset-password`, `/design-system` |
 | Protected | `/ideas`, `/ideas/add`, `/ideas/edit/:id`, `/profile`, `/settings` |
 
 ---

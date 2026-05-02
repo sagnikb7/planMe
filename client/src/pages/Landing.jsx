@@ -277,6 +277,7 @@ export default function Landing() {
               <p className="landing-footer-col-label">Product</p>
               {!user && <Link to="/register" className="landing-footer-link">Get started</Link>}
               <Link to="/login" className="landing-footer-link">Sign in</Link>
+              <Link to="/design-system" className="landing-footer-link">Design System</Link>
             </div>
             <div className="landing-footer-col">
               <p className="landing-footer-col-label">Source</p>

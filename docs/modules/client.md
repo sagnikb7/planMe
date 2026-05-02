@@ -41,7 +41,7 @@ BrowserRouter
 | PublicOnly | `/forgot-password` | ForgotPassword |
 | PublicOnly | `/reset-password` | ResetPassword |
 | None | `/session-limit` | SessionLimit (accessible in pending state) |
-| Dev only | `/design-system` | DesignSystem (Ember showcase, `import.meta.env.DEV` only) |
+| Public | `/design-system` | DesignSystem (Ember showcase) |
 | Protected | `/ideas` | MyIdeas |
 | Protected | `/ideas/add` | AddIdea |
 | Protected | `/ideas/:id` | ViewIdea |

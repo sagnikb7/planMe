@@ -3,6 +3,7 @@ import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { BookOpen, Keyboard, PlusCircle, Settings, Smartphone, UserCircle2 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { cn } from '@/lib/utils';
+import { haptic } from '@/lib/haptics';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { ShortcutsModal } from '@/components/ShortcutsModal';
@@ -67,6 +68,7 @@ function NavItem({ to, icon: Icon, label, mobile = false }) {
     <NavLink
       to={to}
       end={to === '/ideas'}
+      onClick={() => { if (mobile) haptic('light'); }}
       className={({ isActive }) => cn(
         mobile
           ? 'flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[var(--ds-radius-sm)] px-2 py-2 text-[12px] font-medium transition-[color,background-color] duration-150'

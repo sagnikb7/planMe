@@ -21,8 +21,6 @@ import NotFound from '@/pages/NotFound';
 import { PrivacyPolicy, TermsOfService } from '@/pages/Legal';
 import DesignSystem from '@/pages/DesignSystem';
 
-const isDev = import.meta.env.DEV;
-
 export default function App() {
   useEffect(() => {
     fetch('/api/health').catch(() => {});
@@ -36,7 +34,7 @@ export default function App() {
         <div className="app-shell">
           <Routes>
             <Route path="/" element={<Landing />} />
-            {isDev && <Route path="/design-system" element={<DesignSystem />} />}
+            <Route path="/design-system" element={<DesignSystem />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />

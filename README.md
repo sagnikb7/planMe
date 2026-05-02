@@ -252,7 +252,8 @@ planMe is a full PWA with a native-feeling mobile experience:
 - **Safe area** — `viewport-fit=cover` + `env(safe-area-inset-bottom)` so the floating nav clears the iPhone home indicator and Dynamic Island.
 - **Auto-hiding nav** — the bottom nav slides off screen when scrolling down and reappears on scroll-up, recovering ~64px of vertical space. Always visible at the top and bottom of a page, and resets on every route change.
 - **Snackbar toasts** — on mobile (≤ 767px) toasts appear bottom-center above the nav instead of top-right. Tap anywhere on the toast to dismiss. Desktop keeps top-right.
-- **Swipe to archive** — swipe an idea row left (≥ 72px, horizontally dominant) to archive it. **Haptic feedback fires on Android** via `navigator.vibrate(10)` — a short 10 ms pulse. iOS Safari does not implement `vibrate`; the call is a silent no-op there.
+- **Haptic feedback** — `navigator.vibrate()` on key interactions: spark button taps (light 10ms), toast notifications (light), mobile nav taps (light), dialog open (medium 20ms), destructive confirms (heavy 30ms). iOS Safari doesn't implement `vibrate` — calls are silent no-ops.
+- **Splash screen** — inline splash in `index.html` (sparkle icon + wordmark on `#111` bg) shows instantly on cold start before React hydrates, then removes itself on mount. No white flash.
 - **Apple PWA meta tags** — `apple-mobile-web-app-capable` + `apple-mobile-web-app-status-bar-style: black-translucent` for correct iOS standalone behaviour.
 
 ---
@@ -263,7 +264,7 @@ planMe is a full PWA with a native-feeling mobile experience:
 
 All styling through CSS custom properties in `design-system.css`. Light theme supported via `[data-theme="light"]`. Never use raw hex in component files — always reference a token.
 
-In development, visit `/design-system` for an interactive showcase of every token, component, and animation.
+Visit `/design-system` for an interactive showcase of every token, component, and animation.
 
 ---
 

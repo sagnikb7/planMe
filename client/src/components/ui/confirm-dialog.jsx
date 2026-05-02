@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from './dialog';
 import { Button } from './button';
 import { Loader } from './loader';
+import { haptic } from '@/lib/haptics';
 
 export function ConfirmDialog({
   open,
@@ -32,7 +33,7 @@ export function ConfirmDialog({
             variant="ghost-danger"
             size="sm"
             className="w-full sm:w-auto"
-            onClick={onConfirm}
+            onClick={() => { haptic('heavy'); onConfirm(); }}
             disabled={loading || confirmDisabled}
           >
             {loading ? <><Loader /> {confirmLabel}…</> : confirmLabel}

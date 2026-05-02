@@ -1,5 +1,6 @@
 import './toast-context.css';
 import { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { haptic } from '@/lib/haptics';
 
 const ToastContext = createContext(null);
 
@@ -14,6 +15,7 @@ export function ToastProvider({ children }) {
   const toast = useCallback((message, variant = 'success') => {
     const id = ++counterRef.current;
     setToasts((prev) => [...prev, { id, message, variant }]);
+    haptic('light');
     setTimeout(() => dismiss(id), 3000);
   }, [dismiss]);
 

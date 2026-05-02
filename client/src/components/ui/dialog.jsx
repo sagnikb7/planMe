@@ -1,7 +1,10 @@
 import * as RadixDialog from '@radix-ui/react-dialog';
+import { useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { haptic } from '@/lib/haptics';
 
 export function Dialog({ open, onOpenChange, children }) {
+  useEffect(() => { if (open) haptic('medium'); }, [open]);
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       {children}

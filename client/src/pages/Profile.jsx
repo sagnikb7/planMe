@@ -190,7 +190,7 @@ export default function Profile() {
           size="sm"
           onClick={handleLogout}
           disabled={loggingOut}
-          className="self-start sm:self-auto"
+          className="w-full sm:w-auto justify-center"
         >
           {loggingOut ? <Loader /> : <LogOut className="h-4 w-4" />}
           {loggingOut ? 'Signing out…' : 'Sign out'}

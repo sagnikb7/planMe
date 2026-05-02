@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/toast-context';
+import { PWAProvider } from '@/context/pwa-context';
 import { AppShell } from '@/components/AppShell';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ProtectedRoute, PublicOnlyRoute } from '@/components/ProtectedRoute';
@@ -29,6 +30,7 @@ export default function App() {
   return (
     <ErrorBoundary>
     <BrowserRouter>
+      <PWAProvider>
       <ToastProvider>
       <AuthProvider>
         <div className="app-shell">
@@ -55,6 +57,7 @@ export default function App() {
         </div>
       </AuthProvider>
       </ToastProvider>
+      </PWAProvider>
     </BrowserRouter>
     </ErrorBoundary>
   );

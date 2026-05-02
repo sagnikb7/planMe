@@ -1,12 +1,59 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
-import { BookOpen, Keyboard, PlusCircle, Settings, UserCircle2 } from 'lucide-react';
+import { BookOpen, Keyboard, PlusCircle, Settings, Smartphone, UserCircle2 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { ShortcutsModal } from '@/components/ShortcutsModal';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { flushPendingQueue } from '@/lib/sync';
+
+const INSTALL_DISMISSED_KEY = 'planme-install-dismissed';
+
+function PWAInstallModal({ onInstall, onDismiss }) {
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-black/60"
+        style={{ zIndex: 'calc(var(--ds-z-modal) - 1)', animation: 'ds-fade-in 0.2s ease-out both' }}
+        onClick={onDismiss}
+        aria-hidden="true"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pwa-modal-title"
+        className="fixed left-1/2 top-1/2 w-[min(calc(100vw-2rem),22rem)] surface-panel p-7"
+        style={{ zIndex: 'var(--ds-z-modal)', animation: 'ds-modal-enter 0.22s ease-out both', transform: 'translate(-50%, -50%)' }}
+      >
+        <div className="mb-5 flex h-12 w-12 mx-auto items-center justify-center rounded-[var(--ds-radius-md)] bg-[var(--ds-color-glow-soft)] text-[var(--ds-color-glow)]">
+          <Smartphone className="h-6 w-6" />
+        </div>
+        <h2 id="pwa-modal-title" className="text-base font-semibold text-[var(--ds-color-text)] text-center mb-2">
+          Better as an app
+        </h2>
+        <p className="text-sm text-[var(--ds-color-text-muted)] text-center leading-relaxed mb-6">
+          Add planMe to your home screen for instant access, offline support, and a feel closer to native — no app store needed.
+        </p>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={onInstall}
+            className="w-full flex items-center justify-center gap-2 rounded-[var(--ds-radius-sm)] bg-[var(--ds-color-glow)] px-4 py-2.5 text-sm font-semibold text-[var(--ds-color-glow-fg)] transition-opacity hover:opacity-90"
+          >
+            Install planMe
+          </button>
+          <button
+            onClick={onDismiss}
+            className="w-full py-2 text-sm text-[var(--ds-color-text-muted)] transition-colors hover:text-[var(--ds-color-text)]"
+          >
+            Not now
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
 
 const navItems = [
   { to: '/ideas', label: 'Ideas', icon: BookOpen },
@@ -51,10 +98,33 @@ export function AppShell() {
   const [bannerStatus, setBannerStatus] = useState('idle');
   const [navHidden, setNavHidden] = useState(false);
   const [trackedPathname, setTrackedPathname] = useState(location.pathname);
+  const [showInstallModal, setShowInstallModal] = useState(false);
   const syncedTimer = useRef(null);
   const reachable = useRef(true);
   const lastScrollY = useRef(0);
+  const mainRef = useRef(null);
   useKeyboardShortcuts();
+
+  const { installPrompt, prompt: promptInstall } = usePWAInstall();
+
+  // Show install modal once, 5 s after the app is ready, if not already installed/dismissed
+  useEffect(() => {
+    if (!installPrompt) return;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    if (isStandalone || localStorage.getItem(INSTALL_DISMISSED_KEY)) return;
+    const timer = setTimeout(() => setShowInstallModal(true), 5000);
+    return () => clearTimeout(timer);
+  }, [installPrompt]);
+
+  const handleInstall = async () => {
+    await promptInstall();
+    setShowInstallModal(false);
+  };
+
+  const handleInstallDismiss = () => {
+    localStorage.setItem(INSTALL_DISMISSED_KEY, '1');
+    setShowInstallModal(false);
+  };
 
   // Reset nav when route changes — setState during render is the React-recommended
   // pattern for deriving state from props/context without a useEffect
@@ -63,20 +133,25 @@ export function AppShell() {
     setNavHidden(false);
   }
 
-  // Auto-hide nav on scroll down, restore on scroll up / top / bottom
+  // Auto-hide nav on scroll down, restore on scroll up / top / bottom.
+  // main is the scroll container on mobile (body no longer scrolls), so we
+  // listen to mainRef. Re-run on route change because main remounts via key.
   useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    lastScrollY.current = 0;
     const onScroll = () => {
-      const y = window.scrollY;
-      const nearBottom = y + window.innerHeight >= document.documentElement.scrollHeight - 80;
+      const y = el.scrollTop;
+      const nearBottom = y + el.clientHeight >= el.scrollHeight - 80;
       const delta = y - lastScrollY.current;
       lastScrollY.current = y;
       if (nearBottom || y < 80) { setNavHidden(false); return; }
       if (delta > 8)  setNavHidden(true);
       if (delta < -8) setNavHidden(false);
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [location.pathname]);
 
   useEffect(() => {
     const handler = () => setShortcutsOpen(true);
@@ -143,14 +218,14 @@ export function AppShell() {
   const sectionTitle = navItems.find((item) => location.pathname.startsWith(item.to))?.label || 'Workspace';
 
   return (
-    <div className="app-shell min-h-screen">
+    <div className="app-shell app-shell-layout">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-[var(--ds-radius-sm)] focus:bg-[var(--ds-color-surface)] focus:px-4 focus:py-2 focus:text-sm focus:text-[var(--ds-color-text)] focus:shadow-[var(--ds-shadow-focus)]"
       >
         Skip to main content
       </a>
-      <div className="mx-auto flex min-h-screen max-w-[var(--ds-size-container)] gap-0 md:gap-6 px-0 py-0 md:px-6 md:py-6">
+      <div className="app-shell-inner mx-auto flex min-h-screen max-w-[var(--ds-size-container)] gap-0 md:gap-6 px-0 py-0 md:px-6 md:py-6">
 
         {/* Sidebar */}
         <aside className="surface-glass hidden w-56 shrink-0 flex-col p-3 md:flex sticky top-6 h-[calc(100dvh-3rem)]">
@@ -179,17 +254,21 @@ export function AppShell() {
         </aside>
 
         {/* Main content */}
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="app-shell-content-col flex min-w-0 flex-1 flex-col min-h-0">
           <h1 className="sr-only">{sectionTitle}</h1>
           <OfflineBanner status={bannerStatus} />
 
-          <main id="main-content" key={location.pathname} className="ds-page-enter min-w-0 flex-1 px-4 py-4 md:px-0">
+          <main ref={mainRef} id="main-content" key={location.pathname} className="app-shell-main ds-page-enter min-w-0 flex-1 px-4 py-4 md:px-0">
             <Outlet />
           </main>
         </div>
       </div>
 
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+
+      {showInstallModal && (
+        <PWAInstallModal onInstall={handleInstall} onDismiss={handleInstallDismiss} />
+      )}
 
       {/* Mobile bottom nav */}
       <nav className={cn('nav-shell fixed inset-x-3 z-20 rounded-[var(--ds-radius-lg)] px-2 pt-2 md:hidden', navHidden && 'nav-hidden')}>

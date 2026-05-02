@@ -21,7 +21,9 @@
   font-weight: 500;
   pointer-events: all;
   border: 1px solid var(--ds-color-border-strong);
-  background: var(--ds-color-surface-strong);
+  background: rgba(28, 28, 28, 0.82);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
   color: var(--ds-color-text);
   box-shadow: var(--ds-shadow-md);
   animation: ds-fade-up 0.18s ease-out both;
@@ -68,14 +70,20 @@
   }
 
   .toast {
-    background: var(--ds-color-surface-strong);
+    background: rgba(28, 28, 28, 0.86);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border-color: var(--ds-color-border-strong);
     justify-content: center;
     text-align: center;
     cursor: pointer;
   }
 
-  /* Keep solid base for both variants — colored text + border is enough distinction */
-
   .toast-dismiss { display: none; }
+}
+
+[data-theme="light"] .toast {
+  background: rgba(238, 232, 213, 0.84);
+  border-color: rgba(101, 123, 131, 0.22);
+  color: var(--ds-color-text);
 }

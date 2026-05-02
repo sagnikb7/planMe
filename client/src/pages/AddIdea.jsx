@@ -1,3 +1,4 @@
+import './add-idea.css';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -92,10 +93,10 @@ export default function AddIdea() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <Card className="w-full">
-        <CardContent className="pt-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" id="idea-form">
+    <div className="add-idea-page mx-auto max-w-3xl">
+      <Card className="add-idea-card w-full">
+        <CardContent className="add-idea-content pt-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="add-idea-form space-y-4" id="idea-form">
             {errors.root && (
               <p className="feedback-error px-3 py-2 text-sm">{errors.root.message}</p>
             )}
@@ -106,9 +107,10 @@ export default function AddIdea() {
               </div>
               <Input id="title" placeholder="Give your idea a title (optional)" maxLength={TITLE_MAX_LENGTH} {...register('title')} />
             </div>
-            <div className="space-y-1.5">
+            <div className="add-idea-details space-y-1.5">
               <Label>Details</Label>
               <RichEditor
+                className="add-idea-editor"
                 content={details}
                 onChange={(html) => { setDetails(html); if (detailsError) setDetailsError(''); }}
               />

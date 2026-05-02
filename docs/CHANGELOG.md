@@ -4,6 +4,47 @@ Format: `[date] scope — description`
 
 ---
 
+## 2026-05-02 (session 5)
+
+### Mobile UX — scroll, layout, and safe-area fixes
+- **Updated**: `client/src/pages/auth-layout.css` — `body:has(.auth-root) { overflow: hidden }` prevents body scroll on auth pages; `.auth-root` becomes its own scroll container on mobile with `height: 100dvh`, `justify-content: safe center`, hidden scrollbar
+- **New**: `client/src/pages/add-idea.css` — flex chain (`height: 100dvh - 7rem` → card → form → editor → ProseMirror) fills available height on mobile so the rich-text area expands rather than letting the page scroll
+- **Updated**: `client/src/styles/design-system.css` — `app-shell-layout` (mobile): `height: 100dvh; overflow: hidden` bounds the flex chain; `app-shell-inner`: `height: 100%`; `app-shell-main`: `overflow-y: auto; padding-bottom: 5rem + safe-area`. Removed `padding-bottom` from the base `.app-shell` rule
+- **Updated**: `client/src/components/AppShell.jsx` — root div uses `app-shell-layout` (separate from `app-shell` used by App.jsx); `mainRef` scroll listener re-attaches on `location.pathname` change (fixes auto-hide nav after route change); `<main>` keyed on `location.pathname`
+- **Updated**: `client/src/pages/Landing.css` — `landing-footer` gains `padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px))` so "made with ❤" isn't flush with the nav
+
+### Mobile UX — grid enforcement
+- **Updated**: `client/src/pages/MyIdeas.jsx` — `view` state initialised to `'grid'` when `window.innerWidth < 640`; resize listener enforces grid on narrow viewports regardless of saved preference
+
+### Idea card actions — ⋮ dropdown (consistent list + grid)
+- **Removed**: swipe-to-archive gesture (was broken; accidental archives)
+- **Updated**: `client/src/pages/MyIdeas.jsx`:
+  - `IdeaBody` — self-contained menu state (`menuOpen`, `menuPos`); ⋮ button calculates fixed position from `getBoundingClientRect()`, flips upward when near bottom, aligns right when near viewport edge; dropdown rendered via `createPortal` into `document.body` to escape `overflow:hidden` ancestors; `justClosed` ref prevents card navigation immediately after menu closes on outside tap; closes on scroll
+  - Grid (compact): ⋮ top-left in title row, tags bottom-left, date bottom-right
+  - List: ⋮ in the meta row right side; same dropdown, same state machine
+  - State matrix — Active synced: Edit · Pin/Unpin · Archive · Delete; Active local: Delete only; Archived: Restore · Delete
+- **Updated**: `client/src/pages/MyIdeas.css` — added `.idea-menu-btn`, `.idea-menu-dropdown`, `.idea-menu-dropdown-item`, `.idea-card-footer`; removed action-sheet CSS
+- **Updated**: `client/src/pages/ViewIdea.jsx` — action bar is now state-conditional: active idea shows Edit + Archive + Delete; archived idea shows Restore + Delete only (Edit hidden); `handleArchive` added
+
+### Nav + snackbar — opacity
+- **Updated**: `client/src/styles/design-system.css` — `--ds-nav-bg` bumped from `0.94` to `0.97` in both dark and light themes; eliminates content bleeding through the translucent nav bar
+
+### Settings — remove informational offline section
+- **Updated**: `client/src/pages/Settings.jsx` — removed "Offline support" info row (feature is documented on Landing); App section now only renders when `installPrompt || installed` (strictly actionable); removed `WifiOff` import
+
+### Snackbar — glass blur treatment
+- **Updated**: `client/src/context/toast-context.css` — toast now uses `rgba(28,28,28, 0.82)` + `backdrop-filter: blur(20px) saturate(1.4)` on desktop; `0.86` + `blur(24px)` on mobile; light theme override (`rgba(238,232,213, 0.84)`) — matches sidebar glass aesthetic
+
+### PWA install prompt — one-time modal
+- **New**: `client/src/hooks/usePWAInstall.js` — shared hook capturing `beforeinstallprompt` + `appinstalled` events; exposes `installPrompt`, `installed`, `prompt()`
+- **Updated**: `client/src/components/AppShell.jsx` — `PWAInstallModal` component (amber icon, Install + Not now); fires 5 s after mount when `beforeinstallprompt` is available, not in standalone mode, and `planme-install-dismissed` not set; dismissal is permanent (localStorage)
+- **Updated**: `client/src/pages/Settings.jsx` — replaced duplicated local install state with `usePWAInstall` hook
+
+### Design system — archived badge + nav polish
+- **Updated**: `client/src/styles/design-system.css` — archived status badge bumped from `text-soft` to `text-muted` for better legibility without introducing a new hue
+
+---
+
 ## 2026-05-01 (session 4)
 
 ### Phase 1 — Pinned ideas

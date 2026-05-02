@@ -1,0 +1,65 @@
+/* Mobile-only: form fills the available viewport so the editor expands
+   to use remaining space instead of the page scrolling. */
+@media (max-width: 767px) {
+  .add-idea-page {
+    /* 100dvh minus main py-4 (top+bottom = 2rem) and bottom-nav clearance (5rem) */
+    height: calc(100dvh - 7rem);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .add-idea-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* CardContent default class is `p-6 pt-0` — we extend it to flex */
+  .add-idea-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .add-idea-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* The details field (label + editor) absorbs all remaining form space */
+  .add-idea-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* RichEditor outer wrapper */
+  .add-idea-editor {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* TipTap EditorContent renders a plain <div> — target it as the last child */
+  .add-idea-editor > div:last-child {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .add-idea-editor .ProseMirror {
+    flex: 1;
+    min-height: 6rem;
+    overflow-y: auto;
+  }
+}

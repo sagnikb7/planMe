@@ -11,6 +11,26 @@
   padding: 2rem 1.25rem;
 }
 
+/* Lock body scroll on auth pages — the app-shell padding-bottom would
+   otherwise make the body taller than the viewport even when content fits */
+body:has(.auth-root) {
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .auth-root {
+    height: 100dvh;
+    min-height: unset;
+    overflow-y: auto;
+    justify-content: safe center;
+    padding: 1.25rem 1rem;
+    scrollbar-width: none;
+  }
+  .auth-root::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 .auth-card {
   width: 100%;
   max-width: 26rem;

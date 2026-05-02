@@ -1,10 +1,11 @@
 import '../components/ui/tag-picker.css';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Download, Keyboard, Moon, Sun, Check, Pencil, X, Heart, WifiOff, Smartphone } from 'lucide-react';
+import { Download, Keyboard, Moon, Sun, Check, Pencil, X, Heart, Smartphone } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/context/toast-context';
 import { useAuth } from '@/hooks/useAuth';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { Loader } from '@/components/ui/loader';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import api from '@/lib/api';
@@ -164,24 +165,8 @@ export default function Settings() {
   const [tagsLoading, setTagsLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [ideaCount, setIdeaCount] = useState(null);
-  const [installPrompt, setInstallPrompt] = useState(null);
-  const [installed, setInstalled] = useState(
-    () => window.matchMedia?.('(display-mode: standalone)').matches
-  );
-
-  useEffect(() => {
-    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
-    window.addEventListener('beforeinstallprompt', handler);
-    window.addEventListener('appinstalled', () => { setInstalled(true); setInstallPrompt(null); });
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
-
-  const handleInstall = async () => {
-    if (!installPrompt) return;
-    await installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    if (outcome === 'accepted') { setInstalled(true); setInstallPrompt(null); }
-  };
+  const { installPrompt, installed, prompt: promptInstall } = usePWAInstall();
+  const handleInstall = () => promptInstall();
 
   const [currentPwd, setCurrentPwd] = useState('');
   const [newPwd, setNewPwd] = useState('');
@@ -257,25 +242,11 @@ export default function Settings() {
   return (
     <div className="mx-auto max-w-lg space-y-6">
 
-      {/* App / PWA */}
-      <div className="space-y-2">
-        <SectionLabel>App</SectionLabel>
-        <div className="surface-card divide-y divide-[var(--ds-color-border)]">
-          {/* Offline support — always visible */}
-          <div className="flex items-start gap-3 px-4 py-4">
-            <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--ds-radius-sm)] bg-[var(--ds-color-glow-soft)] text-[var(--ds-color-glow)]">
-              <WifiOff className="h-3.5 w-3.5" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-[var(--ds-color-text)]">Offline support</p>
-              <p className="mt-0.5 text-xs text-[var(--ds-color-text-muted)]">
-                Create and read ideas without an internet connection. Changes sync automatically when you reconnect.
-              </p>
-            </div>
-          </div>
-
-          {/* Install to home screen */}
-          {(installPrompt || installed) && (
+      {/* App / PWA — only shown when install action is available or already installed */}
+      {(installPrompt || installed) && (
+        <div className="space-y-2">
+          <SectionLabel>App</SectionLabel>
+          <div className="surface-card">
             <div className="flex items-center justify-between px-4 py-4">
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--ds-radius-sm)] bg-[var(--ds-color-surface-strong)] text-[var(--ds-color-text-muted)]">
@@ -302,9 +273,9 @@ export default function Settings() {
                 </button>
               )}
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Preferences */}
       <div className="space-y-2">
@@ -463,7 +434,7 @@ export default function Settings() {
       </div>
 
       {/* About — no card, just footer text */}
-      <div className="px-1 pb-2">
+      <div className="px-1 pb-6">
         <div className="flex items-baseline justify-between mb-1.5">
           <span className="text-xs font-medium text-[var(--ds-color-text-soft)]">planMe</span>
           <span className="text-xs text-[var(--ds-color-text-soft)] tabular-nums">v{__APP_VERSION__}</span>

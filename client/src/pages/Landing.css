@@ -632,7 +632,7 @@
 
 .landing-footer {
   border-top: 1px solid var(--ds-color-border);
-  padding: 3rem 2rem 2rem;
+  padding: 3rem 2rem calc(2rem + env(safe-area-inset-bottom, 0px));
   background: radial-gradient(ellipse 70% 60% at 50% 110%, rgba(245, 158, 11, 0.035) 0%, transparent 70%);
 }
 

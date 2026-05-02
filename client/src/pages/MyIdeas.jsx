@@ -1,10 +1,11 @@
 import './MyIdeas.css';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import DOMPurify from 'dompurify';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Trash2, Plus, Lightbulb, Search, X, Archive,
-  List, LayoutGrid, GripVertical, RotateCcw, Pin,
+  List, LayoutGrid, GripVertical, RotateCcw, Pin, MoreHorizontal, Pencil,
 } from 'lucide-react';
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay,
@@ -38,7 +39,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, onDelete, onArchive, onRestore, onSwipeArchive, onPin }) {
+function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, onDelete, onArchive, onRestore, onPin }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: idea._id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -46,41 +47,10 @@ function SortableIdeaRow({ idea, index, sortBy, filterTag, setFilterTag, onDelet
     opacity: isDragging ? 0.4 : 1,
   };
   const isArchived = idea.status === 'archived';
-  const canSwipe = !isArchived && sortBy !== 'manual';
-
-  const touchRef = useRef({ startX: 0, startY: 0 });
-  const elRef = useRef(null);
-
-  const setRefs = useCallback((el) => {
-    setNodeRef(el);
-    elRef.current = el;
-  }, [setNodeRef]);
-
-  useEffect(() => {
-    const el = elRef.current;
-    if (!el || !canSwipe) return;
-    const onStart = (e) => {
-      touchRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY };
-    };
-    const onEnd = (e) => {
-      const dx = e.changedTouches[0].clientX - touchRef.current.startX;
-      const dy = e.changedTouches[0].clientY - touchRef.current.startY;
-      if (dx < -72 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-        navigator.vibrate?.(10);
-        onSwipeArchive(idea._id);
-      }
-    };
-    el.addEventListener('touchstart', onStart, { passive: true });
-    el.addEventListener('touchend', onEnd, { passive: true });
-    return () => {
-      el.removeEventListener('touchstart', onStart);
-      el.removeEventListener('touchend', onEnd);
-    };
-  }, [canSwipe, idea._id, onSwipeArchive]);
 
   return (
     <div
-      ref={setRefs}
+      ref={setNodeRef}
       style={{ ...style, animationDelay: `${Math.min(index, 10) * 40}ms` }}
       className={cn('idea-row', isArchived && 'opacity-50')}
     >
@@ -159,98 +129,170 @@ function SortableIdeaCard({ idea, sortBy, filterTag, setFilterTag, onDelete, onA
 function IdeaBody({ idea, filterTag, setFilterTag, onDelete, onArchive, onRestore, onPin, isArchived, compact = false }) {
   const navigate = useNavigate();
   const isLocal = idea._id?.startsWith('local_');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState(null);
+  const menuBtnRef = useRef(null);
+  const menuDropRef = useRef(null);
+  // Prevents card-body click from navigating immediately after the menu closes
+  const justClosed = useRef(false);
+
+  const openMenu = (e) => {
+    e.stopPropagation();
+    if (menuOpen) { setMenuOpen(false); return; }
+    const btn = menuBtnRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const flipUp = rect.bottom + 220 > window.innerHeight;
+    const alignRight = rect.left + 160 > window.innerWidth;
+    setMenuPos({
+      top: flipUp ? undefined : rect.bottom + 4,
+      bottom: flipUp ? window.innerHeight - rect.top + 4 : undefined,
+      left: alignRight ? undefined : rect.left,
+      right: alignRight ? window.innerWidth - rect.right : undefined,
+    });
+    setMenuOpen(true);
+  };
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (e) => {
+      const btn = menuBtnRef.current;
+      const drop = menuDropRef.current;
+      if (btn && btn.contains(e.target)) return; // toggle handled in openMenu
+      if (drop && drop.contains(e.target)) return; // click inside dropdown
+      justClosed.current = true;
+      setMenuOpen(false);
+    };
+    const closeKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+    // Close on any scroll — dropdown position becomes stale
+    const closeScroll = () => setMenuOpen(false);
+    document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close);
+    window.addEventListener('keydown', closeKey);
+    window.addEventListener('scroll', closeScroll, true);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
+      window.removeEventListener('keydown', closeKey);
+      window.removeEventListener('scroll', closeScroll, true);
+    };
+  }, [menuOpen]);
 
   const handleBodyClick = (e) => {
+    if (justClosed.current) { justClosed.current = false; return; }
     if (e.target.closest('a, button, [role="button"]')) return;
     if (!isLocal) navigate(`/ideas/${idea._id}`);
   };
 
   const date = new Date(idea.createdAt).toLocaleDateString('en', { month: 'short', day: 'numeric' });
 
-  return (
-    <div className={cn('idea-row-body', !isLocal && 'cursor-pointer')} onClick={handleBodyClick}>
-      <div className="idea-title-row">
-        {idea.pinned && (
-          <Pin className="h-3 w-3 shrink-0 text-[var(--ds-color-glow)]" aria-label="Pinned" />
-        )}
-        <h3 className={cn('idea-title', !idea.title && 'text-[var(--ds-color-text-soft)] italic')}>
-          {isLocal ? (
-            <span>{idea.title || 'Untitled'}</span>
-          ) : (
-            <Link
-              to={`/ideas/${idea._id}`}
-              className="hover:text-[var(--ds-color-glow)] transition-colors duration-150"
-            >
-              {idea.title || 'Untitled'}
-            </Link>
-          )}
-        </h3>
-        {isLocal && (
-          <span className="inline-flex items-center rounded-[var(--ds-radius-sm)] bg-[var(--ds-color-glow-soft)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--ds-color-glow)] shrink-0">
-            Local
-          </span>
-        )}
-        {isArchived && !isLocal && <StatusBadge status="archived" />}
-      </div>
-      <div
-        className="idea-preview-rich"
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(idea.details) }}
-      />
-      <div className="idea-meta">
-        <div className="idea-meta-left">
-          {compact && <span className="idea-card-date">{date}</span>}
+  const menuActions = [
+    !isArchived && !isLocal && { key: 'edit', label: 'Edit', icon: Pencil, onClick: () => { navigate(`/ideas/edit/${idea._id}`); setMenuOpen(false); } },
+    !isArchived && !isLocal && { key: 'pin', label: idea.pinned ? 'Unpin' : 'Pin', icon: Pin, onClick: () => { onPin(idea._id, idea.pinned); setMenuOpen(false); } },
+    !isArchived && !isLocal && { key: 'archive', label: 'Archive', icon: Archive, onClick: () => { onArchive(idea._id); setMenuOpen(false); } },
+    isArchived && { key: 'restore', label: 'Restore', icon: RotateCcw, onClick: () => { onRestore(idea._id); setMenuOpen(false); } },
+    { key: 'delete', label: 'Delete', icon: Trash2, danger: true, onClick: () => { onDelete(idea); setMenuOpen(false); } },
+  ].filter(Boolean);
+
+  const menuBtn = (
+    <button
+      ref={menuBtnRef}
+      className="idea-menu-btn"
+      onClick={openMenu}
+      aria-label="More actions"
+      aria-expanded={menuOpen}
+    >
+      <MoreHorizontal className="w-4 h-4" />
+    </button>
+  );
+
+  // Portal dropdown — fixed position escapes any overflow:hidden ancestor
+  const menuDropdown = menuOpen && menuPos && createPortal(
+    <div
+      ref={menuDropRef}
+      className="idea-menu-dropdown"
+      style={{ position: 'fixed', top: menuPos.top, bottom: menuPos.bottom, left: menuPos.left, right: menuPos.right }}
+    >
+      {menuActions.map((action) => (
+        <button
+          key={action.key}
+          onClick={action.onClick}
+          className={cn('idea-menu-dropdown-item', action.danger && 'idea-menu-dropdown-item--danger')}
+        >
+          <action.icon className="w-3.5 h-3.5 shrink-0" />
+          {action.label}
+        </button>
+      ))}
+    </div>,
+    document.body,
+  );
+
+  const titleEl = isLocal ? (
+    <span>{idea.title || 'Untitled'}</span>
+  ) : (
+    <Link to={`/ideas/${idea._id}`} className="hover:text-[var(--ds-color-glow)] transition-colors duration-150">
+      {idea.title || 'Untitled'}
+    </Link>
+  );
+
+  const badges = (
+    <>
+      {isLocal && (
+        <span className="inline-flex items-center rounded-[var(--ds-radius-sm)] bg-[var(--ds-color-glow-soft)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--ds-color-glow)] shrink-0">
+          Local
+        </span>
+      )}
+      {isArchived && !isLocal && <StatusBadge status="archived" />}
+    </>
+  );
+
+  // Grid card: ⋮ top-left, tags bottom-left, date bottom-right
+  if (compact) {
+    return (
+      <div className={cn('idea-row-body', !isLocal && 'cursor-pointer')} onClick={handleBodyClick}>
+        {menuDropdown}
+        <div className="idea-title-row">
+          {menuBtn}
+          {idea.pinned && <Pin className="h-3 w-3 shrink-0 text-[var(--ds-color-glow)]" aria-label="Pinned" />}
+          <h3 className={cn('idea-title', !idea.title && 'text-[var(--ds-color-text-soft)] italic')}>{titleEl}</h3>
+          {badges}
+        </div>
+        <div className="idea-preview-rich" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(idea.details) }} />
+        <div className="idea-card-footer">
           <div className="idea-tags">
             {(idea.tags || []).map((tag) => (
-              <button
-                key={tag}
-                className="tag-chip"
-                onClick={() => setFilterTag(filterTag === tag ? '' : tag)}
-              >
+              <button key={tag} className="tag-chip" onClick={(e) => { e.stopPropagation(); setFilterTag(filterTag === tag ? '' : tag); }}>
+                {tag}
+              </button>
+            ))}
+          </div>
+          <span className="idea-card-date">{date}</span>
+        </div>
+      </div>
+    );
+  }
+
+  // List row: ⋮ on the right in the meta row
+  return (
+    <div className={cn('idea-row-body', !isLocal && 'cursor-pointer')} onClick={handleBodyClick}>
+      {menuDropdown}
+      <div className="idea-title-row">
+        {idea.pinned && <Pin className="h-3 w-3 shrink-0 text-[var(--ds-color-glow)]" aria-label="Pinned" />}
+        <h3 className={cn('idea-title', !idea.title && 'text-[var(--ds-color-text-soft)] italic')}>{titleEl}</h3>
+        {badges}
+      </div>
+      <div className="idea-preview-rich" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(idea.details) }} />
+      <div className="idea-meta">
+        <div className="idea-meta-left">
+          <div className="idea-tags">
+            {(idea.tags || []).map((tag) => (
+              <button key={tag} className="tag-chip" onClick={() => setFilterTag(filterTag === tag ? '' : tag)}>
                 {tag}
               </button>
             ))}
           </div>
         </div>
-        <div className="idea-row-actions">
-          {!isArchived && !isLocal && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onPin(idea._id, idea.pinned)}
-              aria-label={idea.pinned ? 'Unpin idea' : 'Pin idea'}
-              style={idea.pinned ? { color: 'var(--ds-color-glow)' } : {}}
-            >
-              <Pin className="w-3.5 h-3.5" />
-            </Button>
-          )}
-          {isArchived ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onRestore(idea._id)}
-              aria-label="Restore idea"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onArchive(idea._id)}
-              aria-label="Archive idea"
-            >
-              <Archive className="w-3.5 h-3.5" />
-            </Button>
-          )}
-          <Button
-            variant="ghost-danger"
-            size="sm"
-            onClick={() => onDelete(idea)}
-            aria-label="Delete idea"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </Button>
-        </div>
+        {menuBtn}
       </div>
     </div>
   );
@@ -276,7 +318,9 @@ export default function MyIdeas() {
   });
   const [filterTag, setFilterTag] = useState('');
   const [showArchived, setShowArchived] = useState(false);
-  const [view, setView] = useState(() => localStorage.getItem(VIEW_KEY) || 'list');
+  const [view, setView] = useState(() =>
+    window.innerWidth < 640 ? 'grid' : (localStorage.getItem(VIEW_KEY) || 'list')
+  );
   const [activeId, setActiveId] = useState(null);
 
   const [pendingDelete, setPendingDelete] = useState(null);
@@ -316,6 +360,13 @@ export default function MyIdeas() {
     const handler = () => searchRef.current?.focus();
     window.addEventListener('planme:focus-search', handler);
     return () => window.removeEventListener('planme:focus-search', handler);
+  }, []);
+
+  // Grid is the only sensible layout on mobile — enforce it on resize too
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth < 640) setView('grid'); };
+    window.addEventListener('resize', onResize, { passive: true });
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
@@ -687,7 +738,6 @@ export default function MyIdeas() {
               ))}
             </div>
           )}
-
           {displayed.length === 0 ? (
             <div className="ideas-empty">
               <p className="ideas-empty-text">
@@ -722,7 +772,6 @@ export default function MyIdeas() {
                         onDelete={setPendingDelete}
                         onArchive={handleSwipeArchive}
                         onRestore={handleRestore}
-                        onSwipeArchive={handleSwipeArchive}
                         onPin={handlePin}
                       />
                     ))}
@@ -767,6 +816,7 @@ export default function MyIdeas() {
         loading={deleting}
         onConfirm={handleDelete}
       />
+
     </main>
   );
 }

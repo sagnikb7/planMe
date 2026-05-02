@@ -41,7 +41,7 @@
   /* Amber focus ring instead of cold white */
   --ds-shadow-focus: 0 0 0 2px var(--ds-color-glow-ring);
 
-  --ds-nav-bg: rgba(17, 17, 17, 0.94);
+  --ds-nav-bg: rgba(17, 17, 17, 0.92);
 
   --ds-radius-sm: 6px;
   --ds-radius-md: 8px;
@@ -142,19 +142,41 @@
     radial-gradient(ellipse 65% 40% at 10% 5%, rgba(245, 158, 11, 0.045) 0%, transparent 60%),
     radial-gradient(ellipse 40% 30% at 92% 90%, rgba(99, 102, 241, 0.028) 0%, transparent 60%),
     var(--ds-color-bg);
-  /* Mobile: pad below the floating nav + iOS home indicator */
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
 }
 
-@media (min-width: 768px) {
-  .app-shell { padding-bottom: 0; }
+/* Mobile: lock the shell to the viewport — main becomes the scroll container.
+   The key is the chain: app-shell (fixed 100dvh) → app-shell-inner (height:100%)
+   → app-shell-content-col (flex-1, min-h-0) → main (flex-1, overflow-y:auto).
+   Each step must be height-bounded, not just min-height, or flex children
+   grow with content instead of scrolling within a fixed container. */
+@media (max-width: 767px) {
+  .app-shell-layout {
+    height: 100dvh;
+    min-height: unset;
+    overflow: hidden;
+  }
+  /* height:100% (not min-height) is what actually bounds the flex chain */
+  .app-shell-inner {
+    height: 100%;
+    min-height: unset;
+  }
+  /* min-h-0 already applied via Tailwind; overflow:hidden prevents blowout */
+  .app-shell-content-col {
+    overflow: hidden;
+  }
+  /* main is the scroll container — bottom clearance moved here from app-shell */
+  .app-shell-main {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .nav-shell {
   background: var(--ds-nav-bg);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  backdrop-filter: blur(24px) saturate(1.5);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
   /* Float above iOS home indicator */
   bottom: calc(var(--ds-space-3) + env(safe-area-inset-bottom, 0px));
@@ -189,11 +211,11 @@
 
 /* Frosted-glass sidebar. Works against the ambient bg gradient. */
 .surface-glass {
-  background: rgba(20, 20, 20, 0.6);
+  background: rgba(20, 20, 20, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.065);
   border-radius: var(--ds-radius-md);
-  backdrop-filter: blur(20px) saturate(1.35);
-  -webkit-backdrop-filter: blur(20px) saturate(1.35);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
 
 /* ─── Feedback ───────────────────────────────────────────────── */
@@ -282,8 +304,8 @@
   flex-shrink: 0;
 }
 
-.status-badge[data-status="archived"] { color: var(--ds-color-text-soft); }
-.status-badge[data-status="archived"] .status-badge-dot { background: var(--ds-color-text-soft); opacity: 0.5; }
+.status-badge[data-status="archived"] { color: var(--ds-color-text-muted); }
+.status-badge[data-status="archived"] .status-badge-dot { background: var(--ds-color-text-muted); opacity: 0.6; }
 
 /* ─── Light theme ────────────────────────────────────────────── */
 
@@ -322,7 +344,7 @@
   --ds-shadow-lg: 0 8px 24px rgba(7, 54, 66, 0.12);
   --ds-shadow-focus: 0 0 0 2px var(--ds-color-glow-ring);
 
-  --ds-nav-bg: rgba(253, 246, 227, 0.94);
+  --ds-nav-bg: rgba(253, 246, 227, 0.92);
 }
 
 [data-theme="light"] .app-shell {
@@ -333,6 +355,6 @@
 }
 
 [data-theme="light"] .surface-glass {
-  background: rgba(253, 246, 227, 0.72);
+  background: rgba(253, 246, 227, 0.82);
   border: 1px solid rgba(101, 123, 131, 0.12);
 }

@@ -34,6 +34,7 @@ export default function ViewIdea() {
   const [deleting, setDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [allIdeas, setAllIdeas] = useState([]);
 
   const contentRef = useRef(null);
@@ -80,6 +81,19 @@ export default function ViewIdea() {
       toast('Failed to restore idea');
     } finally {
       setRestoring(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    setArchiving(true);
+    try {
+      await api.patch(`/ideas/${id}/status`, { status: 'archived' });
+      setIdea((prev) => ({ ...prev, status: 'archived' }));
+      toast('Idea archived');
+    } catch {
+      toast('Failed to archive idea');
+    } finally {
+      setArchiving(false);
     }
   };
 
@@ -155,26 +169,35 @@ export default function ViewIdea() {
 
         {idea && (
           <div className="flex items-center gap-2">
-            {idea.status === 'archived' && (
-              <Button variant="outline" size="sm" onClick={handleRestore} disabled={restoring}>
-                <RotateCcw className="h-3.5 w-3.5" />
-                {restoring ? 'Restoring…' : 'Restore'}
-              </Button>
+            {idea.status === 'archived' ? (
+              <>
+                <Button variant="outline" size="sm" onClick={handleRestore} disabled={restoring}>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {restoring ? 'Restoring…' : 'Restore'}
+                </Button>
+                <Button variant="ghost-danger" size="sm" onClick={() => setShowDeleteDialog(true)}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to={`/ideas/edit/${id}`}>
+                    <Pencil className="h-3.5 w-3.5" />
+                    Edit
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleArchive} disabled={archiving}>
+                  <Archive className="h-3.5 w-3.5" />
+                  {archiving ? 'Archiving…' : 'Archive'}
+                </Button>
+                <Button variant="ghost-danger" size="sm" onClick={() => setShowDeleteDialog(true)}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete
+                </Button>
+              </>
             )}
-            <Button asChild variant="ghost" size="sm">
-              <Link to={`/ideas/edit/${id}`}>
-                <Pencil className="h-3.5 w-3.5" />
-                Edit
-              </Link>
-            </Button>
-            <Button
-              variant="ghost-danger"
-              size="sm"
-              onClick={() => setShowDeleteDialog(true)}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Delete
-            </Button>
           </div>
         )}
       </div>

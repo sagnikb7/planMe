@@ -205,44 +205,101 @@
   align-items: center;
 }
 
-.idea-card .idea-meta {
+/* ─── Card footer (tags left · date right) ───────────────────── */
+
+.idea-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   margin-top: auto;
   padding-top: 0.5rem;
-  align-items: center;
-  position: relative;
   min-height: 1.75rem;
 }
 
-.idea-card .idea-meta-left {
-  align-items: center;
-}
-
-.idea-card .idea-meta-left {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25rem;
-}
-
-.idea-card .idea-tags {
+.idea-card-footer .idea-tags {
   flex-wrap: nowrap;
   overflow: hidden;
-  min-height: 1.5rem;
+  min-width: 0;
+  flex: 1;
 }
 
-.idea-card .idea-tags .tag-chip {
+.idea-card-footer .idea-tags .tag-chip {
   max-width: 6.75rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Actions float over tags with a gradient fade — no layout shift */
-.idea-card .idea-row-actions {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(to right, transparent, var(--ds-color-surface) 2rem);
-  padding-left: 2rem;
+.idea-card-footer .idea-card-date {
+  flex-shrink: 0;
+}
+
+/* ─── ⋮ menu button ──────────────────────────────────────────── */
+
+.idea-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--ds-radius-sm);
+  background: none;
+  border: none;
+  color: var(--ds-color-text-soft);
+  cursor: pointer;
+  transition: color 0.1s, background 0.1s;
+}
+
+.idea-menu-btn:hover,
+.idea-menu-btn:active {
+  color: var(--ds-color-text-muted);
+  background: var(--ds-color-accent-soft);
+}
+
+/* ─── Dropdown (shared list + grid, portal-rendered at fixed pos) */
+
+.idea-menu-dropdown {
+  z-index: var(--ds-z-overlay);
+  min-width: 148px;
+  background: var(--ds-color-surface-strong);
+  border: 1px solid var(--ds-color-border-strong);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-lg);
+  overflow: hidden;
+  animation: ds-fade-up 0.12s ease-out both;
+}
+
+.idea-menu-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  color: var(--ds-color-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.1s;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.idea-menu-dropdown-item:hover,
+.idea-menu-dropdown-item:active {
+  background: var(--ds-color-accent-soft);
+}
+
+.idea-menu-dropdown-item--danger {
+  color: var(--ds-color-danger);
+  border-top: 1px solid var(--ds-color-border);
+}
+
+.idea-menu-dropdown-item--danger:hover,
+.idea-menu-dropdown-item--danger:active {
+  background: var(--ds-color-danger-soft);
 }
 
 .idea-card:hover {

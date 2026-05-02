@@ -41,7 +41,7 @@
   /* Amber focus ring instead of cold white */
   --ds-shadow-focus: 0 0 0 2px var(--ds-color-glow-ring);
 
-  --ds-nav-bg: rgba(17, 17, 17, 0.92);
+  --ds-nav-bg: rgba(17, 17, 17, 0.97);
 
   --ds-radius-sm: 6px;
   --ds-radius-md: 8px;
@@ -190,7 +190,7 @@
 }
 
 [data-theme="light"] .nav-shell {
-  background: rgba(253, 246, 227, 0.92);
+  background: rgba(253, 246, 227, 0.97);
   border: 1px solid rgba(101, 123, 131, 0.12);
   box-shadow: 0 4px 20px rgba(7, 54, 66, 0.07);
 }
@@ -344,7 +344,7 @@
   --ds-shadow-lg: 0 8px 24px rgba(7, 54, 66, 0.12);
   --ds-shadow-focus: 0 0 0 2px var(--ds-color-glow-ring);
 
-  --ds-nav-bg: rgba(253, 246, 227, 0.92);
+  --ds-nav-bg: rgba(253, 246, 227, 0.97);
 }
 
 [data-theme="light"] .app-shell {

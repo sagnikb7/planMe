@@ -15,7 +15,7 @@ export function ToastProvider({ children }) {
   const toast = useCallback((message, variant = 'success') => {
     const id = ++counterRef.current;
     setToasts((prev) => [...prev, { id, message, variant }]);
-    haptic('light');
+    if (variant === 'error') haptic('light');
     setTimeout(() => dismiss(id), 3000);
   }, [dismiss]);
 

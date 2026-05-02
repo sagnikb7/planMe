@@ -21,7 +21,7 @@
   font-weight: 500;
   pointer-events: all;
   border: 1px solid var(--ds-color-border-strong);
-  background: rgba(28, 28, 28, 0.82);
+  background: rgba(28, 28, 28, 0.96);
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   color: var(--ds-color-text);
@@ -30,14 +30,14 @@
 }
 
 .toast[data-variant="success"] {
-  background: var(--ds-color-success-soft);
-  border-color: rgba(90, 171, 128, 0.2);
+  background: rgba(20, 45, 30, 0.96);
+  border-color: rgba(90, 171, 128, 0.3);
   color: var(--ds-color-success);
 }
 
 .toast[data-variant="error"] {
-  background: var(--ds-color-danger-soft);
-  border-color: rgba(224, 85, 85, 0.2);
+  background: rgba(50, 20, 20, 0.96);
+  border-color: rgba(224, 85, 85, 0.3);
   color: var(--ds-color-danger);
 }
 
@@ -70,7 +70,7 @@
   }
 
   .toast {
-    background: rgba(28, 28, 28, 0.86);
+    background: rgba(28, 28, 28, 0.96);
     backdrop-filter: blur(20px) saturate(1.4);
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border-color: var(--ds-color-border-strong);
@@ -83,7 +83,7 @@
 }
 
 [data-theme="light"] .toast {
-  background: rgba(238, 232, 213, 0.84);
+  background: rgba(238, 232, 213, 0.96);
   border-color: rgba(101, 123, 131, 0.22);
   color: var(--ds-color-text);
 }

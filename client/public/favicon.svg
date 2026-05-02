@@ -1,8 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <rect width="48" height="48" rx="11" fill="#111111"/>
-  <!-- 4-pointed star -->
-  <path d="M24 10 C24 10 25.6 19.6 28 22 C30.4 24.4 40 24 40 24 C40 24 30.4 24.6 28 27 C25.6 29.4 24 38 24 38 C24 38 22.4 29.4 20 27 C17.6 24.6 8 24 8 24 C8 24 17.6 24.4 20 22 C22.4 19.6 24 10 24 10 Z" fill="#f59e0b"/>
-  <!-- Small accent dots -->
-  <circle cx="37" cy="13" r="2" fill="#f59e0b" opacity="0.6"/>
-  <circle cx="13" cy="37" r="1.5" fill="#f59e0b" opacity="0.4"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Background gradient — deep charcoal with warm undertone -->
+    <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </radialGradient>
+    <!-- Ambient glow behind the spark -->
+    <radialGradient id="glow" cx="50%" cy="50%" r="40%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25"/>
+      <stop offset="60%" stop-color="#f59e0b" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Spark gradient — warm amber to rich orange -->
+    <linearGradient id="spark" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <!-- Dot gradient — subtle depth -->
+    <radialGradient id="dot" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </radialGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" rx="118" fill="url(#bg)"/>
+  <!-- Ambient glow -->
+  <circle cx="256" cy="256" r="200" fill="url(#glow)"/>
+  <!-- 4-pointed star — scaled from 48 to 512 (×10.667) -->
+  <path d="M256 107 C256 107 273 209 299 235 C325 261 427 256 427 256 C427 256 325 262 299 288 C273 314 256 405 256 405 C256 405 239 314 213 288 C187 262 85 256 85 256 C85 256 187 261 213 235 C239 209 256 107 256 107 Z" fill="url(#spark)"/>
+  <!-- Accent dots -->
+  <circle cx="395" cy="139" r="21" fill="url(#dot)" opacity="0.55"/>
+  <circle cx="139" cy="395" r="16" fill="url(#dot)" opacity="0.35"/>
 </svg>

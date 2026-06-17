@@ -9,9 +9,10 @@
 ## Provider Tree (order matters)
 ```
 BrowserRouter
-  ToastProvider       (toast-context.jsx)
-    AuthProvider      (AuthContext.jsx)
-      AppShell        (protected subtree)
+  PWAProvider         (pwa-context.jsx)
+    ToastProvider     (toast-context.jsx)
+      AuthProvider    (AuthContext.jsx)
+        AppShell      (protected subtree)
 ```
 
 ## Context
@@ -20,6 +21,7 @@ BrowserRouter
 | `context/AuthContext.jsx` | `AuthProvider` | `user` (null\|undefined\|SanitizedUser), `pendingSessions` |
 | `context/auth-context.js` | `AuthContext` (raw context object) | |
 | `context/toast-context.jsx` | `ToastProvider`, `useToast()` | toast queue |
+| `context/pwa-context.jsx` | `PWAProvider` | captures `beforeinstallprompt`/`appinstalled` app-wide so the install prompt isn't lost off the Settings page |
 
 `user === undefined` = loading; `null` = logged out; object = authenticated.
 
@@ -27,6 +29,7 @@ BrowserRouter
 | File | Purpose |
 |---|---|
 | `hooks/useAuth.js` | `useContext(AuthContext)` shorthand |
+| `hooks/usePWAInstall.js` | Consumes `PWAProvider`; exposes `installPrompt`, `installed`, `prompt()` |
 | `hooks/useOnlineStatus.js` | Online/offline detection |
 | `hooks/useKeyboardShortcuts.js` | Global keyboard shortcuts |
 | `hooks/useTheme.js` | Dark/light theme toggle |

@@ -4,6 +4,40 @@ Format: `[date] scope — description`
 
 ---
 
+## 2026-06-17 (session 9)
+
+### Instant-capture feature — evaluated and cut
+- **Investigated**: an in-flight `feat/instant-capture` branch added a dedicated `/capture` quick-capture page (single autofocus input, Enter-to-save, draft persistence, today-count), a PWA `share_target` + home-screen shortcut (`vite.config.js`), a no-op Dexie `version(2)` migration (`client/src/lib/db.js`), and made idea `details` optional server-side (`server/src/schemas/idea.schema.ts`)
+- **Decision**: cut. The only behavior `/ideas/add` could not provide was the PWA share target; with that out of scope the page was redundant with the existing creation surface and was half-wired (route present, no in-app entry point). Reverted all 6 modified files and deleted `client/src/pages/Capture.jsx` + `capture.css`. `details` remains required.
+
+---
+
+## 2026-05-16 (session 8b)
+
+### gstack workflow adoption
+- **Updated**: `CLAUDE.md` — require gstack for AI-assisted engineering work; added the gstack skill routing rules (product ideas → `/office-hours`, bugs → `/investigate`, review → `/review`, ship → `/ship`, etc.) and the `/browse` mandate for all web browsing
+
+---
+
+## 2026-05-02 (session 8)
+
+### PWA install — reliable prompt capture
+- **Updated**: `client/src/main.jsx` — register the service worker via `virtual:pwa-register` so `beforeinstallprompt` actually fires; auto-reload the page when the SW detects updated precached assets (fresh CSS/JS after deploy)
+- **New**: `client/src/context/pwa-context.jsx` — app-level `PWAProvider` that captures `beforeinstallprompt`/`appinstalled` so the event isn't lost when the user isn't on Settings; `usePWAInstall` slimmed to consume the context
+- **Updated**: `client/src/App.jsx` — wraps the tree in `PWAProvider`
+- **Updated**: `client/package.json` — added `workbox-window` dependency
+
+### App icon redesign
+- **Updated**: `client/public/favicon.svg`, `pwa-192x192.png`, `pwa-512x512.png`, `apple-touch-icon.png` — amber-to-orange gradient spark with radial glow on dark bg, regenerated from a 512-unit SVG source; inline splash SVG (`client/index.html`) matches
+- **Removed**: unused `client/public/icons.svg` and `image.png`
+
+### Polish
+- **Updated**: `client/src/styles/design-system.css`, `client/src/context/toast-context.css` — nav + toast background opacity raised to ~0.96–0.97 (no more text bleed-through)
+- **Updated**: haptics trimmed to meaningful interactions only — spark CTA, destructive confirms, error toasts; removed from nav taps, dialog opens, success/info toasts (`AppShell.jsx`, `dialog.jsx`, `toast-context.jsx`)
+- **Updated**: `client/src/pages/Profile.jsx` — sign-out button stretches full-width on mobile
+
+---
+
 ## 2026-05-02 (session 7)
 
 ### Design System public + haptics + PWA splash

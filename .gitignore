@@ -56,7 +56,7 @@ jest-cache/
 
 # Claude / AI tooling
 .claude/
-
+.agents/
 # Optional: logs from runtime tools
 logs/
 
